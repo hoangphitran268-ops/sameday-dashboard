@@ -1,11 +1,18 @@
-import { readDashboardData } from "@/lib/data";
+import { getDashboardData, type SearchParams } from "@/lib/data";
+import { rangeDisplayLabel } from "@/lib/dateRanges";
 import ChartCard, { LegendItem } from "@/components/ChartCard";
 import HourTrendLine from "@/components/charts/HourTrendLine";
+import EmptyState from "@/components/EmptyState";
 
 export const dynamic = "force-dynamic";
 
-export default function TheoGioPage() {
-  const data = readDashboardData();
+export default async function TheoGioPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+  const { data, range } = getDashboardData(await searchParams);
+
+  if (!data.has_data || data.hour_trend.length === 0) {
+    return <EmptyState label={rangeDisplayLabel(range)} />;
+  }
+
   const peakPickup = [...data.hour_trend].sort((a, b) => b.so_don_lay_hang - a.so_don_lay_hang)[0];
   const peakSign = [...data.hour_trend].sort((a, b) => b.so_don_ky_nhan - a.so_don_ky_nhan)[0];
 
@@ -32,6 +39,7 @@ export default function TheoGioPage() {
 
       <ChartCard
         title="Số đơn theo giờ trong ngày: Lấy hàng vs Ký nhận"
+        note={rangeDisplayLabel(range)}
         legend={
           <>
             <LegendItem color="var(--series-primary)" label="Số đơn lấy hàng" />

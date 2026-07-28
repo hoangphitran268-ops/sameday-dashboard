@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import RefreshControl from "@/components/RefreshControl";
-import { readDashboardData } from "@/lib/data";
+import DateRangeFilter from "@/components/DateRangeFilter";
+import { readRawData } from "@/lib/data";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,7 +27,7 @@ export const dynamic = "force-dynamic";
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   let generatedAt: string | undefined;
   try {
-    generatedAt = readDashboardData().meta.generated_at;
+    generatedAt = readRawData().generated_at;
   } catch {
     generatedAt = undefined;
   }
@@ -33,10 +35,12 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="vi" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full flex" style={{ background: "var(--background)" }}>
-        <Sidebar />
+        <Suspense fallback={null}>
+          <Sidebar />
+        </Suspense>
         <div className="flex-1 min-w-0 flex flex-col">
           <header
-            className="flex items-center justify-between px-8 py-4 border-b"
+            className="flex items-center justify-between px-8 py-4 border-b gap-4"
             style={{ borderColor: "var(--border)", background: "var(--surface)" }}
           >
             <div>
@@ -47,7 +51,12 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                 J&T Express · Nguồn: sheet &ldquo;data&rdquo; của file export hằng ngày
               </p>
             </div>
-            <RefreshControl generatedAt={generatedAt} />
+            <div className="flex items-center gap-3">
+              <Suspense fallback={null}>
+                <DateRangeFilter />
+              </Suspense>
+              <RefreshControl generatedAt={generatedAt} />
+            </div>
           </header>
           <main className="flex-1 min-w-0 px-8 py-6">{children}</main>
         </div>

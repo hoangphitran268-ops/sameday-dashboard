@@ -1,17 +1,24 @@
-import { readDashboardData } from "@/lib/data";
+import { getDashboardData, type SearchParams } from "@/lib/data";
+import { rangeDisplayLabel } from "@/lib/dateRanges";
 import ChartCard, { LegendItem } from "@/components/ChartCard";
 import KpiTrendLine from "@/components/charts/KpiTrendLine";
 import DurationBarChart from "@/components/charts/DurationBarChart";
+import EmptyState from "@/components/EmptyState";
 
 export const dynamic = "force-dynamic";
 
-export default function KpiPage() {
-  const data = readDashboardData();
+export default async function KpiPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+  const { data, range } = getDashboardData(await searchParams);
+
+  if (!data.has_data) {
+    return <EmptyState label={rangeDisplayLabel(range)} />;
+  }
 
   return (
     <div className="space-y-6 max-w-6xl">
       <ChartCard
         title="Tỷ lệ ký nhận / cùng ngày / có vấn đề theo ngày (%)"
+        note={rangeDisplayLabel(range)}
         legend={
           <>
             <LegendItem color="var(--series-primary)" label="Tỷ lệ cùng ngày %" />
@@ -23,7 +30,7 @@ export default function KpiPage() {
         <KpiTrendLine data={data.kpi_daily} />
       </ChartCard>
 
-      <ChartCard title="Thời gian xử lý trung bình theo ngày (giờ)" note="Đỏ đậm = vượt quá 130% mức trung bình 21 ngày">
+      <ChartCard title="Thời gian xử lý trung bình theo ngày (giờ)" note="Đỏ đậm = vượt quá 130% mức trung bình trong khoảng đã chọn">
         <DurationBarChart data={data.kpi_daily} />
       </ChartCard>
 

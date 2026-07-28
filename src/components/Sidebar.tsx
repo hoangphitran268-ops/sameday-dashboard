@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { LayoutDashboard, TrendingUp, Building2, AlertTriangle, Clock } from "lucide-react";
+import { rangeDisplayLabel, resolvePreset } from "@/lib/dateRanges";
+import type { RangePresetKey } from "@/lib/types";
 
 const NAV = [
   { href: "/", label: "Tổng quan", icon: LayoutDashboard },
@@ -14,6 +16,11 @@ const NAV = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const qs = searchParams.toString();
+
+  const preset = (searchParams.get("preset") as RangePresetKey) || "all";
+  const range = resolvePreset(preset, { customFrom: searchParams.get("from"), customTo: searchParams.get("to") });
 
   return (
     <aside
@@ -35,10 +42,11 @@ export default function Sidebar() {
       <nav className="flex-1 px-3 py-4 space-y-1">
         {NAV.map(({ href, label, icon: Icon }) => {
           const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
+          const target = qs ? `${href}?${qs}` : href;
           return (
             <Link
               key={href}
-              href={href}
+              href={target}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 active ? "bg-white text-[var(--brand-red)]" : "text-white/90 hover:bg-white/10"
               }`}
@@ -50,9 +58,7 @@ export default function Sidebar() {
         })}
       </nav>
 
-      <div className="px-5 py-4 text-[11px] text-white/60 border-t border-white/15">
-        07/07 – 27/07/2026 · 21 ngày
-      </div>
+      <div className="px-5 py-4 text-[11px] text-white/60 border-t border-white/15">{rangeDisplayLabel(range)}</div>
     </aside>
   );
 }

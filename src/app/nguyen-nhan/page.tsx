@@ -1,15 +1,21 @@
-import { readDashboardData } from "@/lib/data";
+import { getDashboardData, type SearchParams } from "@/lib/data";
+import { rangeDisplayLabel } from "@/lib/dateRanges";
 import ChartCard from "@/components/ChartCard";
 import HBarChart from "@/components/charts/HBarChart";
+import EmptyState from "@/components/EmptyState";
 
 export const dynamic = "force-dynamic";
 
-export default function NguyenNhanPage() {
-  const data = readDashboardData();
+export default async function NguyenNhanPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+  const { data, range } = getDashboardData(await searchParams);
+
+  if (!data.has_data) {
+    return <EmptyState label={rangeDisplayLabel(range)} />;
+  }
 
   return (
     <div className="space-y-6 max-w-6xl">
-      <ChartCard title="Funnel trạng thái hiện tại (số đơn, 21 ngày)">
+      <ChartCard title="Funnel trạng thái hiện tại (số đơn)" note={rangeDisplayLabel(range)}>
         <HBarChart
           data={data.status_overall as unknown as Record<string, unknown>[]}
           dataKey="so_luong"
@@ -20,24 +26,22 @@ export default function NguyenNhanPage() {
         />
       </ChartCard>
 
-      <ChartCard title="Nguyên nhân đơn có vấn đề (số đơn, 21 ngày)">
-        <HBarChart
-          data={data.reason_overall as unknown as Record<string, unknown>[]}
-          dataKey="so_luong"
-          categoryKey="nguyen_nhan"
-          name="Số lượng"
-          width={260}
-          color="var(--series-tertiary)"
-        />
-      </ChartCard>
-
-      <div className="rounded-xl border p-5" style={{ background: "var(--brand-red-tint)", borderColor: "var(--brand-red-light)" }}>
-        <p className="text-[13px]" style={{ color: "var(--text-secondary)" }}>
-          <b style={{ color: "var(--text-primary)" }}>2 nguyên nhân từ phía khách hàng</b> — &ldquo;Khách hẹn lại&rdquo;
-          (5.594 đơn) và &ldquo;Khách không nghe máy&rdquo; (4.817 đơn) — chiếm gần 80% tổng số đơn phát sinh vấn đề,
-          không phải lỗi vận hành nội bộ của bưu cục.
+      {data.reason_overall.length > 0 ? (
+        <ChartCard title="Nguyên nhân đơn có vấn đề (số đơn)" note={rangeDisplayLabel(range)}>
+          <HBarChart
+            data={data.reason_overall as unknown as Record<string, unknown>[]}
+            dataKey="so_luong"
+            categoryKey="nguyen_nhan"
+            name="Số lượng"
+            width={260}
+            color="var(--series-tertiary)"
+          />
+        </ChartCard>
+      ) : (
+        <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+          Không có đơn nào phát sinh vấn đề trong khoảng thời gian này.
         </p>
-      </div>
+      )}
     </div>
   );
 }

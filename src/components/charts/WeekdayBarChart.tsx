@@ -5,6 +5,7 @@ import type { WeekdayRow } from "@/lib/types";
 import { ChartTooltip } from "./ChartTooltip";
 
 export default function WeekdayBarChart({ data }: { data: WeekdayRow[] }) {
+  const minVal = data.length ? Math.min(...data.map((d) => d.ty_le_cung_ngay_pct)) : null;
   return (
     <ResponsiveContainer width="100%" height={260}>
       <BarChart data={data} margin={{ top: 20, right: 12, left: -12, bottom: 0 }}>
@@ -14,7 +15,7 @@ export default function WeekdayBarChart({ data }: { data: WeekdayRow[] }) {
         <Tooltip content={<ChartTooltip />} />
         <Bar dataKey="ty_le_cung_ngay_pct" name="Tỷ lệ cùng ngày %" radius={[4, 4, 0, 0]} maxBarSize={40}>
           {data.map((d, i) => (
-            <Cell key={i} fill={d.weekday === "Chủ nhật" ? "var(--status-critical)" : "var(--series-primary)"} />
+            <Cell key={i} fill={d.ty_le_cung_ngay_pct === minVal ? "var(--status-critical)" : "var(--series-primary)"} />
           ))}
           <LabelList
             dataKey="ty_le_cung_ngay_pct"

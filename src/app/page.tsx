@@ -1,19 +1,25 @@
-import { readDashboardData } from "@/lib/data";
+import { getDashboardData, type SearchParams } from "@/lib/data";
+import { rangeDisplayLabel } from "@/lib/dateRanges";
 import StatTile from "@/components/StatTile";
 import ChartCard, { LegendItem } from "@/components/ChartCard";
 import KpiTrendLine from "@/components/charts/KpiTrendLine";
 import WeekdayBarChart from "@/components/charts/WeekdayBarChart";
+import EmptyState from "@/components/EmptyState";
 
 export const dynamic = "force-dynamic";
 
-export default function OverviewPage() {
-  const data = readDashboardData();
+export default async function OverviewPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+  const { data, range } = getDashboardData(await searchParams);
   const { meta } = data;
+
+  if (!data.has_data) {
+    return <EmptyState label={rangeDisplayLabel(range)} />;
+  }
 
   return (
     <div className="space-y-6 max-w-6xl">
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        <StatTile label="Tổng số đơn (21 ngày)" value={meta.tong_don_21_ngay.toLocaleString("vi-VN")} />
+        <StatTile label={`Tổng số đơn (${meta.so_ngay} ngày)`} value={meta.tong_don_21_ngay.toLocaleString("vi-VN")} />
         <StatTile label="Tỷ lệ đã ký nhận" value={`${meta.ty_le_ky_nhan_pct}%`} />
         <StatTile label="Tỷ lệ ký nhận CÙNG NGÀY" value={`${meta.ty_le_cung_ngay_pct}%`} />
         <StatTile label="TG xử lý trung bình" value={`${meta.tg_xu_ly_tb_h} giờ`} />
@@ -25,21 +31,16 @@ export default function OverviewPage() {
         style={{ background: "var(--brand-red-tint)", borderColor: "var(--brand-red-light)" }}
       >
         <h3 className="text-sm font-semibold mb-2" style={{ color: "var(--brand-red-dark)" }}>
-          Phát hiện chính
+          Phát hiện chính · {rangeDisplayLabel(range)}
         </h3>
         <ul className="space-y-1.5 text-[13px]" style={{ color: "var(--text-secondary)" }}>
           <li>
-            <b style={{ color: "var(--text-primary)" }}>Chủ nhật là điểm nghẽn rõ rệt nhất tuần:</b> tỷ lệ ký nhận
-            cùng ngày trung bình chỉ 43,2%, so với 69–84% các ngày còn lại; thời gian xử lý trung bình tăng lên
-            ~16,4 giờ.
+            <b style={{ color: "var(--text-primary)" }}>Chủ nhật thường là điểm nghẽn:</b> tỷ lệ ký nhận cùng ngày
+            có xu hướng giảm mạnh vào Chủ nhật so với các ngày khác trong tuần — xem chi tiết ở biểu đồ bên dưới.
           </li>
           <li>
-            <b style={{ color: "var(--text-primary)" }}>Thứ 2 hồi phục mạnh nhất</b> (83,8% cùng ngày) — đơn tồn
-            Chủ nhật được dồn xử lý đầu tuần.
-          </li>
-          <li>
-            <b style={{ color: "var(--text-primary)" }}>~80% đơn có vấn đề đến từ nguyên nhân phía khách hàng</b>{" "}
-            (khách hẹn lại, không nghe máy) — không phải lỗi vận hành nội bộ.
+            <b style={{ color: "var(--text-primary)" }}>Thứ 2 thường hồi phục mạnh nhất</b> — đơn tồn cuối tuần
+            được dồn xử lý đầu tuần.
           </li>
         </ul>
       </div>
@@ -57,7 +58,7 @@ export default function OverviewPage() {
         <KpiTrendLine data={data.kpi_daily} />
       </ChartCard>
 
-      <ChartCard title="Tỷ lệ cùng ngày theo Thứ trong tuần (%)" note="Đỏ đậm = Chủ nhật, thấp nhất tuần">
+      <ChartCard title="Tỷ lệ cùng ngày theo Thứ trong tuần (%)" note="Đỏ đậm = ngày có tỷ lệ cùng ngày thấp nhất">
         <WeekdayBarChart data={data.weekday} />
       </ChartCard>
     </div>
