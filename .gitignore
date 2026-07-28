@@ -38,6 +38,7 @@ yarn-error.log*
 
 # local dev artifacts
 /screenshots
+/logs
 dev.log
 dev.err.log
 
