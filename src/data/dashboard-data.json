@@ -1,0 +1,894 @@
+{
+  "meta": {
+    "tu_ngay": "2026-07-07",
+    "den_ngay": "2026-07-27",
+    "so_ngay": 21,
+    "tong_don_21_ngay": 172184,
+    "ty_le_ky_nhan_pct": 89.9,
+    "ty_le_cung_ngay_pct": 71,
+    "ty_le_van_de_pct": 7.6,
+    "tg_xu_ly_tb_h": 11.79,
+    "generated_at": "2026-07-28T16:27:43.278Z"
+  },
+  "kpi_daily": [
+    {
+      "report_date": "07/07",
+      "tong_don": 7580,
+      "ty_le_ky_nhan_pct": 81.5,
+      "ty_le_cung_ngay_pct": 74.5,
+      "tg_xu_ly_trung_binh_h": 11.25,
+      "ty_le_van_de_pct": 13.1
+    },
+    {
+      "report_date": "08/07",
+      "tong_don": 6849,
+      "ty_le_ky_nhan_pct": 86.5,
+      "ty_le_cung_ngay_pct": 71.1,
+      "tg_xu_ly_trung_binh_h": 11.82,
+      "ty_le_van_de_pct": 10.5
+    },
+    {
+      "report_date": "09/07",
+      "tong_don": 5717,
+      "ty_le_ky_nhan_pct": 88.7,
+      "ty_le_cung_ngay_pct": 73.4,
+      "tg_xu_ly_trung_binh_h": 11.5,
+      "ty_le_van_de_pct": 9.2
+    },
+    {
+      "report_date": "10/07",
+      "tong_don": 6923,
+      "ty_le_ky_nhan_pct": 89.2,
+      "ty_le_cung_ngay_pct": 70.2,
+      "tg_xu_ly_trung_binh_h": 11.95,
+      "ty_le_van_de_pct": 7.9
+    },
+    {
+      "report_date": "11/07",
+      "tong_don": 7858,
+      "ty_le_ky_nhan_pct": 82.6,
+      "ty_le_cung_ngay_pct": 76,
+      "tg_xu_ly_trung_binh_h": 10.98,
+      "ty_le_van_de_pct": 9.6
+    },
+    {
+      "report_date": "12/07",
+      "tong_don": 4688,
+      "ty_le_ky_nhan_pct": 79,
+      "ty_le_cung_ngay_pct": 42.6,
+      "tg_xu_ly_trung_binh_h": 16.73,
+      "ty_le_van_de_pct": 16.7
+    },
+    {
+      "report_date": "13/07",
+      "tong_don": 8036,
+      "ty_le_ky_nhan_pct": 88.6,
+      "ty_le_cung_ngay_pct": 84.4,
+      "tg_xu_ly_trung_binh_h": 9.65,
+      "ty_le_van_de_pct": 8.6
+    },
+    {
+      "report_date": "14/07",
+      "tong_don": 6703,
+      "ty_le_ky_nhan_pct": 91.1,
+      "ty_le_cung_ngay_pct": 72,
+      "tg_xu_ly_trung_binh_h": 11.47,
+      "ty_le_van_de_pct": 6.8
+    },
+    {
+      "report_date": "15/07",
+      "tong_don": 8758,
+      "ty_le_ky_nhan_pct": 90.2,
+      "ty_le_cung_ngay_pct": 78.9,
+      "tg_xu_ly_trung_binh_h": 10.59,
+      "ty_le_van_de_pct": 7.7
+    },
+    {
+      "report_date": "16/07",
+      "tong_don": 8464,
+      "ty_le_ky_nhan_pct": 92.1,
+      "ty_le_cung_ngay_pct": 72.4,
+      "tg_xu_ly_trung_binh_h": 11.54,
+      "ty_le_van_de_pct": 5.9
+    },
+    {
+      "report_date": "17/07",
+      "tong_don": 7877,
+      "ty_le_ky_nhan_pct": 92.4,
+      "ty_le_cung_ngay_pct": 71.2,
+      "tg_xu_ly_trung_binh_h": 11.64,
+      "ty_le_van_de_pct": 5.4
+    },
+    {
+      "report_date": "18/07",
+      "tong_don": 7458,
+      "ty_le_ky_nhan_pct": 89.1,
+      "ty_le_cung_ngay_pct": 70.4,
+      "tg_xu_ly_trung_binh_h": 12.02,
+      "ty_le_van_de_pct": 8.4
+    },
+    {
+      "report_date": "19/07",
+      "tong_don": 5103,
+      "ty_le_ky_nhan_pct": 84.6,
+      "ty_le_cung_ngay_pct": 42.1,
+      "tg_xu_ly_trung_binh_h": 16.71,
+      "ty_le_van_de_pct": 12.5
+    },
+    {
+      "report_date": "20/07",
+      "tong_don": 8753,
+      "ty_le_ky_nhan_pct": 92.8,
+      "ty_le_cung_ngay_pct": 84,
+      "tg_xu_ly_trung_binh_h": 9.64,
+      "ty_le_van_de_pct": 5.7
+    },
+    {
+      "report_date": "21/07",
+      "tong_don": 8954,
+      "ty_le_ky_nhan_pct": 92.7,
+      "ty_le_cung_ngay_pct": 75.4,
+      "tg_xu_ly_trung_binh_h": 10.81,
+      "ty_le_van_de_pct": 5.3
+    },
+    {
+      "report_date": "22/07",
+      "tong_don": 10440,
+      "ty_le_ky_nhan_pct": 93,
+      "ty_le_cung_ngay_pct": 70.8,
+      "tg_xu_ly_trung_binh_h": 11.9,
+      "ty_le_van_de_pct": 5.5
+    },
+    {
+      "report_date": "23/07",
+      "tong_don": 10626,
+      "ty_le_ky_nhan_pct": 93.2,
+      "ty_le_cung_ngay_pct": 69.5,
+      "tg_xu_ly_trung_binh_h": 12.01,
+      "ty_le_van_de_pct": 5
+    },
+    {
+      "report_date": "24/07",
+      "tong_don": 10786,
+      "ty_le_ky_nhan_pct": 93.2,
+      "ty_le_cung_ngay_pct": 67.2,
+      "tg_xu_ly_trung_binh_h": 12.38,
+      "ty_le_van_de_pct": 5.5
+    },
+    {
+      "report_date": "25/07",
+      "tong_don": 11374,
+      "ty_le_ky_nhan_pct": 91.7,
+      "ty_le_cung_ngay_pct": 66,
+      "tg_xu_ly_trung_binh_h": 12.52,
+      "ty_le_van_de_pct": 6.7
+    },
+    {
+      "report_date": "26/07",
+      "tong_don": 7691,
+      "ty_le_ky_nhan_pct": 87.8,
+      "ty_le_cung_ngay_pct": 44.2,
+      "tg_xu_ly_trung_binh_h": 16.11,
+      "ty_le_van_de_pct": 10.1
+    },
+    {
+      "report_date": "27/07",
+      "tong_don": 11546,
+      "ty_le_ky_nhan_pct": 94.1,
+      "ty_le_cung_ngay_pct": 83.3,
+      "tg_xu_ly_trung_binh_h": 9.69,
+      "ty_le_van_de_pct": 4.8
+    }
+  ],
+  "weekday": [
+    {
+      "weekday": "Thứ 2",
+      "so_ngay_mau": 3,
+      "tong_don": 28335,
+      "ty_le_ky_nhan_pct": 92.1,
+      "ty_le_cung_ngay_pct": 83.8,
+      "ty_le_van_de_pct": 6.2
+    },
+    {
+      "weekday": "Thứ 3",
+      "so_ngay_mau": 3,
+      "tong_don": 23237,
+      "ty_le_ky_nhan_pct": 88.6,
+      "ty_le_cung_ngay_pct": 74.1,
+      "ty_le_van_de_pct": 8.3
+    },
+    {
+      "weekday": "Thứ 4",
+      "so_ngay_mau": 3,
+      "tong_don": 26047,
+      "ty_le_ky_nhan_pct": 90.4,
+      "ty_le_cung_ngay_pct": 73.6,
+      "ty_le_van_de_pct": 7.6
+    },
+    {
+      "weekday": "Thứ 5",
+      "so_ngay_mau": 3,
+      "tong_don": 24807,
+      "ty_le_ky_nhan_pct": 91.8,
+      "ty_le_cung_ngay_pct": 71.4,
+      "ty_le_van_de_pct": 6.3
+    },
+    {
+      "weekday": "Thứ 6",
+      "so_ngay_mau": 3,
+      "tong_don": 25586,
+      "ty_le_ky_nhan_pct": 91.9,
+      "ty_le_cung_ngay_pct": 69.2,
+      "ty_le_van_de_pct": 6.1
+    },
+    {
+      "weekday": "Thứ 7",
+      "so_ngay_mau": 3,
+      "tong_don": 26690,
+      "ty_le_ky_nhan_pct": 88.3,
+      "ty_le_cung_ngay_pct": 70,
+      "ty_le_van_de_pct": 8
+    },
+    {
+      "weekday": "Chủ nhật",
+      "so_ngay_mau": 3,
+      "tong_don": 17482,
+      "ty_le_ky_nhan_pct": 84.5,
+      "ty_le_cung_ngay_pct": 43.2,
+      "ty_le_van_de_pct": 12.6
+    }
+  ],
+  "status_overall": [
+    {
+      "trang_thai": "Ký nhận CPN",
+      "so_luong": 155122
+    },
+    {
+      "trang_thai": "Quét phát hàng",
+      "so_luong": 6905
+    },
+    {
+      "trang_thai": "Quét kiện vấn đề",
+      "so_luong": 4645
+    },
+    {
+      "trang_thai": "Đóng bao",
+      "so_luong": 1941
+    },
+    {
+      "trang_thai": "Quét hàng đến",
+      "so_luong": 953
+    },
+    {
+      "trang_thai": "Quét mã gửi hàng",
+      "so_luong": 805
+    },
+    {
+      "trang_thai": "Hàng đến TTTC",
+      "so_luong": 571
+    },
+    {
+      "trang_thai": "Đăng ký chuyển hoàn",
+      "so_luong": 479
+    },
+    {
+      "trang_thai": "Gỡ bao",
+      "so_luong": 290
+    },
+    {
+      "trang_thai": "Đang chuyển hoàn",
+      "so_luong": 217
+    },
+    {
+      "trang_thai": "Nhận hàng",
+      "so_luong": 161
+    },
+    {
+      "trang_thai": "In đơn chuyển hoàn",
+      "so_luong": 42
+    },
+    {
+      "trang_thai": "Đăng ký chuyển tiếp",
+      "so_luong": 26
+    },
+    {
+      "trang_thai": "Xác nhận chuyển đơn",
+      "so_luong": 14
+    },
+    {
+      "trang_thai": "Ký nhận chuyển hoàn",
+      "so_luong": 8
+    },
+    {
+      "trang_thai": "Giao lại hàng",
+      "so_luong": 5
+    }
+  ],
+  "reason_overall": [
+    {
+      "nguyen_nhan": "Khách hẹn lại - 客户预约",
+      "so_luong": 5594
+    },
+    {
+      "nguyen_nhan": "Khách không nghe máy - 客户不接电话",
+      "so_luong": 4817
+    },
+    {
+      "nguyen_nhan": "Khách từ chối nhận - 拒收",
+      "so_luong": 1299
+    },
+    {
+      "nguyen_nhan": "Khách đổi địa chỉ nhận hàng - 客户改收件地址",
+      "so_luong": 675
+    },
+    {
+      "nguyen_nhan": "Phân sai - 错分",
+      "so_luong": 420
+    },
+    {
+      "nguyen_nhan": "Bưu cục chậm trễ phát hàng - 原因:网点派件延迟",
+      "so_luong": 243
+    },
+    {
+      "nguyen_nhan": "Đơn chưa đến - 未到",
+      "so_luong": 47
+    }
+  ],
+  "bc_worst15": [
+    {
+      "buu_cuc": "028L17",
+      "tong_don": 340,
+      "da_ky_nhan": 320,
+      "ty_le_ky_nhan_pct": 94.1,
+      "ty_le_cung_ngay_pct": 63.8,
+      "tg_xu_ly_tb_h": 13.67,
+      "so_don_van_de": 18
+    },
+    {
+      "buu_cuc": "028L09",
+      "tong_don": 312,
+      "da_ky_nhan": 304,
+      "ty_le_ky_nhan_pct": 97.4,
+      "ty_le_cung_ngay_pct": 66.8,
+      "tg_xu_ly_tb_h": 12.23,
+      "so_don_van_de": 8
+    },
+    {
+      "buu_cuc": "028N06",
+      "tong_don": 1023,
+      "da_ky_nhan": 938,
+      "ty_le_ky_nhan_pct": 91.7,
+      "ty_le_cung_ngay_pct": 67.2,
+      "tg_xu_ly_tb_h": 12.98,
+      "so_don_van_de": 79
+    },
+    {
+      "buu_cuc": "028V05",
+      "tong_don": 879,
+      "da_ky_nhan": 815,
+      "ty_le_ky_nhan_pct": 92.7,
+      "ty_le_cung_ngay_pct": 67.4,
+      "tg_xu_ly_tb_h": 12.21,
+      "so_don_van_de": 59
+    },
+    {
+      "buu_cuc": "028U06",
+      "tong_don": 686,
+      "da_ky_nhan": 653,
+      "ty_le_ky_nhan_pct": 95.2,
+      "ty_le_cung_ngay_pct": 67.4,
+      "tg_xu_ly_tb_h": 12.45,
+      "so_don_van_de": 28
+    },
+    {
+      "buu_cuc": "028U05",
+      "tong_don": 812,
+      "da_ky_nhan": 771,
+      "ty_le_ky_nhan_pct": 95,
+      "ty_le_cung_ngay_pct": 67.7,
+      "tg_xu_ly_tb_h": 12.06,
+      "so_don_van_de": 36
+    },
+    {
+      "buu_cuc": "028U18",
+      "tong_don": 1031,
+      "da_ky_nhan": 949,
+      "ty_le_ky_nhan_pct": 92,
+      "ty_le_cung_ngay_pct": 67.8,
+      "tg_xu_ly_tb_h": 11.8,
+      "so_don_van_de": 77
+    },
+    {
+      "buu_cuc": "028L11",
+      "tong_don": 414,
+      "da_ky_nhan": 395,
+      "ty_le_ky_nhan_pct": 95.4,
+      "ty_le_cung_ngay_pct": 68.1,
+      "tg_xu_ly_tb_h": 12.35,
+      "so_don_van_de": 19
+    },
+    {
+      "buu_cuc": "028U15",
+      "tong_don": 927,
+      "da_ky_nhan": 890,
+      "ty_le_ky_nhan_pct": 96,
+      "ty_le_cung_ngay_pct": 68.2,
+      "tg_xu_ly_tb_h": 11.89,
+      "so_don_van_de": 36
+    },
+    {
+      "buu_cuc": "028T21",
+      "tong_don": 869,
+      "da_ky_nhan": 840,
+      "ty_le_ky_nhan_pct": 96.7,
+      "ty_le_cung_ngay_pct": 68.2,
+      "tg_xu_ly_tb_h": 12.43,
+      "so_don_van_de": 24
+    },
+    {
+      "buu_cuc": "028B01",
+      "tong_don": 923,
+      "da_ky_nhan": 864,
+      "ty_le_ky_nhan_pct": 93.6,
+      "ty_le_cung_ngay_pct": 68.2,
+      "tg_xu_ly_tb_h": 11.98,
+      "so_don_van_de": 50
+    },
+    {
+      "buu_cuc": "028Z06",
+      "tong_don": 570,
+      "da_ky_nhan": 558,
+      "ty_le_ky_nhan_pct": 97.9,
+      "ty_le_cung_ngay_pct": 68.3,
+      "tg_xu_ly_tb_h": 12.3,
+      "so_don_van_de": 12
+    },
+    {
+      "buu_cuc": "028Q05",
+      "tong_don": 305,
+      "da_ky_nhan": 295,
+      "ty_le_ky_nhan_pct": 96.7,
+      "ty_le_cung_ngay_pct": 68.5,
+      "tg_xu_ly_tb_h": 12.14,
+      "so_don_van_de": 9
+    },
+    {
+      "buu_cuc": "028T12",
+      "tong_don": 2112,
+      "da_ky_nhan": 1991,
+      "ty_le_ky_nhan_pct": 94.3,
+      "ty_le_cung_ngay_pct": 68.6,
+      "tg_xu_ly_tb_h": 11.96,
+      "so_don_van_de": 118
+    },
+    {
+      "buu_cuc": "028U02",
+      "tong_don": 858,
+      "da_ky_nhan": 799,
+      "ty_le_ky_nhan_pct": 93.1,
+      "ty_le_cung_ngay_pct": 68.6,
+      "tg_xu_ly_tb_h": 11.86,
+      "so_don_van_de": 53
+    }
+  ],
+  "bc_best15": [
+    {
+      "buu_cuc": "028C06",
+      "tong_don": 749,
+      "da_ky_nhan": 660,
+      "ty_le_ky_nhan_pct": 88.1,
+      "ty_le_cung_ngay_pct": 75.2,
+      "tg_xu_ly_tb_h": 10.87,
+      "so_don_van_de": 88
+    },
+    {
+      "buu_cuc": "028N11",
+      "tong_don": 1224,
+      "da_ky_nhan": 1156,
+      "ty_le_ky_nhan_pct": 94.4,
+      "ty_le_cung_ngay_pct": 74.7,
+      "tg_xu_ly_tb_h": 11.34,
+      "so_don_van_de": 64
+    },
+    {
+      "buu_cuc": "028V07",
+      "tong_don": 568,
+      "da_ky_nhan": 553,
+      "ty_le_ky_nhan_pct": 97.4,
+      "ty_le_cung_ngay_pct": 74.7,
+      "tg_xu_ly_tb_h": 11.04,
+      "so_don_van_de": 13
+    },
+    {
+      "buu_cuc": "028V18",
+      "tong_don": 783,
+      "da_ky_nhan": 706,
+      "ty_le_ky_nhan_pct": 90.2,
+      "ty_le_cung_ngay_pct": 74.6,
+      "tg_xu_ly_tb_h": 11.31,
+      "so_don_van_de": 73
+    },
+    {
+      "buu_cuc": "028D02",
+      "tong_don": 312,
+      "da_ky_nhan": 286,
+      "ty_le_ky_nhan_pct": 91.7,
+      "ty_le_cung_ngay_pct": 74.5,
+      "tg_xu_ly_tb_h": 10.66,
+      "so_don_van_de": 26
+    },
+    {
+      "buu_cuc": "028V19",
+      "tong_don": 929,
+      "da_ky_nhan": 872,
+      "ty_le_ky_nhan_pct": 93.9,
+      "ty_le_cung_ngay_pct": 74.4,
+      "tg_xu_ly_tb_h": 11.18,
+      "so_don_van_de": 55
+    },
+    {
+      "buu_cuc": "028L12",
+      "tong_don": 482,
+      "da_ky_nhan": 481,
+      "ty_le_ky_nhan_pct": 99.8,
+      "ty_le_cung_ngay_pct": 74.4,
+      "tg_xu_ly_tb_h": 11.35,
+      "so_don_van_de": 1
+    },
+    {
+      "buu_cuc": "028L14",
+      "tong_don": 536,
+      "da_ky_nhan": 504,
+      "ty_le_ky_nhan_pct": 94,
+      "ty_le_cung_ngay_pct": 73.8,
+      "tg_xu_ly_tb_h": 10.81,
+      "so_don_van_de": 32
+    },
+    {
+      "buu_cuc": "028O13",
+      "tong_don": 511,
+      "da_ky_nhan": 483,
+      "ty_le_ky_nhan_pct": 94.5,
+      "ty_le_cung_ngay_pct": 73.7,
+      "tg_xu_ly_tb_h": 11.7,
+      "so_don_van_de": 26
+    },
+    {
+      "buu_cuc": "028N01",
+      "tong_don": 1161,
+      "da_ky_nhan": 1071,
+      "ty_le_ky_nhan_pct": 92.2,
+      "ty_le_cung_ngay_pct": 73.6,
+      "tg_xu_ly_tb_h": 11.47,
+      "so_don_van_de": 68
+    },
+    {
+      "buu_cuc": "028U09",
+      "tong_don": 1034,
+      "da_ky_nhan": 959,
+      "ty_le_ky_nhan_pct": 92.7,
+      "ty_le_cung_ngay_pct": 73.6,
+      "tg_xu_ly_tb_h": 11.02,
+      "so_don_van_de": 58
+    },
+    {
+      "buu_cuc": "028G07",
+      "tong_don": 899,
+      "da_ky_nhan": 844,
+      "ty_le_ky_nhan_pct": 93.9,
+      "ty_le_cung_ngay_pct": 73.6,
+      "tg_xu_ly_tb_h": 11.48,
+      "so_don_van_de": 47
+    },
+    {
+      "buu_cuc": "028U01",
+      "tong_don": 694,
+      "da_ky_nhan": 648,
+      "ty_le_ky_nhan_pct": 93.4,
+      "ty_le_cung_ngay_pct": 73.5,
+      "tg_xu_ly_tb_h": 10.82,
+      "so_don_van_de": 41
+    },
+    {
+      "buu_cuc": "028H09",
+      "tong_don": 1568,
+      "da_ky_nhan": 1463,
+      "ty_le_ky_nhan_pct": 93.3,
+      "ty_le_cung_ngay_pct": 73.3,
+      "tg_xu_ly_tb_h": 11.89,
+      "so_don_van_de": 87
+    },
+    {
+      "buu_cuc": "028H03",
+      "tong_don": 1053,
+      "da_ky_nhan": 968,
+      "ty_le_ky_nhan_pct": 91.9,
+      "ty_le_cung_ngay_pct": 73.2,
+      "tg_xu_ly_tb_h": 11.4,
+      "so_don_van_de": 84
+    }
+  ],
+  "khu_perf": [
+    {
+      "khu": "5E区",
+      "tong_don": 8483,
+      "da_ky_nhan": 8075,
+      "ty_le_ky_nhan_pct": 95.2,
+      "ty_le_cung_ngay_pct": 69.3,
+      "tg_xu_ly_tb_h": 11.88,
+      "so_don_van_de": 361
+    },
+    {
+      "khu": "9A区",
+      "tong_don": 8172,
+      "da_ky_nhan": 7394,
+      "ty_le_ky_nhan_pct": 90.5,
+      "ty_le_cung_ngay_pct": 70.1,
+      "tg_xu_ly_tb_h": 12.15,
+      "so_don_van_de": 632
+    },
+    {
+      "khu": "6E区",
+      "tong_don": 4068,
+      "da_ky_nhan": 3920,
+      "ty_le_ky_nhan_pct": 96.4,
+      "ty_le_cung_ngay_pct": 70.1,
+      "tg_xu_ly_tb_h": 12.04,
+      "so_don_van_de": 141
+    },
+    {
+      "khu": "5C区",
+      "tong_don": 7869,
+      "da_ky_nhan": 7453,
+      "ty_le_ky_nhan_pct": 94.7,
+      "ty_le_cung_ngay_pct": 70.3,
+      "tg_xu_ly_tb_h": 11.49,
+      "so_don_van_de": 346
+    },
+    {
+      "khu": "5A区",
+      "tong_don": 8065,
+      "da_ky_nhan": 7294,
+      "ty_le_ky_nhan_pct": 90.4,
+      "ty_le_cung_ngay_pct": 70.5,
+      "tg_xu_ly_tb_h": 11.91,
+      "so_don_van_de": 745
+    },
+    {
+      "khu": "3C区",
+      "tong_don": 8046,
+      "da_ky_nhan": 7409,
+      "ty_le_ky_nhan_pct": 92.1,
+      "ty_le_cung_ngay_pct": 70.5,
+      "tg_xu_ly_tb_h": 11.84,
+      "so_don_van_de": 532
+    },
+    {
+      "khu": "2C区",
+      "tong_don": 5421,
+      "da_ky_nhan": 4966,
+      "ty_le_ky_nhan_pct": 91.6,
+      "ty_le_cung_ngay_pct": 70.6,
+      "tg_xu_ly_tb_h": 11.71,
+      "so_don_van_de": 428
+    },
+    {
+      "khu": "2A区",
+      "tong_don": 4992,
+      "da_ky_nhan": 4754,
+      "ty_le_ky_nhan_pct": 95.2,
+      "ty_le_cung_ngay_pct": 70.6,
+      "tg_xu_ly_tb_h": 11.84,
+      "so_don_van_de": 217
+    },
+    {
+      "khu": "6A区",
+      "tong_don": 6326,
+      "da_ky_nhan": 6004,
+      "ty_le_ky_nhan_pct": 94.9,
+      "ty_le_cung_ngay_pct": 70.9,
+      "tg_xu_ly_tb_h": 11.85,
+      "so_don_van_de": 296
+    },
+    {
+      "khu": "9C区",
+      "tong_don": 10102,
+      "da_ky_nhan": 9308,
+      "ty_le_ky_nhan_pct": 92.1,
+      "ty_le_cung_ngay_pct": 71,
+      "tg_xu_ly_tb_h": 11.76,
+      "so_don_van_de": 702
+    },
+    {
+      "khu": "1C区",
+      "tong_don": 10347,
+      "da_ky_nhan": 9557,
+      "ty_le_ky_nhan_pct": 92.4,
+      "ty_le_cung_ngay_pct": 71.1,
+      "tg_xu_ly_tb_h": 11.48,
+      "so_don_van_de": 754
+    },
+    {
+      "khu": "7C区",
+      "tong_don": 6886,
+      "da_ky_nhan": 6413,
+      "ty_le_ky_nhan_pct": 93.1,
+      "ty_le_cung_ngay_pct": 71.1,
+      "tg_xu_ly_tb_h": 11.84,
+      "so_don_van_de": 440
+    },
+    {
+      "khu": "8A区",
+      "tong_don": 11122,
+      "da_ky_nhan": 10194,
+      "ty_le_ky_nhan_pct": 91.7,
+      "ty_le_cung_ngay_pct": 71.2,
+      "tg_xu_ly_tb_h": 11.73,
+      "so_don_van_de": 865
+    },
+    {
+      "khu": "1G区",
+      "tong_don": 9106,
+      "da_ky_nhan": 8401,
+      "ty_le_ky_nhan_pct": 92.3,
+      "ty_le_cung_ngay_pct": 71.3,
+      "tg_xu_ly_tb_h": 11.71,
+      "so_don_van_de": 677
+    },
+    {
+      "khu": "7A区",
+      "tong_don": 10696,
+      "da_ky_nhan": 9810,
+      "ty_le_ky_nhan_pct": 91.7,
+      "ty_le_cung_ngay_pct": 71.3,
+      "tg_xu_ly_tb_h": 11.82,
+      "so_don_van_de": 827
+    },
+    {
+      "khu": "3A区",
+      "tong_don": 11586,
+      "da_ky_nhan": 10409,
+      "ty_le_ky_nhan_pct": 89.8,
+      "ty_le_cung_ngay_pct": 71.5,
+      "tg_xu_ly_tb_h": 11.74,
+      "so_don_van_de": 1100
+    },
+    {
+      "khu": "8C区",
+      "tong_don": 15124,
+      "da_ky_nhan": 13561,
+      "ty_le_ky_nhan_pct": 89.7,
+      "ty_le_cung_ngay_pct": 71.5,
+      "tg_xu_ly_tb_h": 12.08,
+      "so_don_van_de": 1422
+    },
+    {
+      "khu": "9E区",
+      "tong_don": 6025,
+      "da_ky_nhan": 5169,
+      "ty_le_ky_nhan_pct": 85.8,
+      "ty_le_cung_ngay_pct": 71.6,
+      "tg_xu_ly_tb_h": 11.91,
+      "so_don_van_de": 769
+    },
+    {
+      "khu": "1A区",
+      "tong_don": 6354,
+      "da_ky_nhan": 5777,
+      "ty_le_ky_nhan_pct": 90.9,
+      "ty_le_cung_ngay_pct": 71.8,
+      "tg_xu_ly_tb_h": 11.43,
+      "so_don_van_de": 559
+    },
+    {
+      "khu": "6C区",
+      "tong_don": 4969,
+      "da_ky_nhan": 4772,
+      "ty_le_ky_nhan_pct": 96,
+      "ty_le_cung_ngay_pct": 71.8,
+      "tg_xu_ly_tb_h": 11.68,
+      "so_don_van_de": 168
+    },
+    {
+      "khu": "1E区",
+      "tong_don": 4252,
+      "da_ky_nhan": 3751,
+      "ty_le_ky_nhan_pct": 88.2,
+      "ty_le_cung_ngay_pct": 72,
+      "tg_xu_ly_tb_h": 11.37,
+      "so_don_van_de": 479
+    }
+  ],
+  "hour_trend": [
+    {
+      "gio": 6,
+      "so_don_lay_hang": 226,
+      "so_don_ky_nhan": 0
+    },
+    {
+      "gio": 7,
+      "so_don_lay_hang": 731,
+      "so_don_ky_nhan": 2
+    },
+    {
+      "gio": 8,
+      "so_don_lay_hang": 5452,
+      "so_don_ky_nhan": 23
+    },
+    {
+      "gio": 9,
+      "so_don_lay_hang": 13696,
+      "so_don_ky_nhan": 44
+    },
+    {
+      "gio": 10,
+      "so_don_lay_hang": 47493,
+      "so_don_ky_nhan": 64
+    },
+    {
+      "gio": 11,
+      "so_don_lay_hang": 50935,
+      "so_don_ky_nhan": 58
+    },
+    {
+      "gio": 12,
+      "so_don_lay_hang": 2754,
+      "so_don_ky_nhan": 57
+    },
+    {
+      "gio": 13,
+      "so_don_lay_hang": 760,
+      "so_don_ky_nhan": 35
+    },
+    {
+      "gio": 14,
+      "so_don_lay_hang": 2874,
+      "so_don_ky_nhan": 92
+    },
+    {
+      "gio": 15,
+      "so_don_lay_hang": 3261,
+      "so_don_ky_nhan": 4584
+    },
+    {
+      "gio": 16,
+      "so_don_lay_hang": 7646,
+      "so_don_ky_nhan": 49573
+    },
+    {
+      "gio": 17,
+      "so_don_lay_hang": 11760,
+      "so_don_ky_nhan": 51769
+    },
+    {
+      "gio": 18,
+      "so_don_lay_hang": 17430,
+      "so_don_ky_nhan": 30223
+    },
+    {
+      "gio": 19,
+      "so_don_lay_hang": 5616,
+      "so_don_ky_nhan": 14257
+    },
+    {
+      "gio": 20,
+      "so_don_lay_hang": 1030,
+      "so_don_ky_nhan": 3043
+    },
+    {
+      "gio": 21,
+      "so_don_lay_hang": 469,
+      "so_don_ky_nhan": 720
+    },
+    {
+      "gio": 22,
+      "so_don_lay_hang": 40,
+      "so_don_ky_nhan": 196
+    },
+    {
+      "gio": 23,
+      "so_don_lay_hang": 11,
+      "so_don_ky_nhan": 83
+    }
+  ]
+}
