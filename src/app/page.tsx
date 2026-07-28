@@ -18,10 +18,9 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
 
   return (
     <div className="space-y-6 max-w-6xl">
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <StatTile label={`Tổng số đơn (${meta.so_ngay} ngày)`} value={meta.tong_don_21_ngay.toLocaleString("vi-VN")} />
-        <StatTile label="Tỷ lệ đã ký nhận" value={`${meta.ty_le_ky_nhan_pct}%`} />
-        <StatTile label="Tỷ lệ ký nhận CÙNG NGÀY" value={`${meta.ty_le_cung_ngay_pct}%`} />
+        <StatTile label="Tỷ lệ ký nhận (đã xử lý xong trong ngày N)" value={`${meta.ty_le_ky_nhan_pct}%`} />
         <StatTile label="TG xử lý trung bình" value={`${meta.tg_xu_ly_tb_h} giờ`} />
         <StatTile label="Tỷ lệ đơn có vấn đề" value={`${meta.ty_le_van_de_pct}%`} critical />
       </div>
@@ -35,22 +34,22 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
         </h3>
         <ul className="space-y-1.5 text-[13px]" style={{ color: "var(--text-secondary)" }}>
           <li>
-            <b style={{ color: "var(--text-primary)" }}>Chủ nhật thường là điểm nghẽn:</b> tỷ lệ ký nhận cùng ngày
-            có xu hướng giảm mạnh vào Chủ nhật so với các ngày khác trong tuần — xem chi tiết ở biểu đồ bên dưới.
+            <b style={{ color: "var(--text-primary)" }}>Chủ nhật có tỷ lệ ký nhận thấp hơn các ngày khác</b> — xem
+            mức chênh lệch cụ thể ở biểu đồ theo Thứ bên dưới.
           </li>
           <li>
-            <b style={{ color: "var(--text-primary)" }}>Thứ 2 thường hồi phục mạnh nhất</b> — đơn tồn cuối tuần
-            được dồn xử lý đầu tuần.
+            <b style={{ color: "var(--text-primary)" }}>Khi đơn đã được ký nhận, gần như luôn đúng trong ngày N</b> —
+            trễ hạn chủ yếu nằm ở việc đơn CHƯA được xử lý xong (thể hiện qua tỷ lệ ký nhận), không phải ký nhận
+            muộn ngày.
           </li>
         </ul>
       </div>
 
       <ChartCard
-        title="Tỷ lệ ký nhận / cùng ngày / có vấn đề theo ngày (%)"
+        title="Tỷ lệ ký nhận / có vấn đề theo ngày (%)"
         legend={
           <>
-            <LegendItem color="var(--series-primary)" label="Tỷ lệ cùng ngày %" />
-            <LegendItem color="var(--series-secondary)" label="Tỷ lệ ký nhận %" />
+            <LegendItem color="var(--series-primary)" label="Tỷ lệ ký nhận %" />
             <LegendItem color="var(--series-tertiary)" label="Tỷ lệ có vấn đề %" />
           </>
         }
@@ -58,7 +57,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
         <KpiTrendLine data={data.kpi_daily} />
       </ChartCard>
 
-      <ChartCard title="Tỷ lệ cùng ngày theo Thứ trong tuần (%)" note="Đỏ đậm = ngày có tỷ lệ cùng ngày thấp nhất">
+      <ChartCard title="Tỷ lệ ký nhận theo Thứ trong tuần (%)" note="Đỏ đậm = ngày có tỷ lệ ký nhận thấp nhất">
         <WeekdayBarChart data={data.weekday} />
       </ChartCard>
     </div>

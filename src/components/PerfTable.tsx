@@ -10,7 +10,6 @@ export default function PerfTable({ rows, labelKey }: { rows: NodePerfRow[]; lab
             <Th>Tổng đơn</Th>
             <Th>Đã ký nhận</Th>
             <Th>Tỷ lệ ký nhận %</Th>
-            <Th>Tỷ lệ cùng ngày %</Th>
             <Th>TG xử lý TB (giờ)</Th>
             <Th>Số đơn vấn đề</Th>
           </tr>
@@ -23,16 +22,15 @@ export default function PerfTable({ rows, labelKey }: { rows: NodePerfRow[]; lab
               </Td>
               <Td>{r.tong_don.toLocaleString("vi-VN")}</Td>
               <Td>{r.da_ky_nhan.toLocaleString("vi-VN")}</Td>
-              <Td>{r.ty_le_ky_nhan_pct}%</Td>
               <Td>
                 <span
                   className="font-semibold px-1.5 py-0.5 rounded"
                   style={{
-                    color: r.ty_le_cung_ngay_pct < 70 ? "var(--status-critical)" : "var(--text-primary)",
-                    background: r.ty_le_cung_ngay_pct < 70 ? "var(--brand-red-light)" : "transparent",
+                    color: r.ty_le_ky_nhan_pct < 85 ? "var(--status-critical)" : "var(--text-primary)",
+                    background: r.ty_le_ky_nhan_pct < 85 ? "var(--brand-red-light)" : "transparent",
                   }}
                 >
-                  {r.ty_le_cung_ngay_pct}%
+                  {r.ty_le_ky_nhan_pct}%
                 </span>
               </Td>
               <Td>{r.tg_xu_ly_tb_h ?? "—"}</Td>

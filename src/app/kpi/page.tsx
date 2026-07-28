@@ -17,12 +17,11 @@ export default async function KpiPage({ searchParams }: { searchParams: Promise<
   return (
     <div className="space-y-6 max-w-6xl">
       <ChartCard
-        title="Tỷ lệ ký nhận / cùng ngày / có vấn đề theo ngày (%)"
+        title="Tỷ lệ ký nhận / có vấn đề theo ngày (%)"
         note={rangeDisplayLabel(range)}
         legend={
           <>
-            <LegendItem color="var(--series-primary)" label="Tỷ lệ cùng ngày %" />
-            <LegendItem color="var(--series-secondary)" label="Tỷ lệ ký nhận %" />
+            <LegendItem color="var(--series-primary)" label="Tỷ lệ ký nhận %" />
             <LegendItem color="var(--series-tertiary)" label="Tỷ lệ có vấn đề %" />
           </>
         }
@@ -39,7 +38,7 @@ export default async function KpiPage({ searchParams }: { searchParams: Promise<
           <table className="w-full text-sm">
             <thead>
               <tr style={{ borderBottom: "1px solid var(--border)" }}>
-                {["Ngày", "Tổng đơn", "Tỷ lệ ký nhận %", "Tỷ lệ cùng ngày %", "TG xử lý TB (giờ)", "Tỷ lệ vấn đề %"].map((h, i) => (
+                {["Ngày", "Tổng đơn", "Tỷ lệ ký nhận %", "TG xử lý TB (giờ)", "Tỷ lệ vấn đề %"].map((h, i) => (
                   <th
                     key={h}
                     className={`py-2 px-3 text-[11px] font-semibold uppercase ${i === 0 ? "text-left" : "text-right"}`}
@@ -59,8 +58,7 @@ export default async function KpiPage({ searchParams }: { searchParams: Promise<
                   <td className="py-2 px-3 text-right" style={{ fontVariantNumeric: "tabular-nums" }}>
                     {d.tong_don.toLocaleString("vi-VN")}
                   </td>
-                  <td className="py-2 px-3 text-right">{d.ty_le_ky_nhan_pct}%</td>
-                  <td className="py-2 px-3 text-right font-semibold">{d.ty_le_cung_ngay_pct}%</td>
+                  <td className="py-2 px-3 text-right font-semibold">{d.ty_le_ky_nhan_pct}%</td>
                   <td className="py-2 px-3 text-right">{d.tg_xu_ly_trung_binh_h}</td>
                   <td className="py-2 px-3 text-right">{d.ty_le_van_de_pct}%</td>
                 </tr>

@@ -37,17 +37,13 @@ function excelSerialToDate(v) {
   return null;
 }
 
-function toISODate(d) {
-  return d.toISOString().slice(0, 10);
-}
-
 function readFiles() {
   if (!fs.existsSync(RAW_DIR)) {
     throw new Error(`Không tìm thấy thư mục dữ liệu gốc: ${RAW_DIR}`);
   }
   return fs
     .readdirSync(RAW_DIR)
-    .filter((f) => f.toLowerCase().endsWith(".xlsx"))
+    .filter((f) => f.toLowerCase().endsWith(".xlsx") && !f.startsWith("~$"))
     .sort();
 }
 
@@ -85,7 +81,6 @@ function main() {
       const pickup = excelSerialToDate(r["Ngày lấy hàng"]);
       const sign = excelSerialToDate(r["ThƠì gian ký"]);
       const isSigned = !!sign;
-      const isSameDay = isSigned && pickup && toISODate(pickup) === toISODate(sign);
       const durationH = isSigned && pickup ? (sign.getTime() - pickup.getTime()) / 3600000 : null;
 
       rows.push({
@@ -97,7 +92,6 @@ function main() {
         pickup_hour: pickup ? pickup.getUTCHours() : null,
         sign_hour: sign ? sign.getUTCHours() : null,
         is_signed: isSigned,
-        is_same_day: isSameDay,
         duration_h: durationH,
       });
     }
@@ -116,7 +110,6 @@ function main() {
       iso_date: date,
       tong_don: g.length,
       da_ky_nhan: g.filter((r) => r.is_signed).length,
-      ky_nhan_cung_ngay: g.filter((r) => r.is_same_day).length,
       so_don_co_van_de: g.filter((r) => r.nguyen_nhan).length,
       duration_sum_h: round4(sum(durs)),
       duration_count: durs.length,
@@ -199,7 +192,6 @@ function nodeByDay(availableDates, byDate, field) {
         key,
         tong_don: items.length,
         da_ky_nhan: items.filter((r) => r.is_signed).length,
-        same_day: items.filter((r) => r.is_same_day).length,
         issue: items.filter((r) => r.nguyen_nhan).length,
         duration_sum_h: round4(sum(durs)),
         duration_count: durs.length,

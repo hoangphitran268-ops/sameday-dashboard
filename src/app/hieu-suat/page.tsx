@@ -21,14 +21,14 @@ export default async function HieuSuatPage({ searchParams }: { searchParams: Pro
     <div className="space-y-6 max-w-6xl">
       {khuSorted.length > 0 ? (
         <ChartCard
-          title="Hiệu suất theo Khu (tỷ lệ cùng ngày %, khu ≥ 1.000 đơn)"
+          title="Hiệu suất theo Khu (tỷ lệ ký nhận %, khu ≥ 1.000 đơn)"
           note="Sắp xếp tăng dần — khu ở đầu danh sách cần chú ý nhất"
         >
           <HBarChart
             data={khuSorted as unknown as Record<string, unknown>[]}
-            dataKey="ty_le_cung_ngay_pct"
+            dataKey="ty_le_ky_nhan_pct"
             categoryKey="khu"
-            name="Tỷ lệ cùng ngày"
+            name="Tỷ lệ ký nhận"
             unit="%"
             width={70}
             height={Math.max(160, khuSorted.length * 26)}
@@ -42,7 +42,7 @@ export default async function HieuSuatPage({ searchParams }: { searchParams: Pro
 
       <div className="rounded-xl border p-5" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
         <h3 className="text-sm font-semibold mb-3" style={{ color: "var(--text-primary)" }}>
-          Hiệu suất theo Bưu cục (tỷ lệ cùng ngày %, bưu cục ≥ 300 đơn)
+          Hiệu suất theo Bưu cục (tỷ lệ ký nhận %, bưu cục ≥ 300 đơn)
         </h3>
         {data.bc_worst15.length > 0 ? (
           <BcTabs worst={data.bc_worst15} best={data.bc_best15} />

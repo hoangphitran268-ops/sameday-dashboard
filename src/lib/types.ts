@@ -4,7 +4,6 @@ export interface RawKpiDay {
   iso_date: string;
   tong_don: number;
   da_ky_nhan: number;
-  ky_nhan_cung_ngay: number;
   so_don_co_van_de: number;
   duration_sum_h: number;
   duration_count: number;
@@ -27,7 +26,6 @@ export interface RawNodeDay {
   key: string;
   tong_don: number;
   da_ky_nhan: number;
-  same_day: number;
   issue: number;
   duration_sum_h: number;
   duration_count: number;
@@ -57,7 +55,6 @@ export interface KpiDailyRow {
   report_date: string;
   tong_don: number;
   ty_le_ky_nhan_pct: number;
-  ty_le_cung_ngay_pct: number;
   tg_xu_ly_trung_binh_h: number;
   ty_le_van_de_pct: number;
 }
@@ -67,7 +64,6 @@ export interface WeekdayRow {
   so_ngay_mau: number;
   tong_don: number;
   ty_le_ky_nhan_pct: number;
-  ty_le_cung_ngay_pct: number;
   ty_le_van_de_pct: number;
 }
 
@@ -87,7 +83,6 @@ export interface NodePerfRow {
   tong_don: number;
   da_ky_nhan: number;
   ty_le_ky_nhan_pct: number;
-  ty_le_cung_ngay_pct: number;
   tg_xu_ly_tb_h: number | null;
   so_don_van_de: number;
 }
@@ -104,7 +99,6 @@ export interface DashboardMeta {
   so_ngay: number;
   tong_don_21_ngay: number;
   ty_le_ky_nhan_pct: number;
-  ty_le_cung_ngay_pct: number;
   ty_le_van_de_pct: number;
   tg_xu_ly_tb_h: number;
   generated_at?: string;
