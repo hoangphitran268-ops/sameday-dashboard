@@ -1,5 +1,6 @@
 import { getDashboardData, type SearchParams } from "@/lib/data";
 import { rangeDisplayLabel } from "@/lib/dateRanges";
+import { getLang, dict } from "@/lib/i18n";
 import ChartCard, { LegendItem } from "@/components/ChartCard";
 import KpiTrendLine from "@/components/charts/KpiTrendLine";
 import DurationBarChart from "@/components/charts/DurationBarChart";
@@ -8,37 +9,40 @@ import EmptyState from "@/components/EmptyState";
 export const dynamic = "force-dynamic";
 
 export default async function KpiPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
-  const { data, range } = getDashboardData(await searchParams);
+  const params = await searchParams;
+  const lang = getLang(params);
+  const t = dict[lang];
+  const { data, range } = getDashboardData(params);
 
   if (!data.has_data) {
-    return <EmptyState label={rangeDisplayLabel(range)} />;
+    return <EmptyState label={rangeDisplayLabel(range, lang)} lang={lang} />;
   }
 
   return (
     <div className="space-y-6 w-full">
       <ChartCard
-        title="Tỷ lệ ký nhận / có vấn đề theo ngày (%)"
-        note={rangeDisplayLabel(range)}
+        title={t.pages.overview.kpiChartTitle}
+        note={rangeDisplayLabel(range, lang)}
         legend={
           <>
-            <LegendItem color="var(--series-primary)" label="Tỷ lệ ký nhận %" />
-            <LegendItem color="var(--series-tertiary)" label="Tỷ lệ có vấn đề %" />
+            <LegendItem color="var(--series-primary)" label={t.chartNames.signRatePct} />
+            <LegendItem color="var(--series-tertiary)" label={t.chartNames.issueRatePct} />
           </>
         }
       >
-        <KpiTrendLine data={data.kpi_daily} />
+        <KpiTrendLine data={data.kpi_daily} lang={lang} />
       </ChartCard>
 
-      <ChartCard title="Thời gian xử lý trung bình theo ngày (giờ)" note="Đỏ đậm = vượt quá 130% mức trung bình trong khoảng đã chọn">
-        <DurationBarChart data={data.kpi_daily} />
+      <ChartCard title={t.pages.kpi.durationChartTitle} note={t.pages.kpi.durationChartNote}>
+        <DurationBarChart data={data.kpi_daily} lang={lang} />
       </ChartCard>
 
-      <ChartCard title="Bảng chi tiết theo ngày">
+      <ChartCard title={t.pages.kpi.tableTitle}>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr style={{ borderBottom: "1px solid var(--border)" }}>
-                {["Ngày", "Tổng đơn", "Tỷ lệ ký nhận %", "TG xử lý TB (giờ)", "Tỷ lệ vấn đề %"].map((h, i) => (
+                {t.pages.kpi.tableHeaders.map((h, i) => (
                   <th
                     key={h}
                     className={`py-2 px-3 text-[11px] font-semibold uppercase ${i === 0 ? "text-left" : "text-right"}`}

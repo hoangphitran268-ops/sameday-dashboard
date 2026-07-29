@@ -20,11 +20,13 @@
   --baseline: #dde0e3;
   --border: rgba(17, 17, 17, 0.08);
 
-  /* chart series (chrome stays red/white; data series kept distinguishable) */
-  --series-primary: #ff1a3d;   /* brand red — headline metric */
-  --series-secondary: #27272a; /* clean near-black */
-  --series-tertiary: #d98c00;  /* amber */
-  --series-quaternary: #6b7280;
+  /* Màu biểu đồ (dữ liệu) tách riêng khỏi màu thương hiệu (đỏ/trắng chỉ dùng cho khung giao
+     diện: sidebar, nút, badge). Dùng bảng màu thông dụng, dịu mắt: xanh dương/xanh lá/vàng —
+     đỏ chỉ còn dành riêng cho status-critical (cảnh báo thật sự), không dùng tràn lan. */
+  --series-primary: #2f7de1;   /* xanh dương dịu */
+  --series-secondary: #1e9e6b; /* xanh lá dịu */
+  --series-tertiary: #eda100;  /* vàng/amber */
+  --series-quaternary: #8b7fd6; /* tím nhạt, dùng khi cần chuỗi thứ 4 */
 
   --status-good: #0ca30c;
   --status-warning: #d98c00;
@@ -60,10 +62,10 @@
   --grid: #2e2e2e;
   --baseline: #3f3f3f;
   --border: rgba(250, 250, 250, 0.1);
-  --series-primary: #ff3d5c;
-  --series-secondary: #ececec;
+  --series-primary: #5b9bf5;
+  --series-secondary: #3ecf8e;
   --series-tertiary: #f0a83a;
-  --series-quaternary: #c7c7c7;
+  --series-quaternary: #a89bef;
 
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25), 0 1px 3px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.3), 0 8px 20px -6px rgba(0, 0, 0, 0.4);

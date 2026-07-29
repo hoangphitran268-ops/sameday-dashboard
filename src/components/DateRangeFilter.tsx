@@ -3,13 +3,16 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Check, ChevronDown, Calendar } from "lucide-react";
-import { PRESET_LABELS, PRESET_ORDER, rangeDisplayLabel, resolvePreset } from "@/lib/dateRanges";
+import { PRESET_ORDER, rangeDisplayLabel, resolvePreset } from "@/lib/dateRanges";
+import { getLang, dict } from "@/lib/i18n";
 import type { RangePresetKey } from "@/lib/types";
 
 export default function DateRangeFilter() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const lang = getLang(searchParams);
+  const t = dict[lang];
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -20,6 +23,7 @@ export default function DateRangeFilter() {
   const [draftTo, setDraftTo] = useState(customTo ?? "");
 
   const range = resolvePreset(activePreset, { customFrom, customTo });
+  const rangeLabel = rangeDisplayLabel(range, lang);
 
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
@@ -63,7 +67,7 @@ export default function DateRangeFilter() {
         }}
       >
         <Calendar size={13} style={{ color: "var(--brand-red)" }} />
-        {rangeDisplayLabel(range)}
+        {rangeLabel}
         <ChevronDown size={13} style={{ color: "var(--text-muted)", transform: open ? "rotate(180deg)" : undefined, transition: "transform 150ms" }} />
       </button>
 
@@ -82,7 +86,7 @@ export default function DateRangeFilter() {
                   className="w-full flex items-center justify-between px-4 py-2 text-[13px] text-left transition-colors hover:bg-[var(--brand-red-tint)]"
                   style={{ color: isActive ? "var(--brand-red)" : "var(--text-primary)", fontWeight: isActive ? 600 : 400 }}
                 >
-                  {PRESET_LABELS[key]}
+                  {t.dateRange.presets[key]}
                   {isActive && <Check size={16} strokeWidth={2.5} />}
                 </button>
               );
@@ -90,7 +94,7 @@ export default function DateRangeFilter() {
           </div>
           <div className="border-t px-4 py-3" style={{ borderColor: "var(--border)" }}>
             <div className="text-[11px] font-semibold mb-2" style={{ color: "var(--text-secondary)" }}>
-              Tùy chỉnh khoảng ngày
+              {t.dateRange.customLabel}
             </div>
             <div className="flex items-center gap-2">
               <input
@@ -101,7 +105,7 @@ export default function DateRangeFilter() {
                 style={{ borderColor: "var(--border)", background: "var(--background)", color: "var(--text-primary)" }}
               />
               <span className="text-xs" style={{ color: "var(--text-muted)" }}>
-                đến
+                {t.dateRange.to}
               </span>
               <input
                 type="date"
@@ -121,7 +125,7 @@ export default function DateRangeFilter() {
                 boxShadow: "var(--shadow-red)",
               }}
             >
-              Áp dụng
+              {t.dateRange.apply}
             </button>
           </div>
         </div>

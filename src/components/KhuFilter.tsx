@@ -2,11 +2,13 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { MapPin } from "lucide-react";
+import { getLang, dict } from "@/lib/i18n";
 
 export default function KhuFilter({ options }: { options: string[] }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const t = dict[getLang(searchParams)];
   const current = searchParams.get("khu") ?? "";
 
   function onChange(value: string) {
@@ -28,7 +30,7 @@ export default function KhuFilter({ options }: { options: string[] }) {
         className="bg-transparent outline-none cursor-pointer font-semibold"
         style={{ color: "var(--text-primary)" }}
       >
-        <option value="">Tất cả khu</option>
+        <option value="">{t.khuFilter.all}</option>
         {options.map((k) => (
           <option key={k} value={k}>
             {k}

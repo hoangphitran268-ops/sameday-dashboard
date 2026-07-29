@@ -2,15 +2,19 @@
 
 import { useMemo, useState } from "react";
 import type { PenaltyBcRow, PenaltyTypeRow } from "@/lib/types";
+import { dict, localizeLabel, type Lang } from "@/lib/i18n";
 
 export default function PenaltyBcBreakdown({
   typeOverall,
   penaltyBc,
+  lang = "vi",
 }: {
   typeOverall: PenaltyTypeRow[];
   penaltyBc: PenaltyBcRow[];
+  lang?: Lang;
 }) {
-  const viPhamTypes = typeOverall.filter((t) => t.is_vi_pham);
+  const t = dict[lang].penaltyBc;
+  const viPhamTypes = typeOverall.filter((tt) => tt.is_vi_pham);
   const [selected, setSelected] = useState<string>(viPhamTypes[0]?.tinh_trang ?? "");
 
   const rows = useMemo(() => {
@@ -25,13 +29,13 @@ export default function PenaltyBcBreakdown({
   return (
     <div>
       <div className="flex gap-2 mb-4 flex-wrap">
-        {viPhamTypes.map((t) => (
+        {viPhamTypes.map((pt) => (
           <button
-            key={t.tinh_trang}
-            onClick={() => setSelected(t.tinh_trang)}
+            key={pt.tinh_trang}
+            onClick={() => setSelected(pt.tinh_trang)}
             className="text-xs font-semibold px-3.5 py-1.5 rounded-full border transition-all duration-150"
             style={
-              selected === t.tinh_trang
+              selected === pt.tinh_trang
                 ? {
                     background: "linear-gradient(135deg, var(--brand-red) 0%, var(--brand-red-dark) 100%)",
                     borderColor: "var(--brand-red)",
@@ -41,24 +45,24 @@ export default function PenaltyBcBreakdown({
                 : { background: "transparent", borderColor: "var(--border)", color: "var(--text-secondary)" }
             }
           >
-            {t.tinh_trang} ({t.so_luong.toLocaleString("vi-VN")})
+            {localizeLabel(pt.tinh_trang, lang)} ({pt.so_luong.toLocaleString("vi-VN")})
           </button>
         ))}
       </div>
 
       {rows.length === 0 ? (
         <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-          Không có bưu cục nào bị ghi nhận loại vi phạm này trong khoảng đã chọn.
+          {t.empty}
         </p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr style={{ borderBottom: "1px solid var(--border)" }}>
-                <Th align="left">Bưu cục chịu trách nhiệm</Th>
-                <Th align="left">Khu</Th>
-                <Th>Số đơn vi phạm</Th>
-                <Th>Tiền phạt</Th>
+                <Th align="left">{t.buuCuc}</Th>
+                <Th align="left">{t.khu}</Th>
+                <Th>{t.soDonViPham}</Th>
+                <Th>{t.tienPhat}</Th>
               </tr>
             </thead>
             <tbody>
@@ -69,7 +73,9 @@ export default function PenaltyBcBreakdown({
                   </Td>
                   <Td align="left">{r.khu ?? "—"}</Td>
                   <Td>{r.so_luong.toLocaleString("vi-VN")}</Td>
-                  <Td strong>{r.tien_phat.toLocaleString("vi-VN")} đ</Td>
+                  <Td strong>
+                    {r.tien_phat.toLocaleString("vi-VN")} {dict[lang].common.currencySuffix}
+                  </Td>
                 </tr>
               ))}
             </tbody>

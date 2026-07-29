@@ -1,5 +1,6 @@
 import { getPenaltyPageData, type SearchParams } from "@/lib/data";
 import { rangeDisplayLabel } from "@/lib/dateRanges";
+import { getLang, dict, localizeLabel } from "@/lib/i18n";
 import ChartCard from "@/components/ChartCard";
 import HBarChart from "@/components/charts/HBarChart";
 import PenaltyDailyChart from "@/components/charts/PenaltyDailyChart";
@@ -12,54 +13,63 @@ import { ClipboardList, CheckCircle2, Gavel, Banknote } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 export default async function PhatPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
-  const { data, range, khu } = getPenaltyPageData(await searchParams);
+  const params = await searchParams;
+  const lang = getLang(params);
+  const t = dict[lang];
+  const { data, range, khu } = getPenaltyPageData(params);
 
   if (!data.has_data) {
-    return <EmptyState label={rangeDisplayLabel(range)} />;
+    return <EmptyState label={rangeDisplayLabel(range, lang)} lang={lang} />;
   }
 
-  const note = khu ? `${rangeDisplayLabel(range)} · Khu ${khu}` : rangeDisplayLabel(range);
-  const viPhamOverall = data.tinh_trang_overall.filter((t) => t.is_vi_pham);
+  const rangeLabel = rangeDisplayLabel(range, lang);
+  const note = khu ? `${rangeLabel} · ${t.common.khuLabel} ${khu}` : rangeLabel;
+  const viPhamOverall = data.tinh_trang_overall.filter((tt) => tt.is_vi_pham);
+  const viPhamOverallLocalized = viPhamOverall.map((r) => ({ ...r, tinh_trang: localizeLabel(r.tinh_trang, lang) }));
 
   return (
     <div className="space-y-6 w-full">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h2 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-            Phạt vi phạm — Khâu Nhận
+            {t.pages.phat.pageTitle}
           </h2>
           <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
-            Nguồn: file &ldquo;THỐNG KÊ PHẠT SAMEDAY&rdquo;, sheet &ldquo;data&rdquo; · lũy kế toàn kỳ, luôn lấy bản
-            mới nhất
+            {t.pages.phat.subtitle}
           </p>
         </div>
         <KhuFilter options={data.khu_options} />
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatTile label="Tổng đơn được rà soát" value={data.meta.tong_don_ra_soat.toLocaleString("vi-VN")} icon={ClipboardList} />
-        <StatTile label="Tỷ lệ gửi đúng giờ" value={`${data.meta.ty_le_dung_gio_pct}%`} icon={CheckCircle2} />
-        <StatTile label="Số đơn vi phạm" value={data.meta.so_don_vi_pham.toLocaleString("vi-VN")} icon={Gavel} critical />
-        <StatTile label="Tổng tiền phạt" value={`${data.meta.tong_tien_phat.toLocaleString("vi-VN")} đ`} icon={Banknote} critical />
+        <StatTile label={t.pages.phat.statTongDon} value={data.meta.tong_don_ra_soat.toLocaleString("vi-VN")} icon={ClipboardList} />
+        <StatTile label={t.pages.phat.statTyLeDungGio} value={`${data.meta.ty_le_dung_gio_pct}%`} icon={CheckCircle2} />
+        <StatTile label={t.pages.phat.statSoDonViPham} value={data.meta.so_don_vi_pham.toLocaleString("vi-VN")} icon={Gavel} critical />
+        <StatTile
+          label={t.pages.phat.statTongTienPhat}
+          value={`${data.meta.tong_tien_phat.toLocaleString("vi-VN")} ${t.common.currencySuffix}`}
+          icon={Banknote}
+          critical
+        />
       </div>
 
       {viPhamOverall.length > 0 && (
-        <ChartCard title="Phân bố theo loại vi phạm (số đơn)" note={note}>
+        <ChartCard title={t.pages.phat.typeChartTitle} note={note}>
           <HBarChart
-            data={viPhamOverall as unknown as Record<string, unknown>[]}
+            data={viPhamOverallLocalized as unknown as Record<string, unknown>[]}
             dataKey="so_luong"
             categoryKey="tinh_trang"
-            name="Số đơn"
+            name={t.chartNames.quantity}
             width={220}
-            color="var(--status-critical)"
+            color="var(--series-primary)"
             height={Math.max(160, viPhamOverall.length * 60)}
           />
         </ChartCard>
       )}
 
       {data.daily.length > 1 && (
-        <ChartCard title="Tiền phạt theo ngày" note={note}>
-          <PenaltyDailyChart data={data.daily} />
+        <ChartCard title={t.pages.phat.dailyChartTitle} note={note}>
+          <PenaltyDailyChart data={data.daily} lang={lang} />
         </ChartCard>
       )}
 
@@ -68,13 +78,12 @@ export default async function PhatPage({ searchParams }: { searchParams: Promise
         style={{ background: "var(--surface)", borderColor: "var(--border)", boxShadow: "var(--shadow-sm)" }}
       >
         <h3 className="text-sm font-semibold mb-1" style={{ color: "var(--text-primary)" }}>
-          Bưu cục chịu trách nhiệm nhiều nhất theo loại vi phạm
+          {t.pages.phat.bcSectionTitle}
         </h3>
         <p className="text-[11px] mb-4" style={{ color: "var(--text-muted)" }}>
-          Chọn 1 loại vi phạm để xem 15 bưu cục bị phạt nhiều nhất (theo &ldquo;Mã bc chịu trách nhiệm&rdquo;), sắp xếp
-          theo tổng tiền phạt giảm dần.
+          {t.pages.phat.bcSectionDesc}
         </p>
-        <PenaltyBcBreakdown typeOverall={data.tinh_trang_overall} penaltyBc={data.penalty_bc} />
+        <PenaltyBcBreakdown typeOverall={data.tinh_trang_overall} penaltyBc={data.penalty_bc} lang={lang} />
       </div>
     </div>
   );

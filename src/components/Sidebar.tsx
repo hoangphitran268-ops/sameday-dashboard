@@ -5,23 +5,26 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { LayoutDashboard, TrendingUp, Building2, AlertTriangle, Clock, Gavel, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { rangeDisplayLabel, resolvePreset } from "@/lib/dateRanges";
+import { getLang, dict } from "@/lib/i18n";
 import type { RangePresetKey } from "@/lib/types";
 
-const NAV = [
-  { href: "/", label: "Tổng quan", icon: LayoutDashboard },
-  { href: "/kpi", label: "Xu hướng KPI", icon: TrendingUp },
-  { href: "/hieu-suat", label: "Bưu cục & Khu", icon: Building2 },
-  { href: "/nguyen-nhan", label: "Nguyên nhân & Trạng thái", icon: AlertTriangle },
-  { href: "/theo-gio", label: "Theo giờ trong ngày", icon: Clock },
-  { href: "/phat", label: "Phạt vi phạm", icon: Gavel },
-];
-
 const STORAGE_KEY = "jt-sidebar-collapsed";
+
+const NAV: { href: string; navKey: "overview" | "kpi" | "hieuSuat" | "nguyenNhan" | "theoGio" | "phat"; icon: typeof LayoutDashboard }[] = [
+  { href: "/", navKey: "overview", icon: LayoutDashboard },
+  { href: "/kpi", navKey: "kpi", icon: TrendingUp },
+  { href: "/hieu-suat", navKey: "hieuSuat", icon: Building2 },
+  { href: "/nguyen-nhan", navKey: "nguyenNhan", icon: AlertTriangle },
+  { href: "/theo-gio", navKey: "theoGio", icon: Clock },
+  { href: "/phat", navKey: "phat", icon: Gavel },
+];
 
 export default function Sidebar() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const qs = searchParams.toString();
+  const lang = getLang(searchParams);
+  const t = dict[lang];
   const [collapsed, setCollapsed] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -29,6 +32,10 @@ export default function Sidebar() {
     setCollapsed(localStorage.getItem(STORAGE_KEY) === "1");
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    document.documentElement.lang = lang;
+  }, [lang]);
 
   function toggle() {
     setCollapsed((c) => {
@@ -40,6 +47,7 @@ export default function Sidebar() {
 
   const preset = (searchParams.get("preset") as RangePresetKey) || "all";
   const range = resolvePreset(preset, { customFrom: searchParams.get("from"), customTo: searchParams.get("to") });
+  const rangeLabel = rangeDisplayLabel(range, lang);
 
   return (
     <aside
@@ -57,7 +65,7 @@ export default function Sidebar() {
 
       <button
         onClick={toggle}
-        title={collapsed ? "Mở rộng menu" : "Thu gọn menu"}
+        title={collapsed ? t.sidebar.expand : t.sidebar.collapse}
         className="absolute top-6 -right-3 z-10 w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-md hover:scale-110 transition-transform"
         style={{ color: "var(--brand-red)" }}
       >
@@ -74,15 +82,16 @@ export default function Sidebar() {
           </div>
           {!collapsed && (
             <div className="whitespace-nowrap">
-              <div className="font-extrabold leading-tight text-[15px] tracking-tight">SAME DAY</div>
-              <div className="text-[11px] text-white/70 leading-tight">Ops Dashboard</div>
+              <div className="font-extrabold leading-tight text-[15px] tracking-tight">{t.sidebar.brandLine1}</div>
+              <div className="text-[11px] text-white/70 leading-tight">{t.sidebar.brandLine2}</div>
             </div>
           )}
         </div>
       </div>
 
       <nav className={`relative flex-1 py-4 space-y-1 ${collapsed ? "px-2" : "px-3"}`}>
-        {NAV.map(({ href, label, icon: Icon }) => {
+        {NAV.map(({ href, navKey, icon: Icon }) => {
+          const label = t.nav[navKey];
           const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
           const target = qs ? `${href}?${qs}` : href;
           return (
@@ -104,7 +113,7 @@ export default function Sidebar() {
 
       {!collapsed && (
         <div className="relative px-5 py-4 text-[11px] text-white/60 border-t border-white/15 whitespace-nowrap overflow-hidden text-ellipsis">
-          {rangeDisplayLabel(range)}
+          {rangeLabel}
         </div>
       )}
     </aside>

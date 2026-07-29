@@ -1,6 +1,8 @@
 import { Inbox } from "lucide-react";
+import { dict, type Lang } from "@/lib/i18n";
 
-export default function EmptyState({ label }: { label: string }) {
+export default function EmptyState({ label, lang = "vi" }: { label: string; lang?: Lang }) {
+  const t = dict[lang];
   return (
     <div
       className="rounded-2xl border p-12 flex flex-col items-center justify-center text-center w-full"
@@ -13,10 +15,10 @@ export default function EmptyState({ label }: { label: string }) {
         <Inbox size={26} style={{ color: "var(--brand-red)" }} />
       </div>
       <p className="mt-3 text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-        Không có dữ liệu cho khoảng thời gian đã chọn
+        {t.emptyState.title}
       </p>
       <p className="mt-1 text-xs" style={{ color: "var(--text-secondary)" }}>
-        {label} — chưa có file export nào khớp khoảng ngày này. Hãy chọn khoảng khác ở góc trên bên phải.
+        {t.emptyState.desc(label)}
       </p>
     </div>
   );

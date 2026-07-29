@@ -1,17 +1,27 @@
 import type { NodePerfRow } from "@/lib/types";
+import { dict, type Lang } from "@/lib/i18n";
 
-export default function PerfTable({ rows, labelKey }: { rows: NodePerfRow[]; labelKey: "buu_cuc" | "khu" }) {
+export default function PerfTable({
+  rows,
+  labelKey,
+  lang = "vi",
+}: {
+  rows: NodePerfRow[];
+  labelKey: "buu_cuc" | "khu";
+  lang?: Lang;
+}) {
+  const t = dict[lang].perfTable;
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm border-collapse">
         <thead>
           <tr style={{ borderBottom: "1px solid var(--border)" }}>
-            <Th align="left">{labelKey === "buu_cuc" ? "Bưu cục" : "Khu"}</Th>
-            <Th>Tổng đơn</Th>
-            <Th>Đã ký nhận</Th>
-            <Th>Tỷ lệ ký nhận %</Th>
-            <Th>TG xử lý TB (giờ)</Th>
-            <Th>Số đơn vấn đề</Th>
+            <Th align="left">{labelKey === "buu_cuc" ? t.buuCuc : t.khu}</Th>
+            <Th>{t.tongDon}</Th>
+            <Th>{t.daKyNhan}</Th>
+            <Th>{t.tyLeKyNhanPct}</Th>
+            <Th>{t.tgXuLyTb}</Th>
+            <Th>{t.soDonVanDe}</Th>
           </tr>
         </thead>
         <tbody>

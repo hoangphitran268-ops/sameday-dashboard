@@ -1,24 +1,23 @@
 import type { HourBcDetailRow, HourBcHourRow, HourFlowRow } from "@/lib/types";
+import { dict, type Lang } from "@/lib/i18n";
 
 const MAX_ROWS = 15;
-
-const METRIC_LABEL: Record<"pickup" | "sign" | "arrival", string> = {
-  pickup: "Số đơn lấy hàng",
-  sign: "Số đơn ký nhận",
-  arrival: "Số đơn hàng đến bưu cục phát",
-};
 
 export default function HourBcPivotTable({
   metric,
   bcDetail,
   bcHour,
   hours,
+  lang = "vi",
 }: {
   metric: "pickup" | "sign" | "arrival";
   bcDetail: HourBcDetailRow[];
   bcHour: HourBcHourRow[];
   hours: HourFlowRow[];
+  lang?: Lang;
 }) {
+  const t = dict[lang].hourBcPivot;
+  const METRIC_LABEL = t.metricLabel;
   const gioColumns = hours.filter((h) => h[metric] > 0).map((h) => h.gio);
   const sortedBc = [...bcDetail].filter((b) => b[metric] > 0).sort((a, b) => b[metric] - a[metric]);
   const shown = sortedBc.slice(0, MAX_ROWS);
@@ -29,7 +28,7 @@ export default function HourBcPivotTable({
   if (shown.length === 0) {
     return (
       <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-        Không có dữ liệu &ldquo;{METRIC_LABEL[metric]}&rdquo; cho lựa chọn hiện tại.
+        {t.empty(METRIC_LABEL[metric])}
       </p>
     );
   }
@@ -44,7 +43,7 @@ export default function HourBcPivotTable({
                 className="py-2 px-3 text-left text-[11px] font-semibold uppercase tracking-wide sticky left-0"
                 style={{ color: "var(--text-secondary)", background: "var(--surface)" }}
               >
-                Bưu cục phát
+                {t.buuCucPhat}
               </th>
               {gioColumns.map((g) => (
                 <th
@@ -56,7 +55,7 @@ export default function HourBcPivotTable({
                 </th>
               ))}
               <th className="py-2 px-3 text-right text-[11px] font-semibold uppercase" style={{ color: "var(--text-secondary)" }}>
-                Tổng
+                {t.tong}
               </th>
             </tr>
           </thead>
@@ -94,8 +93,7 @@ export default function HourBcPivotTable({
       </div>
       {sortedBc.length > MAX_ROWS && (
         <p className="text-[11px] mt-2" style={{ color: "var(--text-muted)" }}>
-          Đang hiển thị {MAX_ROWS}/{sortedBc.length} bưu cục theo &ldquo;{METRIC_LABEL[metric]}&rdquo; cao nhất — thu
-          hẹp bằng bộ lọc Khu/Bưu cục ở trên để xem đầy đủ.
+          {t.truncated(MAX_ROWS, sortedBc.length, METRIC_LABEL[metric])}
         </p>
       )}
     </div>

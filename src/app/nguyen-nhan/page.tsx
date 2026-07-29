@@ -1,5 +1,6 @@
 import { getReasonPageData, type SearchParams } from "@/lib/data";
 import { rangeDisplayLabel } from "@/lib/dateRanges";
+import { getLang, dict, localizeLabel } from "@/lib/i18n";
 import ChartCard from "@/components/ChartCard";
 import HBarChart from "@/components/charts/HBarChart";
 import ReasonBcBreakdown from "@/components/ReasonBcBreakdown";
@@ -9,11 +10,17 @@ import EmptyState from "@/components/EmptyState";
 export const dynamic = "force-dynamic";
 
 export default async function NguyenNhanPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
-  const { data, range, khu } = getReasonPageData(await searchParams);
+  const params = await searchParams;
+  const lang = getLang(params);
+  const t = dict[lang];
+  const { data, range, khu } = getReasonPageData(params);
 
   if (!data.has_data) {
-    return <EmptyState label={rangeDisplayLabel(range)} />;
+    return <EmptyState label={rangeDisplayLabel(range, lang)} lang={lang} />;
   }
+
+  const reasonOverallLocalized = data.reason_overall.map((r) => ({ ...r, nguyen_nhan: localizeLabel(r.nguyen_nhan, lang) }));
+  const khuSuffix = khu ? ` ${t.common.khuLabel} ${khu}` : "";
 
   return (
     <div className="space-y-6 w-full">
@@ -23,21 +30,21 @@ export default async function NguyenNhanPage({ searchParams }: { searchParams: P
 
       {data.reason_overall.length > 0 ? (
         <ChartCard
-          title="Nguyên nhân đơn có vấn đề (số đơn)"
-          note={`${rangeDisplayLabel(range)}${khu ? ` · Khu ${khu}` : ""}`}
+          title={t.pages.nguyenNhan.chartTitle}
+          note={`${rangeDisplayLabel(range, lang)}${khu ? ` · ${t.common.khuLabel} ${khu}` : ""}`}
         >
           <HBarChart
-            data={data.reason_overall as unknown as Record<string, unknown>[]}
+            data={reasonOverallLocalized as unknown as Record<string, unknown>[]}
             dataKey="so_luong"
             categoryKey="nguyen_nhan"
-            name="Số lượng"
+            name={t.chartNames.quantity}
             width={260}
             color="var(--series-primary)"
           />
         </ChartCard>
       ) : (
         <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-          Không có đơn nào phát sinh vấn đề trong khoảng thời gian này{khu ? ` ở khu ${khu}` : ""}.
+          {t.pages.nguyenNhan.emptyMsg(khuSuffix)}
         </p>
       )}
 
@@ -46,13 +53,12 @@ export default async function NguyenNhanPage({ searchParams }: { searchParams: P
         style={{ background: "var(--surface)", borderColor: "var(--border)", boxShadow: "var(--shadow-sm)" }}
       >
         <h3 className="text-sm font-semibold mb-1" style={{ color: "var(--text-primary)" }}>
-          Bưu cục thường xuyên ghi nhận nguyên nhân này
+          {t.pages.nguyenNhan.bcSectionTitle}
         </h3>
         <p className="text-[11px] mb-4" style={{ color: "var(--text-muted)" }}>
-          Chọn 1 nguyên nhân để xem 15 bưu cục ghi nhận nhiều nhất — kèm tỷ lệ nguyên nhân đó chiếm bao nhiêu % trong
-          tổng số đơn có vấn đề của chính bưu cục đó.
+          {t.pages.nguyenNhan.bcSectionDesc}
         </p>
-        <ReasonBcBreakdown reasonOverall={data.reason_overall} reasonBc={data.reason_bc} />
+        <ReasonBcBreakdown reasonOverall={data.reason_overall} reasonBc={data.reason_bc} lang={lang} />
       </div>
     </div>
   );

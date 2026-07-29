@@ -5,6 +5,8 @@ import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import RefreshControl from "@/components/RefreshControl";
 import DateRangeFilter from "@/components/DateRangeFilter";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
+import HeaderBrand from "@/components/HeaderBrand";
 import { readRawData } from "@/lib/data";
 
 const geistSans = Geist({
@@ -47,27 +49,19 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               className="absolute inset-x-0 top-0 h-[3px]"
               style={{ background: "linear-gradient(90deg, var(--brand-red) 0%, var(--brand-red-dark) 60%, transparent 100%)" }}
             />
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-lg font-extrabold tracking-tight" style={{ color: "var(--text-primary)" }}>
-                  Dashboard vận hành SAME DAY
-                </h1>
-                <span
-                  className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide"
-                  style={{ background: "var(--brand-red)", color: "#fff" }}
-                >
-                  J&amp;T Express
-                </span>
-              </div>
-              <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
-                Nguồn: sheet &ldquo;data&rdquo; của file export hằng ngày
-              </p>
-            </div>
+            <Suspense fallback={null}>
+              <HeaderBrand />
+            </Suspense>
             <div className="flex items-center gap-3">
+              <Suspense fallback={null}>
+                <LanguageSwitcher />
+              </Suspense>
               <Suspense fallback={null}>
                 <DateRangeFilter />
               </Suspense>
-              <RefreshControl generatedAt={generatedAt} />
+              <Suspense fallback={null}>
+                <RefreshControl generatedAt={generatedAt} />
+              </Suspense>
             </div>
           </header>
           <main className="flex-1 min-w-0 px-8 py-6">{children}</main>

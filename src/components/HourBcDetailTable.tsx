@@ -1,12 +1,14 @@
 import type { HourBcDetailRow } from "@/lib/types";
+import { dict, type Lang } from "@/lib/i18n";
 
 const MAX_ROWS = 30;
 
-export default function HourBcDetailTable({ rows }: { rows: HourBcDetailRow[] }) {
+export default function HourBcDetailTable({ rows, lang = "vi" }: { rows: HourBcDetailRow[]; lang?: Lang }) {
+  const t = dict[lang].hourBcDetail;
   if (rows.length === 0) {
     return (
       <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-        Không có dữ liệu bưu cục cho lựa chọn hiện tại.
+        {t.empty}
       </p>
     );
   }
@@ -19,12 +21,12 @@ export default function HourBcDetailTable({ rows }: { rows: HourBcDetailRow[] })
         <table className="w-full text-sm border-collapse">
           <thead>
             <tr style={{ borderBottom: "1px solid var(--border)" }}>
-              <Th align="left">Bưu cục phát</Th>
-              <Th align="left">Khu</Th>
-              <Th>Số đơn lấy hàng</Th>
-              <Th>Số đơn ký nhận</Th>
-              <Th>Số đơn hàng đến</Th>
-              <Th>Tổng cộng</Th>
+              <Th align="left">{t.buuCucPhat}</Th>
+              <Th align="left">{t.khu}</Th>
+              <Th>{t.pickup}</Th>
+              <Th>{t.sign}</Th>
+              <Th>{t.arrival}</Th>
+              <Th>{t.tong}</Th>
             </tr>
           </thead>
           <tbody>
@@ -45,8 +47,7 @@ export default function HourBcDetailTable({ rows }: { rows: HourBcDetailRow[] })
       </div>
       {rows.length > MAX_ROWS && (
         <p className="text-[11px] mt-2" style={{ color: "var(--text-muted)" }}>
-          Đang hiển thị {MAX_ROWS}/{rows.length} bưu cục theo khối lượng cao nhất — thu hẹp bằng bộ lọc Khu/Bưu cục ở
-          trên để xem đầy đủ.
+          {t.truncated(MAX_ROWS, rows.length)}
         </p>
       )}
     </div>

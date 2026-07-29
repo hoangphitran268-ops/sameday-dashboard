@@ -1,4 +1,5 @@
 import type { DateRange, RangePresetKey } from "./types";
+import { dict, type Lang } from "./i18n";
 
 // Toàn bộ tính toán ngày đều dùng mốc UTC nội bộ (không phụ thuộc timezone máy chạy),
 // nhất quán với cách scripts/regenerate-data.mjs diễn giải ngày từ file Excel.
@@ -108,12 +109,13 @@ export function formatVN(iso: string | null): string {
   return `${d}/${m}/${y}`;
 }
 
-export function rangeDisplayLabel(range: DateRange): string {
+export function rangeDisplayLabel(range: DateRange, lang: Lang = "vi"): string {
+  const label = lang === "zh" ? dict.zh.dateRange.presets[range.preset] : range.label;
   if (range.preset !== "custom" && range.preset !== "all") {
-    return `${range.label} (${formatVN(range.from)} - ${formatVN(range.to)})`;
+    return `${label} (${formatVN(range.from)} - ${formatVN(range.to)})`;
   }
   if (range.preset === "custom" && range.from && range.to) {
     return `${formatVN(range.from)} - ${formatVN(range.to)}`;
   }
-  return range.label;
+  return label;
 }

@@ -2,8 +2,18 @@
 
 import { useMemo, useState } from "react";
 import type { ReasonBcRow, ReasonRow } from "@/lib/types";
+import { dict, localizeLabel, type Lang } from "@/lib/i18n";
 
-export default function ReasonBcBreakdown({ reasonOverall, reasonBc }: { reasonOverall: ReasonRow[]; reasonBc: ReasonBcRow[] }) {
+export default function ReasonBcBreakdown({
+  reasonOverall,
+  reasonBc,
+  lang = "vi",
+}: {
+  reasonOverall: ReasonRow[];
+  reasonBc: ReasonBcRow[];
+  lang?: Lang;
+}) {
+  const t = dict[lang].reasonBc;
   const [selected, setSelected] = useState<string>(reasonOverall[0]?.nguyen_nhan ?? "");
 
   const bcTotals = useMemo(() => {
@@ -40,24 +50,24 @@ export default function ReasonBcBreakdown({ reasonOverall, reasonBc }: { reasonO
                 : { background: "transparent", borderColor: "var(--border)", color: "var(--text-secondary)" }
             }
           >
-            {r.nguyen_nhan} ({r.so_luong.toLocaleString("vi-VN")})
+            {localizeLabel(r.nguyen_nhan, lang)} ({r.so_luong.toLocaleString("vi-VN")})
           </button>
         ))}
       </div>
 
       {rows.length === 0 ? (
         <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-          Không có bưu cục nào ghi nhận nguyên nhân này trong khoảng đã chọn.
+          {t.empty}
         </p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr style={{ borderBottom: "1px solid var(--border)" }}>
-                <Th align="left">Bưu cục</Th>
-                <Th align="left">Khu</Th>
-                <Th>Số đơn (nguyên nhân này)</Th>
-                <Th>% trong tổng số đơn vấn đề của bưu cục</Th>
+                <Th align="left">{t.buuCuc}</Th>
+                <Th align="left">{t.khu}</Th>
+                <Th>{t.soDonReason}</Th>
+                <Th>{t.sharePct}</Th>
               </tr>
             </thead>
             <tbody>

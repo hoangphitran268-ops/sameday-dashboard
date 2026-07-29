@@ -3,21 +3,23 @@
 import { useState } from "react";
 import PerfTable from "@/components/PerfTable";
 import type { NodePerfRow } from "@/lib/types";
+import { dict, type Lang } from "@/lib/i18n";
 
-export default function BcTabs({ worst, best }: { worst: NodePerfRow[]; best: NodePerfRow[] }) {
+export default function BcTabs({ worst, best, lang = "vi" }: { worst: NodePerfRow[]; best: NodePerfRow[]; lang?: Lang }) {
+  const t = dict[lang].bcTabs;
   const [tab, setTab] = useState<"worst" | "best">("worst");
 
   return (
     <div>
       <div className="flex gap-2 mb-4">
         <TabButton active={tab === "worst"} onClick={() => setTab("worst")}>
-          15 thấp nhất
+          {t.worst15}
         </TabButton>
         <TabButton active={tab === "best"} onClick={() => setTab("best")}>
-          15 cao nhất
+          {t.best15}
         </TabButton>
       </div>
-      <PerfTable rows={tab === "worst" ? worst : best} labelKey="buu_cuc" />
+      <PerfTable rows={tab === "worst" ? worst : best} labelKey="buu_cuc" lang={lang} />
     </div>
   );
 }

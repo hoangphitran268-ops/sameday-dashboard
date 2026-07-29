@@ -2,18 +2,19 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { MapPin, Building2, Filter } from "lucide-react";
-
-const METRIC_OPTIONS: { value: string; label: string }[] = [
-  { value: "", label: "Tất cả (3 loại)" },
-  { value: "pickup", label: "Lấy hàng" },
-  { value: "sign", label: "Ký nhận" },
-  { value: "arrival", label: "Hàng đến bưu cục phát" },
-];
+import { getLang, dict } from "@/lib/i18n";
 
 export default function HourFilters({ khuOptions, bcOptions }: { khuOptions: string[]; bcOptions: string[] }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const t = dict[getLang(searchParams)];
+  const METRIC_OPTIONS: { value: string; label: string }[] = [
+    { value: "", label: t.hourFilters.metricAll },
+    { value: "pickup", label: t.hourFilters.pickup },
+    { value: "sign", label: t.hourFilters.sign },
+    { value: "arrival", label: t.hourFilters.arrival },
+  ];
   const currentKhu = searchParams.get("akhu") ?? "";
   const currentBc = searchParams.get("abc") ?? "";
   const currentMetric = searchParams.get("metric") ?? "";
@@ -42,8 +43,8 @@ export default function HourFilters({ khuOptions, bcOptions }: { khuOptions: str
 
   return (
     <div className="flex items-center gap-2 flex-wrap">
-      <FilterSelect icon={MapPin} value={currentKhu} onChange={onKhuChange} placeholder="Tất cả khu" options={khuOptions} />
-      <FilterSelect icon={Building2} value={currentBc} onChange={onBcChange} placeholder="Tất cả bưu cục phát" options={bcOptions} />
+      <FilterSelect icon={MapPin} value={currentKhu} onChange={onKhuChange} placeholder={t.hourFilters.allKhu} options={khuOptions} />
+      <FilterSelect icon={Building2} value={currentBc} onChange={onBcChange} placeholder={t.hourFilters.allBc} options={bcOptions} />
       <label
         className="flex items-center gap-2 text-xs font-semibold px-3.5 py-1.5 rounded-full border"
         style={{ borderColor: "var(--border)", color: "var(--text-primary)", background: "var(--surface)", boxShadow: "var(--shadow-sm)" }}

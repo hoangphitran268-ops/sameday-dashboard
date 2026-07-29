@@ -3,8 +3,10 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import type { KpiDailyRow } from "@/lib/types";
 import { ChartTooltip } from "./ChartTooltip";
+import { dict, type Lang } from "@/lib/i18n";
 
-export default function DurationBarChart({ data }: { data: KpiDailyRow[] }) {
+export default function DurationBarChart({ data, lang = "vi" }: { data: KpiDailyRow[]; lang?: Lang }) {
+  const t = dict[lang].chartNames;
   const avg = data.reduce((a, d) => a + d.tg_xu_ly_trung_binh_h, 0) / data.length;
   return (
     <ResponsiveContainer width="100%" height={260}>
@@ -13,7 +15,7 @@ export default function DurationBarChart({ data }: { data: KpiDailyRow[] }) {
         <XAxis dataKey="report_date" tick={{ fontSize: 11, fill: "var(--text-muted)" }} axisLine={{ stroke: "var(--baseline)" }} tickLine={false} />
         <YAxis tick={{ fontSize: 11, fill: "var(--text-muted)" }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}h`} />
         <Tooltip content={<ChartTooltip />} />
-        <Bar dataKey="tg_xu_ly_trung_binh_h" name="TG xử lý TB (giờ)" radius={[4, 4, 0, 0]} maxBarSize={22} isAnimationActive={false}>
+        <Bar dataKey="tg_xu_ly_trung_binh_h" name={t.avgDuration} radius={[4, 4, 0, 0]} maxBarSize={22} isAnimationActive={false}>
           {data.map((d, i) => (
             <Cell key={i} fill={d.tg_xu_ly_trung_binh_h > avg * 1.3 ? "var(--status-critical)" : "var(--series-tertiary)"} />
           ))}
