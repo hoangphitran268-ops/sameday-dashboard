@@ -74,10 +74,17 @@ export default async function ReceivingPage({ searchParams }: { searchParams: Pr
         />
       </div>
 
-      {data.geo.length > 0 && (
+      {data.geo_total.length > 0 && (
         <ChartCard title={t.pages.receiving.mapSectionTitle} note={note}>
           <VietnamMap
-            data={data.geo}
+            pickupData={data.geo}
+            deliveryData={data.geo_phat}
+            totalData={data.geo_total}
+            modeLabels={{
+              pickup: t.pages.receiving.mapModePickup,
+              delivery: t.pages.receiving.mapModeDelivery,
+              total: t.pages.receiving.mapModeTotal,
+            }}
             loadingLabel={t.pages.receiving.mapLoading}
             emptyLabel={t.pages.receiving.mapEmpty}
             unitLabel={t.pages.receiving.mapUnit}

@@ -312,6 +312,8 @@ export interface ReceivingPageData {
   seller_best15: ReceivingSellerRow[];
   seller_reason: ReceivingSellerReasonRow[];
   geo: ReceivingGeoRow[];
+  geo_phat: ReceivingGeoRow[];
+  geo_total: ReceivingGeoRow[];
   has_data: boolean;
 }
 

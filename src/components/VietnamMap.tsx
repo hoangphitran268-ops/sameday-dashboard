@@ -33,13 +33,22 @@ function clampK(k: number) {
   return Math.min(MAX_K, Math.max(MIN_K, k));
 }
 
+type GeoRow = { tinh_thanh: string; thanh_cong: number };
+type MapMode = "pickup" | "delivery" | "total";
+
 export default function VietnamMap({
-  data,
+  pickupData,
+  deliveryData,
+  totalData,
+  modeLabels,
   loadingLabel,
   emptyLabel,
   unitLabel,
 }: {
-  data: { tinh_thanh: string; thanh_cong: number }[];
+  pickupData: GeoRow[];
+  deliveryData: GeoRow[];
+  totalData: GeoRow[];
+  modeLabels: { pickup: string; delivery: string; total: string };
   loadingLabel: string;
   emptyLabel: string;
   unitLabel: string;
@@ -48,6 +57,7 @@ export default function VietnamMap({
   const [transform, setTransform] = useState({ x: 0, y: 0, k: 1 });
   const [hover, setHover] = useState<{ name: string; value: number; x: number; y: number } | null>(null);
   const [dragging, setDragging] = useState(false);
+  const [mode, setMode] = useState<MapMode>("total");
   const svgRef = useRef<SVGSVGElement>(null);
   const dragStart = useRef<{ clientX: number; clientY: number; x: number; y: number } | null>(null);
 
@@ -57,6 +67,8 @@ export default function VietnamMap({
       .then(setGeojson)
       .catch(() => setGeojson(null));
   }, []);
+
+  const data = mode === "pickup" ? pickupData : mode === "delivery" ? deliveryData : totalData;
 
   const valueMap = new Map<string, number>();
   for (const d of data) valueMap.set(normalizeName(d.tinh_thanh), (valueMap.get(normalizeName(d.tinh_thanh)) ?? 0) + d.thanh_cong);
@@ -124,6 +136,27 @@ export default function VietnamMap({
 
   return (
     <div className="relative">
+      <div className="flex gap-2 mb-3">
+        {(["pickup", "delivery", "total"] as const).map((m) => (
+          <button
+            key={m}
+            onClick={() => setMode(m)}
+            className="text-xs font-semibold px-3.5 py-1.5 rounded-full border transition-all duration-150"
+            style={
+              mode === m
+                ? {
+                    background: "linear-gradient(135deg, var(--brand-red) 0%, var(--brand-red-dark) 100%)",
+                    borderColor: "var(--brand-red)",
+                    color: "#fff",
+                    boxShadow: "var(--shadow-red)",
+                  }
+                : { background: "transparent", borderColor: "var(--border)", color: "var(--text-secondary)" }
+            }
+          >
+            {modeLabels[m]}
+          </button>
+        ))}
+      </div>
       <svg
         ref={svgRef}
         viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
