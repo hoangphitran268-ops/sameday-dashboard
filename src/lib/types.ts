@@ -88,10 +88,11 @@ export interface RawReceivingSellerReasonDay {
   so_luong: number;
 }
 
-/** Theo tỉnh/thành lấy hàng — dùng cho bản đồ Việt Nam (chỉ quan tâm đơn nhận thành công). */
+/** Theo Phường/Xã lấy hàng (đơn vị hành chính mới) — dùng cho bản đồ HCM (chỉ quan tâm đơn nhận
+ * thành công). */
 export interface RawReceivingGeoDay {
   iso_date: string;
-  tinh_thanh: string;
+  phuong_xa: string;
   tong_don: number;
   thanh_cong: number;
 }
@@ -295,7 +296,7 @@ export interface ReceivingSellerReasonRow {
 }
 
 export interface ReceivingGeoRow {
-  tinh_thanh: string;
+  phuong_xa: string;
   tong_don: number;
   thanh_cong: number;
 }

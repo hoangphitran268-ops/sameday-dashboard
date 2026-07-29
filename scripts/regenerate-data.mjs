@@ -359,7 +359,11 @@ function readReceivingRows() {
         bc: r["Mã Bc lấy hàng"] ?? null,
         seller: r["Tên shop"] ?? null,
         reason: r["Nguyên nhân lấy hàng thất bại"] || null,
-        tinh_thanh: r["Tỉnh thành lấy"] ?? null,
+        // Cột "Phường xã lấy" phần lớn để trống (~91% rỗng) nên dùng "Quận huyện cũ/ Phường xã
+        // mới" làm nguồn Phường/Xã cho bản đồ — cột này phủ 100% dòng, đã là tên Phường/Xã mới
+        // sau sáp nhập cho phần lớn đơn (một số ít còn ghi theo Quận/Huyện cũ, không đối chiếu
+        // được lên bản đồ Phường nên sẽ bị bỏ qua khi không khớp).
+        phuong_xa: r["Quận huyện cũ/ Phường xã mới "] || null,
       });
     }
   }
@@ -447,14 +451,14 @@ function readReceivingByDay(bcKhuMap) {
     return { iso_date, seller, reason, so_luong: items.length };
   });
 
-  // ---- theo tỉnh/thành (cho bản đồ Việt Nam) — chỉ cần đơn NHẬN THÀNH CÔNG ----
+  // ---- theo Phường/Xã (cho bản đồ HCM) — chỉ cần đơn NHẬN THÀNH CÔNG ----
   const geoGroups = groupBy(
-    classified.filter((r) => r.tinh_thanh),
-    (r) => JSON.stringify([r.iso_date, r.tinh_thanh])
+    classified.filter((r) => r.phuong_xa),
+    (r) => JSON.stringify([r.iso_date, r.phuong_xa])
   );
   const geoByDay = Object.entries(geoGroups).map(([key, items]) => {
-    const [iso_date, tinh_thanh] = JSON.parse(key);
-    return { iso_date, tinh_thanh, tong_don: items.length, thanh_cong: sum(items.map((r) => r.thanh_cong)) };
+    const [iso_date, phuong_xa] = JSON.parse(key);
+    return { iso_date, phuong_xa, tong_don: items.length, thanh_cong: sum(items.map((r) => r.thanh_cong)) };
   });
 
   return { bcByDay, reasonByDay, sellerByDay, sellerReasonByDay, geoByDay };

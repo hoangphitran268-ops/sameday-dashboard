@@ -1,17 +1,17 @@
 "use client";
 
-import { useEffect, useRef, useState, type WheelEvent as ReactWheelEvent, type MouseEvent as ReactMouseEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type WheelEvent as ReactWheelEvent, type MouseEvent as ReactMouseEvent } from "react";
 import { geoMercator, geoPath } from "d3-geo";
 import { ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
 
-interface ProvinceFeature {
+interface WardFeature {
   type: "Feature";
-  properties: { Ma: string; TinhThanh: string };
+  properties: { code: string; name: string };
   geometry: GeoJSON.Geometry;
 }
-interface ProvinceCollection {
+interface WardCollection {
   type: "FeatureCollection";
-  features: ProvinceFeature[];
+  features: WardFeature[];
 }
 
 const WIDTH = 720;
@@ -23,8 +23,7 @@ function normalizeName(s: string): string {
   return s
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "")
-    .replace(/^tp\.?\s*/i, "")
-    .replace(/thanh pho\s*/i, "")
+    .replace(/^(phường|phuong|xã|xa)\.?\s*/i, "")
     .toLowerCase()
     .trim();
 }
@@ -33,7 +32,7 @@ function clampK(k: number) {
   return Math.min(MAX_K, Math.max(MIN_K, k));
 }
 
-type GeoRow = { tinh_thanh: string; thanh_cong: number };
+type GeoRow = { phuong_xa: string; thanh_cong: number };
 type MapMode = "pickup" | "delivery" | "total";
 
 export default function VietnamMap({
@@ -53,25 +52,46 @@ export default function VietnamMap({
   emptyLabel: string;
   unitLabel: string;
 }) {
-  const [geojson, setGeojson] = useState<ProvinceCollection | null>(null);
+  const [geojson, setGeojson] = useState<WardCollection | null>(null);
   const [transform, setTransform] = useState({ x: 0, y: 0, k: 1 });
   const [hover, setHover] = useState<{ name: string; value: number; x: number; y: number } | null>(null);
   const [dragging, setDragging] = useState(false);
   const [mode, setMode] = useState<MapMode>("total");
   const svgRef = useRef<SVGSVGElement>(null);
   const dragStart = useRef<{ clientX: number; clientY: number; x: number; y: number } | null>(null);
+  const wheelFrame = useRef<number | null>(null);
 
   useEffect(() => {
-    fetch("/geo/vn-provinces.geojson")
+    fetch("/geo/hcm-wards.geojson")
       .then((r) => r.json())
       .then(setGeojson)
       .catch(() => setGeojson(null));
   }, []);
 
+  // Chỉ tính lại projection + chuỗi "d" của từng phường 1 LẦN khi geojson thay đổi — đây là phần
+  // nặng nhất (fitSize duyệt toàn bộ toạ độ). Trước đây tính lại mỗi lần render (kể cả mỗi pixel
+  // di chuột / mỗi tick zoom) khiến bản đồ giật/văng khi tương tác nhiều.
+  const paths = useMemo(() => {
+    if (!geojson) return [];
+    const projection = geoMercator().fitSize([WIDTH, HEIGHT], geojson as unknown as GeoJSON.GeoJSON);
+    const pathGen = geoPath(projection);
+    return geojson.features.map((f) => ({
+      code: f.properties.code,
+      name: f.properties.name,
+      d: pathGen(f) ?? "",
+    }));
+  }, [geojson]);
+
   const data = mode === "pickup" ? pickupData : mode === "delivery" ? deliveryData : totalData;
 
-  const valueMap = new Map<string, number>();
-  for (const d of data) valueMap.set(normalizeName(d.tinh_thanh), (valueMap.get(normalizeName(d.tinh_thanh)) ?? 0) + d.thanh_cong);
+  const valueMap = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const d of data) {
+      const key = normalizeName(d.phuong_xa);
+      m.set(key, (m.get(key) ?? 0) + d.thanh_cong);
+    }
+    return m;
+  }, [data]);
   const maxVal = Math.max(1, ...data.map((d) => d.thanh_cong));
 
   function colorFor(v: number) {
@@ -102,7 +122,12 @@ export default function VietnamMap({
 
   function onWheel(e: ReactWheelEvent<SVGSVGElement>) {
     e.preventDefault();
-    zoomAt(e.clientX, e.clientY, e.deltaY > 0 ? 0.88 : 1.14);
+    const { clientX, clientY, deltaY } = e;
+    if (wheelFrame.current != null) return;
+    wheelFrame.current = requestAnimationFrame(() => {
+      wheelFrame.current = null;
+      zoomAt(clientX, clientY, deltaY > 0 ? 0.88 : 1.14);
+    });
   }
 
   function onMouseDown(e: ReactMouseEvent<SVGSVGElement>) {
@@ -130,8 +155,6 @@ export default function VietnamMap({
     );
   }
 
-  const projection = geoMercator().fitSize([WIDTH, HEIGHT], geojson as unknown as GeoJSON.GeoJSON);
-  const pathGen = geoPath(projection);
   const center = { x: WIDTH / 2, y: HEIGHT / 2 };
 
   return (
@@ -170,17 +193,16 @@ export default function VietnamMap({
         style={{ cursor: dragging ? "grabbing" : "grab", touchAction: "none", display: "block" }}
       >
         <g transform={`translate(${transform.x},${transform.y}) scale(${transform.k})`}>
-          {geojson.features.map((f) => {
-            const name = f.properties.TinhThanh;
-            const val = valueMap.get(normalizeName(name)) ?? 0;
+          {paths.map((p) => {
+            const val = valueMap.get(normalizeName(p.name)) ?? 0;
             return (
               <path
-                key={f.properties.Ma}
-                d={pathGen(f) ?? undefined}
+                key={p.code}
+                d={p.d}
                 fill={colorFor(val)}
                 stroke="var(--surface)"
-                strokeWidth={0.6 / transform.k}
-                onMouseEnter={(e) => setHover({ name, value: val, x: e.clientX, y: e.clientY })}
+                strokeWidth={0.4 / transform.k}
+                onMouseEnter={(e) => setHover({ name: p.name, value: val, x: e.clientX, y: e.clientY })}
                 onMouseMove={(e) => setHover((h) => (h ? { ...h, x: e.clientX, y: e.clientY } : h))}
                 onMouseLeave={() => setHover(null)}
               />

@@ -16,11 +16,11 @@ const NAV: {
   icon: typeof LayoutDashboard;
 }[] = [
   { href: "/", navKey: "overview", icon: LayoutDashboard },
+  { href: "/nhan-kien", navKey: "receiving", icon: PackageCheck },
   { href: "/kpi", navKey: "kpi", icon: TrendingUp },
   { href: "/hieu-suat", navKey: "hieuSuat", icon: Building2 },
   { href: "/nguyen-nhan", navKey: "nguyenNhan", icon: AlertTriangle },
   { href: "/theo-gio", navKey: "theoGio", icon: Clock },
-  { href: "/nhan-kien", navKey: "receiving", icon: PackageCheck },
   { href: "/phat", navKey: "phat", icon: Gavel },
 ];
 
