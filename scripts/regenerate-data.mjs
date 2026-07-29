@@ -82,6 +82,9 @@ function main() {
       const sign = excelSerialToDate(r["ThƠì gian ký"]);
       const isSigned = !!sign;
       const durationH = isSigned && pickup ? (sign.getTime() - pickup.getTime()) / 3600000 : null;
+      // "Thời gian quét đến" = mốc hàng được quét ghi nhận ĐÃ ĐẾN bưu cục phát (BC/Khu cuối).
+      // Nhiều dòng chưa đến sẽ có giá trị text ("Chưa đến") thay vì ngày giờ -> excelSerialToDate trả về null.
+      const arrival = excelSerialToDate(r["Thời gian quét đến"]);
 
       rows.push({
         iso_date: reportDate,
@@ -93,6 +96,9 @@ function main() {
         sign_hour: sign ? sign.getUTCHours() : null,
         is_signed: isSigned,
         duration_h: durationH,
+        bc_cuoi: r["BC cuối"] ?? null,
+        khu_cuoi: r["Khu cuối"] ?? null,
+        arrival_hour: arrival ? arrival.getUTCHours() : null,
       });
     }
   }
@@ -151,6 +157,20 @@ function main() {
     }
   }
 
+  // ---- giờ hàng đến bưu cục phát, chi tiết theo BC cuối + Khu cuối (khác với
+  // "Bưu cục đang thao tác" — đây là điểm phát cuối cùng của đơn) ----
+  const arrivalByDay = [];
+  for (const date of availableDates) {
+    const g = groupBy(
+      byDate[date].filter((r) => r.arrival_hour != null && r.bc_cuoi),
+      (r) => JSON.stringify([r.bc_cuoi, r.khu_cuoi ?? null, r.arrival_hour])
+    );
+    for (const [key, items] of Object.entries(g)) {
+      const [buu_cuc, khu, gio] = JSON.parse(key);
+      arrivalByDay.push({ iso_date: date, buu_cuc, khu, gio, so_luong: items.length });
+    }
+  }
+
   const data = {
     generated_at: new Date().toISOString(),
     available_dates: availableDates,
@@ -159,6 +179,7 @@ function main() {
     bc_by_day: bcByDay,
     khu_by_day: khuByDay,
     hour_by_day: hourByDay,
+    arrival_by_day: arrivalByDay,
   };
 
   fs.mkdirSync(path.dirname(OUT_PATH), { recursive: true });

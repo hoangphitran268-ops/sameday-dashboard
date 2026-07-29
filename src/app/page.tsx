@@ -17,6 +17,45 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
     return <EmptyState label={rangeDisplayLabel(range)} />;
   }
 
+  const findings: React.ReactNode[] = [];
+  const b = (text: string | number) => (
+    <b style={{ color: "var(--text-primary)" }}>{text}</b>
+  );
+
+  if (data.weekday.length > 1) {
+    const worstDay = [...data.weekday].sort((a, b) => a.ty_le_ky_nhan_pct - b.ty_le_ky_nhan_pct)[0];
+    const others = data.weekday.filter((w) => w.weekday !== worstDay.weekday);
+    const avgOthers = others.reduce((s, w) => s + w.ty_le_ky_nhan_pct, 0) / others.length;
+    const gap = Math.round((avgOthers - worstDay.ty_le_ky_nhan_pct) * 10) / 10;
+    if (gap >= 1) {
+      findings.push(
+        <>
+          {b(worstDay.weekday)} có tỷ lệ ký nhận thấp nhất trong khoảng này: {b(`${worstDay.ty_le_ky_nhan_pct}%`)}, thấp
+          hơn {gap} điểm % so với trung bình các ngày còn lại.
+        </>
+      );
+    }
+  }
+
+  if (data.bc_worst15.length > 0) {
+    const worstBc = data.bc_worst15[0];
+    findings.push(
+      <>
+        Bưu cục {b(worstBc.buu_cuc ?? "")} có tỷ lệ ký nhận thấp nhất (≥300 đơn): {b(`${worstBc.ty_le_ky_nhan_pct}%`)} trên{" "}
+        {worstBc.tong_don.toLocaleString("vi-VN")} đơn.
+      </>
+    );
+  }
+
+  if (data.kpi_daily.length > 1) {
+    const worstIssueDay = [...data.kpi_daily].sort((a, b) => b.ty_le_van_de_pct - a.ty_le_van_de_pct)[0];
+    findings.push(
+      <>
+        Ngày {b(worstIssueDay.report_date)} có tỷ lệ đơn phát sinh vấn đề cao nhất: {b(`${worstIssueDay.ty_le_van_de_pct}%`)}.
+      </>
+    );
+  }
+
   return (
     <div className="space-y-6 max-w-6xl">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -34,27 +73,23 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
         <StatTile label="Tỷ lệ đơn có vấn đề" value={`${meta.ty_le_van_de_pct}%`} icon={AlertTriangle} critical />
       </div>
 
-      <div
-        className="relative rounded-2xl border p-5 pl-6 overflow-hidden"
-        style={{ background: "var(--brand-red-tint)", borderColor: "var(--brand-red-light)", boxShadow: "var(--shadow-sm)" }}
-      >
-        <div className="absolute inset-y-0 left-0 w-1.5" style={{ background: "var(--brand-red)" }} />
-        <h3 className="text-sm font-semibold mb-2 flex items-center gap-2" style={{ color: "var(--brand-red-dark)" }}>
-          <Lightbulb size={16} strokeWidth={2.2} />
-          Phát hiện chính · {rangeDisplayLabel(range)}
-        </h3>
-        <ul className="space-y-1.5 text-[13px]" style={{ color: "var(--text-secondary)" }}>
-          <li>
-            <b style={{ color: "var(--text-primary)" }}>Chủ nhật có tỷ lệ ký nhận thấp hơn các ngày khác</b> — xem
-            mức chênh lệch cụ thể ở biểu đồ theo Thứ bên dưới.
-          </li>
-          <li>
-            <b style={{ color: "var(--text-primary)" }}>Khi đơn đã được ký nhận, gần như luôn đúng trong ngày N</b> —
-            trễ hạn chủ yếu nằm ở việc đơn CHƯA được xử lý xong (thể hiện qua tỷ lệ ký nhận), không phải ký nhận
-            muộn ngày.
-          </li>
-        </ul>
-      </div>
+      {findings.length > 0 && (
+        <div
+          className="relative rounded-2xl border p-5 pl-6 overflow-hidden"
+          style={{ background: "var(--brand-red-tint)", borderColor: "var(--brand-red-light)", boxShadow: "var(--shadow-sm)" }}
+        >
+          <div className="absolute inset-y-0 left-0 w-1.5" style={{ background: "var(--brand-red)" }} />
+          <h3 className="text-sm font-semibold mb-2 flex items-center gap-2" style={{ color: "var(--brand-red-dark)" }}>
+            <Lightbulb size={16} strokeWidth={2.2} />
+            Phát hiện chính · {rangeDisplayLabel(range)}
+          </h3>
+          <ul className="space-y-1.5 text-[13px]" style={{ color: "var(--text-secondary)" }}>
+            {findings.map((f, i) => (
+              <li key={i}>{f}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <ChartCard
         title="Tỷ lệ ký nhận / có vấn đề theo ngày (%)"

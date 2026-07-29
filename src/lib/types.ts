@@ -34,6 +34,14 @@ export interface RawHourDay {
   sign: number;
 }
 
+export interface RawArrivalDay {
+  iso_date: string;
+  buu_cuc: string;
+  khu: string | null;
+  gio: number;
+  so_luong: number;
+}
+
 export interface RawDashboardData {
   generated_at: string;
   available_dates: string[];
@@ -42,6 +50,7 @@ export interface RawDashboardData {
   bc_by_day: RawNodeDay[];
   khu_by_day: RawNodeDay[];
   hour_by_day: RawHourDay[];
+  arrival_by_day: RawArrivalDay[];
 }
 
 // ---- Dữ liệu đã tổng hợp cho 1 khoảng ngày cụ thể (tính bởi src/lib/aggregate.ts) ----
@@ -116,6 +125,18 @@ export interface ReasonPageData {
   reason_overall: ReasonRow[];
   reason_bc: ReasonBcRow[];
   khu_options: string[];
+  has_data: boolean;
+}
+
+export interface HourCountRow {
+  gio: number;
+  so_luong: number;
+}
+
+export interface ArrivalPageData {
+  hours: HourCountRow[];
+  khu_options: string[];
+  bc_options: string[];
   has_data: boolean;
 }
 
