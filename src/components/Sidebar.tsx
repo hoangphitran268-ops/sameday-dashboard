@@ -26,13 +26,13 @@ export default function Sidebar() {
     <aside
       className="relative w-64 shrink-0 flex flex-col text-white overflow-hidden"
       style={{
-        background: "linear-gradient(160deg, var(--brand-red) 0%, var(--brand-red-dark) 65%, var(--brand-red-darker) 100%)",
-        boxShadow: "4px 0 24px -8px rgba(0,0,0,0.25)",
+        background: "linear-gradient(160deg, var(--brand-red) 0%, var(--brand-red-dark) 100%)",
+        boxShadow: "4px 0 24px -8px rgba(217,4,41,0.25)",
       }}
     >
       {/* decorative depth accents */}
-      <div className="pointer-events-none absolute -top-16 -right-16 w-56 h-56 rounded-full bg-white/[0.06]" />
-      <div className="pointer-events-none absolute bottom-24 -left-10 w-40 h-40 rounded-full bg-black/[0.08]" />
+      <div className="pointer-events-none absolute -top-16 -right-16 w-56 h-56 rounded-full bg-white/[0.08]" />
+      <div className="pointer-events-none absolute bottom-24 -left-10 w-40 h-40 rounded-full bg-white/[0.06]" />
 
       <div className="relative px-5 py-6 border-b border-white/15">
         <div className="flex items-center gap-2.5">
