@@ -19,8 +19,9 @@ export default function ReceivingPerfTable({
             <Th align="left">{labelKey === "bc" ? t.bc : t.khu}</Th>
             <Th>{t.tongDon}</Th>
             <Th>{t.thanhCong}</Th>
+            <Th>{t.khongThanhCong}</Th>
             <Th>{t.tyLeThanhCongPct}</Th>
-            <Th>{t.huy}</Th>
+            <Th align="left">{t.nguyenNhanChinh}</Th>
           </tr>
         </thead>
         <tbody>
@@ -31,6 +32,7 @@ export default function ReceivingPerfTable({
               </Td>
               <Td>{r.tong_don.toLocaleString("vi-VN")}</Td>
               <Td>{r.thanh_cong.toLocaleString("vi-VN")}</Td>
+              <Td>{r.khong_thanh_cong.toLocaleString("vi-VN")}</Td>
               <Td>
                 <span
                   className="font-semibold px-1.5 py-0.5 rounded"
@@ -42,7 +44,7 @@ export default function ReceivingPerfTable({
                   {r.ty_le_thanh_cong_pct}%
                 </span>
               </Td>
-              <Td>{r.huy.toLocaleString("vi-VN")}</Td>
+              <Td align="left">{r.nguyen_nhan_chinh ?? "—"}</Td>
             </tr>
           ))}
         </tbody>

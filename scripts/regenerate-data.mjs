@@ -18,10 +18,10 @@ const OUT_PATH = path.join(__dirname, "..", "src", "data", "dashboard-data.json"
 // hằng ngày nên không đối chiếu Khu qua bcKhuMap được. Điền Khu thật vào đây khi biết (điền chuỗi
 // dạng "8C区" giống định dạng Khu trong dashboard) — mã còn null sẽ hiện "Không xác định".
 const BC_KHU_OVERRIDES = {
-  "028P25": null,
-  "028P28": null,
-  "028P22": null,
-  "028H04": null,
+  "028P25": "2C区",
+  "028P28": "17区",
+  "028P22": "7C区",
+  "028H04": "8C区",
 };
 
 const DATE_RE = /(\d{2})\.(\d{2})\.(\d{4})/;

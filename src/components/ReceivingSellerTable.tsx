@@ -11,8 +11,9 @@ export default function ReceivingSellerTable({ rows, lang = "vi" }: { rows: Rece
             <Th align="left">{t.seller}</Th>
             <Th>{t.tongDon}</Th>
             <Th>{t.thanhCong}</Th>
+            <Th>{t.khongThanhCong}</Th>
             <Th>{t.tyLeThanhCongPct}</Th>
-            <Th>{t.huy}</Th>
+            <Th align="left">{t.nguyenNhanChinh}</Th>
           </tr>
         </thead>
         <tbody>
@@ -23,6 +24,7 @@ export default function ReceivingSellerTable({ rows, lang = "vi" }: { rows: Rece
               </Td>
               <Td>{r.tong_don.toLocaleString("vi-VN")}</Td>
               <Td>{r.thanh_cong.toLocaleString("vi-VN")}</Td>
+              <Td>{r.khong_thanh_cong.toLocaleString("vi-VN")}</Td>
               <Td>
                 <span
                   className="font-semibold px-1.5 py-0.5 rounded"
@@ -34,7 +36,7 @@ export default function ReceivingSellerTable({ rows, lang = "vi" }: { rows: Rece
                   {r.ty_le_thanh_cong_pct}%
                 </span>
               </Td>
-              <Td>{r.huy.toLocaleString("vi-VN")}</Td>
+              <Td align="left">{r.nguyen_nhan_chinh ?? "—"}</Td>
             </tr>
           ))}
         </tbody>

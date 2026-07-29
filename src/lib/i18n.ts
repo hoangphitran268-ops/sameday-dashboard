@@ -156,16 +156,20 @@ const vi = {
     khu: "Khu",
     tongDon: "Tổng đơn",
     thanhCong: "Thành công",
+    khongThanhCong: "Không thành công",
     tyLeThanhCongPct: "Tỷ lệ nhận kiện %",
     huy: "Hủy đơn",
+    nguyenNhanChinh: "Nguyên nhân chính",
   },
 
   receivingSellerTable: {
     seller: "Seller",
     tongDon: "Tổng đơn",
     thanhCong: "Thành công",
+    khongThanhCong: "Không thành công",
     tyLeThanhCongPct: "Tỷ lệ nhận kiện %",
     huy: "Hủy đơn",
+    nguyenNhanChinh: "Nguyên nhân chính",
   },
 
   sellerReason: {
@@ -300,9 +304,11 @@ const vi = {
     receiving: {
       pageTitle: "Nhận kiện — Khâu Nhận",
       subtitle: 'Nguồn: thư mục "Khâu nhận" · gộp theo Mã vận đơn, cộng dồn khi có file mới',
-      statTongDon: "Tổng đơn",
-      statThanhCong: "Tỷ lệ nhận kiện thành công",
-      statHuy: "Tỷ lệ hủy đơn",
+      statTongDon: "Tổng đơn tạo",
+      statThanhCong: "Nhận thành công",
+      statKhongThanhCong: "Nhận không thành công",
+      statHuy: "Hủy đơn",
+      statCountPct: (count: string, pct: number) => `${count} (${pct}%)`,
       trendChartTitle: "Tỷ lệ nhận kiện thành công / hủy theo ngày (%)",
       khuChartTitle: "Xếp hạng theo Khu (tỷ lệ nhận kiện %, khu ≥ 1.000 đơn)",
       khuChartNote: "Sắp xếp tăng dần — khu ở đầu danh sách cần chú ý nhất",
@@ -419,16 +425,20 @@ const zh: typeof vi = {
     khu: "片区",
     tongDon: "总单量",
     thanhCong: "成功揽收",
+    khongThanhCong: "未成功揽收",
     tyLeThanhCongPct: "揽收成功率 %",
     huy: "取消单量",
+    nguyenNhanChinh: "主要原因",
   },
 
   receivingSellerTable: {
     seller: "商家",
     tongDon: "总单量",
     thanhCong: "成功揽收",
+    khongThanhCong: "未成功揽收",
     tyLeThanhCongPct: "揽收成功率 %",
     huy: "取消单量",
+    nguyenNhanChinh: "主要原因",
   },
 
   sellerReason: {
@@ -559,9 +569,11 @@ const zh: typeof vi = {
     receiving: {
       pageTitle: "揽收成功率 — 揽收环节",
       subtitle: '数据来源："Khâu nhận" 文件夹 · 按运单号合并，新文件到达时累加',
-      statTongDon: "总单量",
-      statThanhCong: "揽收成功率",
-      statHuy: "取消率",
+      statTongDon: "总创建单量",
+      statThanhCong: "成功揽收",
+      statKhongThanhCong: "未成功揽收",
+      statHuy: "取消单量",
+      statCountPct: (count: string, pct: number) => `${count}（${pct}%）`,
       trendChartTitle: "每日揽收成功率／取消率 (%)",
       khuChartTitle: "各片区揽收成功率（%，片区单量≥1,000）",
       khuChartNote: "按升序排列 — 列表最前的片区最需要关注",

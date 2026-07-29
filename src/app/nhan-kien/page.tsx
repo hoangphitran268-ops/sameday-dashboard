@@ -12,7 +12,7 @@ import SellerReasonBreakdown from "@/components/SellerReasonBreakdown";
 import StatTile from "@/components/StatTile";
 import EmptyState from "@/components/EmptyState";
 import VietnamMap from "@/components/VietnamMap";
-import { PackageCheck, CheckCircle2, XCircle } from "lucide-react";
+import { PackageCheck, CheckCircle2, AlertCircle, XCircle } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -34,6 +34,13 @@ export default async function ReceivingPage({ searchParams }: { searchParams: Pr
   const reasonOverallLocalized = data.reason_overall.map((r) => ({ ...r, nguyen_nhan: localizeReceivingReason(r.nguyen_nhan, lang) }));
   const reasonBcLocalized = data.reason_bc.map((r) => ({ ...r, nguyen_nhan: localizeReceivingReason(r.nguyen_nhan, lang) }));
   const sellerReasonLocalized = data.seller_reason.map((r) => ({ ...r, nguyen_nhan: localizeReceivingReason(r.nguyen_nhan, lang) }));
+  function localizeTopReason<T extends { nguyen_nhan_chinh: string | null }>(r: T): T {
+    return { ...r, nguyen_nhan_chinh: r.nguyen_nhan_chinh ? localizeReceivingReason(r.nguyen_nhan_chinh, lang) : null };
+  }
+  const bcWorst15Localized = data.bc_worst15.map(localizeTopReason);
+  const bcBest15Localized = data.bc_best15.map(localizeTopReason);
+  const sellerWorst15Localized = data.seller_worst15.map(localizeTopReason);
+  const sellerBest15Localized = data.seller_best15.map(localizeTopReason);
 
   return (
     <div className="space-y-6 w-full">
@@ -46,10 +53,25 @@ export default async function ReceivingPage({ searchParams }: { searchParams: Pr
         </p>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <StatTile label={t.pages.receiving.statTongDon} value={data.meta.tong_don.toLocaleString("vi-VN")} icon={PackageCheck} />
-        <StatTile label={t.pages.receiving.statThanhCong} value={`${data.meta.ty_le_thanh_cong_pct}%`} icon={CheckCircle2} />
-        <StatTile label={t.pages.receiving.statHuy} value={`${data.meta.ty_le_huy_pct}%`} icon={XCircle} critical />
+        <StatTile
+          label={t.pages.receiving.statThanhCong}
+          value={t.pages.receiving.statCountPct(data.meta.thanh_cong.toLocaleString("vi-VN"), data.meta.ty_le_thanh_cong_pct)}
+          icon={CheckCircle2}
+        />
+        <StatTile
+          label={t.pages.receiving.statKhongThanhCong}
+          value={t.pages.receiving.statCountPct(data.meta.khong_thanh_cong.toLocaleString("vi-VN"), data.meta.ty_le_khong_thanh_cong_pct)}
+          icon={AlertCircle}
+          critical
+        />
+        <StatTile
+          label={t.pages.receiving.statHuy}
+          value={t.pages.receiving.statCountPct(data.meta.huy.toLocaleString("vi-VN"), data.meta.ty_le_huy_pct)}
+          icon={XCircle}
+          critical
+        />
       </div>
 
       {data.geo.length > 0 && (
@@ -95,7 +117,7 @@ export default async function ReceivingPage({ searchParams }: { searchParams: Pr
           {t.pages.receiving.bcSectionTitle}
         </h3>
         {data.bc_worst15.length > 0 ? (
-          <ReceivingBcTabs worst={data.bc_worst15} best={data.bc_best15} lang={lang} />
+          <ReceivingBcTabs worst={bcWorst15Localized} best={bcBest15Localized} lang={lang} />
         ) : (
           <p className="text-sm" style={{ color: "var(--text-muted)" }}>
             {t.pages.receiving.bcEmptyMsg}
@@ -139,7 +161,7 @@ export default async function ReceivingPage({ searchParams }: { searchParams: Pr
           {t.pages.receiving.sellerSectionTitle}
         </h3>
         {data.seller_worst15.length > 0 ? (
-          <ReceivingSellerTabs worst={data.seller_worst15} best={data.seller_best15} lang={lang} />
+          <ReceivingSellerTabs worst={sellerWorst15Localized} best={sellerBest15Localized} lang={lang} />
         ) : (
           <p className="text-sm" style={{ color: "var(--text-muted)" }}>
             {t.pages.receiving.sellerEmptyMsg}

@@ -253,7 +253,11 @@ export interface PenaltyPageData {
 
 export interface ReceivingMeta {
   tong_don: number;
+  thanh_cong: number;
+  khong_thanh_cong: number;
+  huy: number;
   ty_le_thanh_cong_pct: number;
+  ty_le_khong_thanh_cong_pct: number;
   ty_le_huy_pct: number;
 }
 
@@ -268,16 +272,20 @@ export interface ReceivingPerfRow {
   khu?: string;
   tong_don: number;
   thanh_cong: number;
+  khong_thanh_cong: number;
   ty_le_thanh_cong_pct: number;
   huy: number;
+  nguyen_nhan_chinh: string | null;
 }
 
 export interface ReceivingSellerRow {
   seller: string;
   tong_don: number;
   thanh_cong: number;
+  khong_thanh_cong: number;
   ty_le_thanh_cong_pct: number;
   huy: number;
+  nguyen_nhan_chinh: string | null;
 }
 
 export interface ReceivingSellerReasonRow {
