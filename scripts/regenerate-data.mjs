@@ -116,27 +116,17 @@ function main() {
     };
   });
 
-  // ---- funnel trạng thái theo ngày ----
-  const statusByDay = [];
+  // ---- nguyên nhân theo ngày, chi tiết theo bưu cục + khu (để lọc theo khu và tìm
+  // bưu cục hay chọn nguyên nhân nào nhất — không chỉ tổng số theo nguyên nhân) ----
+  const reasonBcByDay = [];
   for (const date of availableDates) {
     const g = groupBy(
-      byDate[date].filter((r) => r.trang_thai),
-      (r) => r.trang_thai
+      byDate[date].filter((r) => r.nguyen_nhan && r.buu_cuc),
+      (r) => JSON.stringify([r.buu_cuc, r.khu ?? null, r.nguyen_nhan])
     );
-    for (const [trang_thai, items] of Object.entries(g)) {
-      statusByDay.push({ iso_date: date, trang_thai, so_luong: items.length });
-    }
-  }
-
-  // ---- nguyên nhân theo ngày ----
-  const reasonByDay = [];
-  for (const date of availableDates) {
-    const g = groupBy(
-      byDate[date].filter((r) => r.nguyen_nhan),
-      (r) => r.nguyen_nhan
-    );
-    for (const [nguyen_nhan, items] of Object.entries(g)) {
-      reasonByDay.push({ iso_date: date, nguyen_nhan, so_luong: items.length });
+    for (const [key, items] of Object.entries(g)) {
+      const [buu_cuc, khu, nguyen_nhan] = JSON.parse(key);
+      reasonBcByDay.push({ iso_date: date, buu_cuc, khu, nguyen_nhan, so_luong: items.length });
     }
   }
 
@@ -165,8 +155,7 @@ function main() {
     generated_at: new Date().toISOString(),
     available_dates: availableDates,
     kpi_daily: kpiDaily,
-    status_by_day: statusByDay,
-    reason_by_day: reasonByDay,
+    reason_bc_by_day: reasonBcByDay,
     bc_by_day: bcByDay,
     khu_by_day: khuByDay,
     hour_by_day: hourByDay,

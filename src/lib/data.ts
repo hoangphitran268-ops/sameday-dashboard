@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
-import type { DashboardData, RawDashboardData, RangePresetKey } from "./types";
-import { aggregateRange } from "./aggregate";
+import type { DashboardData, RawDashboardData, RangePresetKey, ReasonPageData } from "./types";
+import { aggregateRange, aggregateReasonPage } from "./aggregate";
 import { resolvePreset } from "./dateRanges";
 
 const DATA_PATH = path.join(process.cwd(), "src", "data", "dashboard-data.json");
@@ -45,4 +45,22 @@ export function getDashboardData(searchParams: SearchParams): { data: DashboardD
   const range = resolvePreset(preset, { customFrom, customTo });
   const data = aggregateRange(raw, range);
   return { data, range };
+}
+
+/** Đọc query string (?preset=&from=&to=&khu=) cho trang Nguyên nhân & Trạng thái. */
+export function getReasonPageData(
+  searchParams: SearchParams
+): { data: ReasonPageData; range: ReturnType<typeof resolvePreset>; khu: string | null } {
+  const raw = readRawData();
+  const presetParam = firstParam(searchParams.preset);
+  const preset: RangePresetKey = VALID_PRESETS.includes(presetParam as RangePresetKey)
+    ? (presetParam as RangePresetKey)
+    : "all";
+  const customFrom = firstParam(searchParams.from) ?? null;
+  const customTo = firstParam(searchParams.to) ?? null;
+  const khu = firstParam(searchParams.khu) ?? null;
+
+  const range = resolvePreset(preset, { customFrom, customTo });
+  const data = aggregateReasonPage(raw, range, khu);
+  return { data, range, khu };
 }

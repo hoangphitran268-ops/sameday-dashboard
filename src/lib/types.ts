@@ -9,14 +9,10 @@ export interface RawKpiDay {
   duration_count: number;
 }
 
-export interface RawStatusDay {
+export interface RawReasonBcDay {
   iso_date: string;
-  trang_thai: string;
-  so_luong: number;
-}
-
-export interface RawReasonDay {
-  iso_date: string;
+  buu_cuc: string;
+  khu: string | null;
   nguyen_nhan: string;
   so_luong: number;
 }
@@ -42,8 +38,7 @@ export interface RawDashboardData {
   generated_at: string;
   available_dates: string[];
   kpi_daily: RawKpiDay[];
-  status_by_day: RawStatusDay[];
-  reason_by_day: RawReasonDay[];
+  reason_bc_by_day: RawReasonBcDay[];
   bc_by_day: RawNodeDay[];
   khu_by_day: RawNodeDay[];
   hour_by_day: RawHourDay[];
@@ -67,12 +62,14 @@ export interface WeekdayRow {
   ty_le_van_de_pct: number;
 }
 
-export interface StatusRow {
-  trang_thai: string;
+export interface ReasonRow {
+  nguyen_nhan: string;
   so_luong: number;
 }
 
-export interface ReasonRow {
+export interface ReasonBcRow {
+  buu_cuc: string;
+  khu: string | null;
   nguyen_nhan: string;
   so_luong: number;
 }
@@ -108,12 +105,17 @@ export interface DashboardData {
   meta: DashboardMeta;
   kpi_daily: KpiDailyRow[];
   weekday: WeekdayRow[];
-  status_overall: StatusRow[];
-  reason_overall: ReasonRow[];
   bc_worst15: NodePerfRow[];
   bc_best15: NodePerfRow[];
   khu_perf: NodePerfRow[];
   hour_trend: HourRow[];
+  has_data: boolean;
+}
+
+export interface ReasonPageData {
+  reason_overall: ReasonRow[];
+  reason_bc: ReasonBcRow[];
+  khu_options: string[];
   has_data: boolean;
 }
 
