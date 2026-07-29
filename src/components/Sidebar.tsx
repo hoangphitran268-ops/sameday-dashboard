@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { LayoutDashboard, TrendingUp, Building2, AlertTriangle, Clock, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { LayoutDashboard, TrendingUp, Building2, AlertTriangle, Clock, Gavel, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { rangeDisplayLabel, resolvePreset } from "@/lib/dateRanges";
 import type { RangePresetKey } from "@/lib/types";
 
@@ -13,6 +13,7 @@ const NAV = [
   { href: "/hieu-suat", label: "Bưu cục & Khu", icon: Building2 },
   { href: "/nguyen-nhan", label: "Nguyên nhân & Trạng thái", icon: AlertTriangle },
   { href: "/theo-gio", label: "Theo giờ trong ngày", icon: Clock },
+  { href: "/phat", label: "Phạt vi phạm", icon: Gavel },
 ];
 
 const STORAGE_KEY = "jt-sidebar-collapsed";

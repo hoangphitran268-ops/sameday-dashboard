@@ -13,9 +13,9 @@ export default function HourFlowChart({ data }: { data: HourFlowRow[] }) {
         <XAxis dataKey="gio_label" tick={{ fontSize: 11, fill: "var(--text-muted)" }} axisLine={{ stroke: "var(--baseline)" }} tickLine={false} />
         <YAxis tick={{ fontSize: 11, fill: "var(--text-muted)" }} axisLine={false} tickLine={false} tickFormatter={(v) => v.toLocaleString("vi-VN")} />
         <Tooltip content={<ChartTooltip />} />
-        <Line type="monotone" dataKey="pickup" name="Số đơn lấy hàng" stroke="var(--series-primary)" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
-        <Line type="monotone" dataKey="sign" name="Số đơn ký nhận" stroke="var(--series-secondary)" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
-        <Line type="monotone" dataKey="arrival" name="Số đơn hàng đến bưu cục phát" stroke="var(--series-tertiary)" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+        <Line type="monotone" dataKey="pickup" name="Số đơn lấy hàng" stroke="var(--series-primary)" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} isAnimationActive={false} />
+        <Line type="monotone" dataKey="sign" name="Số đơn ký nhận" stroke="var(--series-secondary)" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} isAnimationActive={false} />
+        <Line type="monotone" dataKey="arrival" name="Số đơn hàng đến bưu cục phát" stroke="var(--series-tertiary)" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} isAnimationActive={false} />
       </LineChart>
     </ResponsiveContainer>
   );

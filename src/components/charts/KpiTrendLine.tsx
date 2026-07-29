@@ -18,8 +18,8 @@ export default function KpiTrendLine({ data }: { data: KpiDailyRow[] }) {
           tickFormatter={(v) => `${v}%`}
         />
         <Tooltip content={<ChartTooltip />} />
-        <Line type="monotone" dataKey="ty_le_ky_nhan_pct" name="Tỷ lệ ký nhận %" stroke="var(--series-primary)" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
-        <Line type="monotone" dataKey="ty_le_van_de_pct" name="Tỷ lệ có vấn đề %" stroke="var(--series-tertiary)" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+        <Line type="monotone" dataKey="ty_le_ky_nhan_pct" name="Tỷ lệ ký nhận %" stroke="var(--series-primary)" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} isAnimationActive={false} />
+        <Line type="monotone" dataKey="ty_le_van_de_pct" name="Tỷ lệ có vấn đề %" stroke="var(--series-tertiary)" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} isAnimationActive={false} />
       </LineChart>
     </ResponsiveContainer>
   );

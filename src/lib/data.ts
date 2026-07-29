@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
-import type { DashboardData, HourPageData, RawDashboardData, RangePresetKey, ReasonPageData } from "./types";
-import { aggregateHourPage, aggregateRange, aggregateReasonPage } from "./aggregate";
+import type { DashboardData, HourPageData, PenaltyPageData, RawDashboardData, RangePresetKey, ReasonPageData } from "./types";
+import { aggregateHourPage, aggregatePenaltyPage, aggregateRange, aggregateReasonPage } from "./aggregate";
 import { resolvePreset } from "./dateRanges";
 
 const DATA_PATH = path.join(process.cwd(), "src", "data", "dashboard-data.json");
@@ -83,4 +83,22 @@ export function getHourPageData(
   const range = resolvePreset(preset, { customFrom, customTo });
   const data = aggregateHourPage(raw, range, khu, bc);
   return { data, range, khu, bc };
+}
+
+/** Đọc query string (?preset=&from=&to=&khu=) cho trang Phạt vi phạm (Khâu Nhận). */
+export function getPenaltyPageData(
+  searchParams: SearchParams
+): { data: PenaltyPageData; range: ReturnType<typeof resolvePreset>; khu: string | null } {
+  const raw = readRawData();
+  const presetParam = firstParam(searchParams.preset);
+  const preset: RangePresetKey = VALID_PRESETS.includes(presetParam as RangePresetKey)
+    ? (presetParam as RangePresetKey)
+    : "all";
+  const customFrom = firstParam(searchParams.from) ?? null;
+  const customTo = firstParam(searchParams.to) ?? null;
+  const khu = firstParam(searchParams.khu) ?? null;
+
+  const range = resolvePreset(preset, { customFrom, customTo });
+  const data = aggregatePenaltyPage(raw, range, khu);
+  return { data, range, khu };
 }

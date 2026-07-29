@@ -13,7 +13,7 @@ export default function WeekdayBarChart({ data }: { data: WeekdayRow[] }) {
         <XAxis dataKey="weekday" tick={{ fontSize: 11, fill: "var(--text-muted)" }} axisLine={{ stroke: "var(--baseline)" }} tickLine={false} />
         <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: "var(--text-muted)" }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} />
         <Tooltip content={<ChartTooltip />} />
-        <Bar dataKey="ty_le_ky_nhan_pct" name="Tỷ lệ ký nhận %" radius={[4, 4, 0, 0]} maxBarSize={40}>
+        <Bar dataKey="ty_le_ky_nhan_pct" name="Tỷ lệ ký nhận %" radius={[4, 4, 0, 0]} maxBarSize={40} isAnimationActive={false}>
           {data.map((d, i) => (
             <Cell key={i} fill={d.ty_le_ky_nhan_pct === minVal ? "var(--status-critical)" : "var(--series-primary)"} />
           ))}

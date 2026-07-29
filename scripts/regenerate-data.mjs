@@ -10,6 +10,7 @@ import XLSX from "xlsx";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const RAW_DIR = process.env.SAMEDAY_RAW_DIR || "D:\\Claude CODE\\data\\raw\\sameday";
+const PENALTY_DIR = path.join(RAW_DIR, "PHẠT Khâu Nhận");
 const OUT_PATH = path.join(__dirname, "..", "src", "data", "dashboard-data.json");
 
 const DATE_RE = /(\d{2})\.(\d{2})\.(\d{4})/;
@@ -170,6 +171,11 @@ function main() {
     }
   }
 
+  // ---- Phạt Khâu Nhận (lũy kế) — file riêng, không phải export hằng ngày.
+  // Mỗi lần "up" là 1 snapshot TOÀN BỘ lũy kế (không cộng dồn theo file như sameday),
+  // nên chỉ đọc đúng 1 file mới nhất (theo thời gian sửa đổi) trong thư mục này. ----
+  const penaltyByDay = readPenaltyByDay();
+
   const data = {
     generated_at: new Date().toISOString(),
     available_dates: availableDates,
@@ -178,6 +184,7 @@ function main() {
     bc_by_day: bcByDay,
     khu_by_day: khuByDay,
     hour_by_day: hourByDay,
+    penalty_by_day: penaltyByDay,
   };
 
   fs.mkdirSync(path.dirname(OUT_PATH), { recursive: true });
@@ -207,6 +214,62 @@ function nodeByDay(availableDates, byDate, field) {
     }
   }
   return out;
+}
+
+// "13H 7/7/2026 - 12H59 8/7/2026" -> ngày báo cáo N là mốc kết thúc (8/7/2026),
+// đúng quy ước 13:00(N-1) -> 12:59(N) đang dùng cho toàn bộ dashboard.
+function parseWindowEndDate(s) {
+  if (typeof s !== "string") return null;
+  const m = s.match(/12H59\s+(\d{1,2})\/(\d{1,2})\/(\d{4})/i);
+  if (!m) return null;
+  const [, d, mo, y] = m;
+  return `${y}-${mo.padStart(2, "0")}-${d.padStart(2, "0")}`;
+}
+
+function normalizeKhu(v) {
+  if (v == null || v === "") return null;
+  const s = String(v).trim();
+  return s.endsWith("区") ? s : `${s}区`;
+}
+
+function readPenaltyByDay() {
+  if (!fs.existsSync(PENALTY_DIR)) return [];
+  const files = fs
+    .readdirSync(PENALTY_DIR)
+    .filter((f) => f.toLowerCase().endsWith(".xlsx") && !f.startsWith("~$"))
+    .map((f) => ({ name: f, mtime: fs.statSync(path.join(PENALTY_DIR, f)).mtimeMs }))
+    .sort((a, b) => b.mtime - a.mtime);
+  if (files.length === 0) return [];
+
+  const latest = files[0].name;
+  const wb = XLSX.readFile(path.join(PENALTY_DIR, latest), { sheets: ["data"] });
+  if (!wb.SheetNames.includes("data")) return [];
+  const json = XLSX.utils.sheet_to_json(wb.Sheets["data"], { defval: null, raw: true });
+
+  console.log(`Đã đọc file phạt: ${latest}, tổng ${json.length} dòng.`);
+
+  const rows = json
+    .map((r) => ({
+      iso_date: parseWindowEndDate(r["Phân loại thời gian"]),
+      tinh_trang: r["Tình trạng\r\n状态"] ?? null,
+      khu: normalizeKhu(r["Khu\r\n区域"]),
+      bc: r["Mã bc chịu trách nhiệm"] ?? null,
+      tien_phat: Number(r[" Tiền phạt "]) || 0,
+    }))
+    .filter((r) => r.iso_date && r.tinh_trang && r.bc);
+
+  const g = groupBy(rows, (r) => JSON.stringify([r.iso_date, r.tinh_trang, r.khu, r.bc]));
+  return Object.entries(g).map(([key, items]) => {
+    const [iso_date, tinh_trang, khu, bc] = JSON.parse(key);
+    return {
+      iso_date,
+      tinh_trang,
+      khu,
+      bc,
+      so_luong: items.length,
+      tien_phat: sum(items.map((r) => r.tien_phat)),
+    };
+  });
 }
 
 function sum(arr) {

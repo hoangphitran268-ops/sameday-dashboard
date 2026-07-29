@@ -39,6 +39,18 @@ export interface RawHourDay {
   arrival: number;
 }
 
+/** Phạt Khâu Nhận (lũy kế) — nguồn khác, file riêng (không phải export hằng ngày), luôn
+ * là snapshot mới nhất khi quét lại. iso_date lấy theo mốc kết thúc khung "13H(N-1)-12H59(N)"
+ * trong cột "Phân loại thời gian", cùng quy ước ngày báo cáo N với toàn bộ dashboard. */
+export interface RawPenaltyDay {
+  iso_date: string;
+  tinh_trang: string;
+  khu: string | null;
+  bc: string;
+  so_luong: number;
+  tien_phat: number;
+}
+
 export interface RawDashboardData {
   generated_at: string;
   available_dates: string[];
@@ -47,6 +59,7 @@ export interface RawDashboardData {
   bc_by_day: RawNodeDay[];
   khu_by_day: RawNodeDay[];
   hour_by_day: RawHourDay[];
+  penalty_by_day: RawPenaltyDay[];
 }
 
 // ---- Dữ liệu đã tổng hợp cho 1 khoảng ngày cụ thể (tính bởi src/lib/aggregate.ts) ----
@@ -148,6 +161,43 @@ export interface HourPageData {
   bc_options: string[];
   bc_detail: HourBcDetailRow[];
   bc_hour: HourBcHourRow[];
+  has_data: boolean;
+}
+
+export interface PenaltyTypeRow {
+  tinh_trang: string;
+  so_luong: number;
+  tien_phat: number;
+  is_vi_pham: boolean;
+}
+
+export interface PenaltyBcRow {
+  bc: string;
+  khu: string | null;
+  tinh_trang: string;
+  so_luong: number;
+  tien_phat: number;
+}
+
+export interface PenaltyDailyRow {
+  report_date: string;
+  so_don_vi_pham: number;
+  tien_phat: number;
+}
+
+export interface PenaltyMeta {
+  tong_don_ra_soat: number;
+  so_don_vi_pham: number;
+  ty_le_dung_gio_pct: number;
+  tong_tien_phat: number;
+}
+
+export interface PenaltyPageData {
+  meta: PenaltyMeta;
+  tinh_trang_overall: PenaltyTypeRow[];
+  penalty_bc: PenaltyBcRow[];
+  daily: PenaltyDailyRow[];
+  khu_options: string[];
   has_data: boolean;
 }
 

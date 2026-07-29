@@ -42,7 +42,7 @@ export default function HBarChart({
           tickLine={false}
         />
         <Tooltip content={<ChartTooltip />} />
-        <Bar dataKey={dataKey} name={name} fill={color} radius={[0, 4, 4, 0]} maxBarSize={18} unit={unit} />
+        <Bar dataKey={dataKey} name={name} fill={color} radius={[0, 4, 4, 0]} maxBarSize={18} unit={unit} isAnimationActive={false} />
       </BarChart>
     </ResponsiveContainer>
   );
