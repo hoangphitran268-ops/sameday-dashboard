@@ -42,36 +42,9 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:where(:not([data-theme="light"])) {
-    color-scheme: dark;
-    --background: #131313;
-    --surface: #1e1e1e;
-    --foreground: #fafafa;
-
-    --brand-red: #ff3d5c;
-    --brand-red-dark: #ff6b82;
-    --brand-red-light: #3a1418;
-    --brand-red-tint: #291316;
-
-    --text-primary: #fafafa;
-    --text-secondary: #c7c7c7;
-    --text-muted: #8f8f8f;
-    --grid: #2e2e2e;
-    --baseline: #3f3f3f;
-    --border: rgba(250, 250, 250, 0.1);
-
-    --series-primary: #ff3d5c;
-    --series-secondary: #ececec;
-    --series-tertiary: #f0a83a;
-    --series-quaternary: #c7c7c7;
-
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25), 0 1px 3px rgba(0, 0, 0, 0.3);
-    --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.3), 0 8px 20px -6px rgba(0, 0, 0, 0.4);
-    --shadow-red: 0 8px 24px -8px rgba(255, 61, 92, 0.4);
-  }
-}
-
+/* Không tự chuyển theme theo prefers-color-scheme của hệ điều hành/trình duyệt —
+   dashboard này luôn hiển thị bảng màu sáng đỏ-trắng cố định. Chỉ chuyển tối khi
+   có thứ gì đó tự set data-theme="dark" (hiện chưa có nút bật, để dành sau). */
 :root[data-theme="dark"] {
   color-scheme: dark;
   --background: #131313;
