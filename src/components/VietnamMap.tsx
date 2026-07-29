@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type WheelEvent as ReactWheelEvent, type MouseEvent as ReactMouseEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from "react";
 import { geoMercator, geoPath } from "d3-geo";
 import { ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
 
@@ -18,7 +18,7 @@ const WIDTH = 720;
 const HEIGHT = 900;
 const MIN_K = 1;
 const MAX_K = 30;
-/** Chỉ hiện tên phường khi đã zoom đủ gần — tránh chữ chồng chéo lúc xem toàn cảnh 102 phường. */
+/** Chỉ hiện tên phường khi đã zoom đủ gần — tránh chồng chữ lúc xem toàn cảnh 102 phường. */
 const LABEL_MIN_K = 2.2;
 
 function normalizeName(s: string): string {
@@ -64,6 +64,7 @@ export default function VietnamMap({
   const [hover, setHover] = useState<{ name: string; value: number; x: number; y: number } | null>(null);
   const [dragging, setDragging] = useState(false);
   const [mode, setMode] = useState<MapMode>("total");
+  const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const dragStart = useRef<{ clientX: number; clientY: number; x: number; y: number } | null>(null);
   const wheelFrame = useRef<number | null>(null);
@@ -113,16 +114,12 @@ export default function VietnamMap({
     return `hsl(211, 75%, ${lightness}%)`;
   }
 
-  function svgPoint(clientX: number, clientY: number) {
+  const zoomAt = useCallback((clientX: number, clientY: number, factor: number) => {
     const el = svgRef.current;
-    if (!el) return { x: clientX, y: clientY };
+    if (!el) return;
     const rect = el.getBoundingClientRect();
     const scale = WIDTH / rect.width;
-    return { x: (clientX - rect.left) * scale, y: (clientY - rect.top) * scale };
-  }
-
-  function zoomAt(clientX: number, clientY: number, factor: number) {
-    const p = svgPoint(clientX, clientY);
+    const p = { x: (clientX - rect.left) * scale, y: (clientY - rect.top) * scale };
     setTransform((t) => {
       const k2 = clampK(t.k * factor);
       if (k2 === t.k) return t;
@@ -130,17 +127,33 @@ export default function VietnamMap({
       const y2 = p.y - ((p.y - t.y) * k2) / t.k;
       return { x: x2, y: y2, k: k2 };
     });
-  }
+  }, []);
 
-  function onWheel(e: ReactWheelEvent<SVGSVGElement>) {
-    e.preventDefault();
-    const { clientX, clientY, deltaY } = e;
-    if (wheelFrame.current != null) return;
-    wheelFrame.current = requestAnimationFrame(() => {
-      wheelFrame.current = null;
-      zoomAt(clientX, clientY, deltaY > 0 ? 0.88 : 1.14);
-    });
-  }
+  // Bắt sự kiện wheel bằng addEventListener gốc ({ passive: false }) thay vì prop onWheel của React —
+  // trình duyệt coi listener "wheel" gắn qua JSX là passive nên preventDefault() không chặn được cuộn
+  // trang thật với thao tác lăn chuột/trackpad thật (khác với sự kiện giả lập khi test).
+  //
+  // Gắn vào containerRef (luôn tồn tại từ lần render đầu tiên, kể cả lúc đang hiện "Đang tải bản
+  // đồ...") thay vì svgRef — svgRef chỉ tồn tại SAU KHI geojson tải xong, nên nếu gắn theo svgRef
+  // sẽ có một khoảng (đúng lúc trang vừa vào, người dùng lướt chuột ngay) mà listener chưa kịp gắn,
+  // khiến vài lượt lướt đầu bị lọt ra ngoài làm cuộn trang — đúng như hiện tượng "lướt 2-3 cái đã lỗi".
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    function handleWheel(e: WheelEvent) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (!svgRef.current) return; // bản đồ chưa tải xong — chỉ chặn cuộn trang, chưa zoom được
+      if (wheelFrame.current != null) return;
+      const { clientX, clientY, deltaY } = e;
+      wheelFrame.current = requestAnimationFrame(() => {
+        wheelFrame.current = null;
+        zoomAt(clientX, clientY, deltaY > 0 ? 0.88 : 1.14);
+      });
+    }
+    el.addEventListener("wheel", handleWheel, { passive: false });
+    return () => el.removeEventListener("wheel", handleWheel);
+  }, [zoomAt]);
 
   function onMouseDown(e: ReactMouseEvent<SVGSVGElement>) {
     dragStart.current = { clientX: e.clientX, clientY: e.clientY, x: transform.x, y: transform.y };
@@ -159,126 +172,129 @@ export default function VietnamMap({
     setDragging(false);
   }
 
-  if (!geojson) {
-    return (
-      <div className="flex items-center justify-center text-sm" style={{ height: 400, color: "var(--text-muted)" }}>
-        {loadingLabel}
-      </div>
-    );
-  }
-
   const center = { x: WIDTH / 2, y: HEIGHT / 2 };
 
   return (
-    <div className="relative">
-      <div className="flex gap-2 mb-3">
-        {(["pickup", "delivery", "total"] as const).map((m) => (
-          <button
-            key={m}
-            onClick={() => setMode(m)}
-            className="text-xs font-semibold px-3.5 py-1.5 rounded-full border transition-all duration-150"
-            style={
-              mode === m
-                ? {
-                    background: "linear-gradient(135deg, var(--brand-red) 0%, var(--brand-red-dark) 100%)",
-                    borderColor: "var(--brand-red)",
-                    color: "#fff",
-                    boxShadow: "var(--shadow-red)",
-                  }
-                : { background: "transparent", borderColor: "var(--border)", color: "var(--text-secondary)" }
-            }
-          >
-            {modeLabels[m]}
-          </button>
-        ))}
-      </div>
-      <svg
-        ref={svgRef}
-        viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
-        width="100%"
-        height={520}
-        onWheel={onWheel}
-        onMouseDown={onMouseDown}
-        onMouseMove={onMouseMove}
-        onMouseUp={endDrag}
-        onMouseLeave={endDrag}
-        style={{ cursor: dragging ? "grabbing" : "grab", touchAction: "none", display: "block" }}
-      >
-        <g transform={`translate(${transform.x},${transform.y}) scale(${transform.k})`}>
-          {paths.map((p) => {
-            const val = valueMap.get(normalizeName(p.name)) ?? 0;
-            return (
-              <path
-                key={p.code}
-                d={p.d}
-                fill={colorFor(val)}
-                stroke="var(--surface)"
-                strokeWidth={0.4 / transform.k}
-                onMouseEnter={(e) => setHover({ name: p.name, value: val, x: e.clientX, y: e.clientY })}
-                onMouseMove={(e) => setHover((h) => (h ? { ...h, x: e.clientX, y: e.clientY } : h))}
-                onMouseLeave={() => setHover(null)}
-              />
-            );
-          })}
-          {transform.k >= LABEL_MIN_K &&
-            paths.map((p) => (
-              <text
-                key={`label-${p.code}`}
-                x={p.cx}
-                y={p.cy}
-                textAnchor="middle"
-                dominantBaseline="middle"
-                fontSize={4.5 / transform.k}
-                fontWeight={600}
-                fill="var(--text-primary)"
-                stroke="var(--surface)"
-                strokeWidth={1.4 / transform.k}
-                paintOrder="stroke"
-                style={{ pointerEvents: "none" }}
-              >
-                {shortLabel(p.name)}
-              </text>
-            ))}
-        </g>
-      </svg>
-
-      {hover && (
-        <div
-          className="pointer-events-none fixed z-50 rounded-lg border px-3 py-2 text-xs shadow-lg"
-          style={{ left: hover.x + 12, top: hover.y + 12, background: "var(--surface)", borderColor: "var(--border)" }}
-        >
-          <div className="font-semibold" style={{ color: "var(--text-primary)" }}>
-            {hover.name}
-          </div>
-          <div style={{ color: "var(--text-secondary)" }}>
-            {hover.value > 0 ? `${hover.value.toLocaleString("vi-VN")} ${unitLabel}` : emptyLabel}
-          </div>
+    <div ref={containerRef} className="relative" style={{ overscrollBehavior: "contain" }}>
+      {!geojson ? (
+        <div className="flex items-center justify-center text-sm" style={{ height: 400, color: "var(--text-muted)" }}>
+          {loadingLabel}
         </div>
-      )}
+      ) : (
+        <>
+          <div className="flex gap-2 mb-3">
+            {(["pickup", "delivery", "total"] as const).map((m) => (
+              <button
+                key={m}
+                onClick={() => setMode(m)}
+                className="text-xs font-semibold px-3.5 py-1.5 rounded-full border transition-all duration-150"
+                style={
+                  mode === m
+                    ? {
+                        background: "linear-gradient(135deg, var(--brand-red) 0%, var(--brand-red-dark) 100%)",
+                        borderColor: "var(--brand-red)",
+                        color: "#fff",
+                        boxShadow: "var(--shadow-red)",
+                      }
+                    : { background: "transparent", borderColor: "var(--border)", color: "var(--text-secondary)" }
+                }
+              >
+                {modeLabels[m]}
+              </button>
+            ))}
+          </div>
+          <svg
+            ref={svgRef}
+            viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
+            width="100%"
+            height={520}
+            onMouseDown={onMouseDown}
+            onMouseMove={onMouseMove}
+            onMouseUp={endDrag}
+            onMouseLeave={endDrag}
+            style={{
+              cursor: dragging ? "grabbing" : "grab",
+              touchAction: "none",
+              display: "block",
+            }}
+          >
+            <g transform={`translate(${transform.x},${transform.y}) scale(${transform.k})`}>
+              {paths.map((p) => {
+                const val = valueMap.get(normalizeName(p.name)) ?? 0;
+                return (
+                  <path
+                    key={p.code}
+                    d={p.d}
+                    fill={colorFor(val)}
+                    stroke="var(--surface)"
+                    strokeWidth={0.4 / transform.k}
+                    onMouseEnter={(e) => setHover({ name: p.name, value: val, x: e.clientX, y: e.clientY })}
+                    onMouseMove={(e) => setHover((h) => (h ? { ...h, x: e.clientX, y: e.clientY } : h))}
+                    onMouseLeave={() => setHover(null)}
+                  />
+                );
+              })}
+              {transform.k >= LABEL_MIN_K &&
+                paths.map((p) => (
+                  <text
+                    key={`label-${p.code}`}
+                    x={p.cx}
+                    y={p.cy}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    fontSize={4.5 / transform.k}
+                    fontWeight={600}
+                    fill="var(--text-primary)"
+                    stroke="var(--surface)"
+                    strokeWidth={1.4 / transform.k}
+                    paintOrder="stroke"
+                    style={{ pointerEvents: "none" }}
+                  >
+                    {shortLabel(p.name)}
+                  </text>
+                ))}
+            </g>
+          </svg>
 
-      <div className="absolute top-2 right-2 flex flex-col gap-1">
-        <button
-          onClick={() => zoomAt(center.x, center.y, 1.3)}
-          className="w-7 h-7 rounded-lg border flex items-center justify-center hover:bg-[var(--brand-red-tint)]"
-          style={{ background: "var(--surface)", borderColor: "var(--border)", color: "var(--text-primary)" }}
-        >
-          <ZoomIn size={14} />
-        </button>
-        <button
-          onClick={() => zoomAt(center.x, center.y, 1 / 1.3)}
-          className="w-7 h-7 rounded-lg border flex items-center justify-center hover:bg-[var(--brand-red-tint)]"
-          style={{ background: "var(--surface)", borderColor: "var(--border)", color: "var(--text-primary)" }}
-        >
-          <ZoomOut size={14} />
-        </button>
-        <button
-          onClick={() => setTransform({ x: 0, y: 0, k: 1 })}
-          className="w-7 h-7 rounded-lg border flex items-center justify-center hover:bg-[var(--brand-red-tint)]"
-          style={{ background: "var(--surface)", borderColor: "var(--border)", color: "var(--text-primary)" }}
-        >
-          <RotateCcw size={13} />
-        </button>
-      </div>
+          {hover && (
+            <div
+              className="pointer-events-none fixed z-50 rounded-lg border px-3 py-2 text-xs shadow-lg"
+              style={{ left: hover.x + 12, top: hover.y + 12, background: "var(--surface)", borderColor: "var(--border)" }}
+            >
+              <div className="font-semibold" style={{ color: "var(--text-primary)" }}>
+                {hover.name}
+              </div>
+              <div style={{ color: "var(--text-secondary)" }}>
+                {hover.value > 0 ? `${hover.value.toLocaleString("vi-VN")} ${unitLabel}` : emptyLabel}
+              </div>
+            </div>
+          )}
+
+          <div className="absolute top-2 right-2 flex flex-col gap-1">
+            <button
+              onClick={() => zoomAt(center.x, center.y, 1.3)}
+              className="w-7 h-7 rounded-lg border flex items-center justify-center hover:bg-[var(--brand-red-tint)]"
+              style={{ background: "var(--surface)", borderColor: "var(--border)", color: "var(--text-primary)" }}
+            >
+              <ZoomIn size={14} />
+            </button>
+            <button
+              onClick={() => zoomAt(center.x, center.y, 1 / 1.3)}
+              className="w-7 h-7 rounded-lg border flex items-center justify-center hover:bg-[var(--brand-red-tint)]"
+              style={{ background: "var(--surface)", borderColor: "var(--border)", color: "var(--text-primary)" }}
+            >
+              <ZoomOut size={14} />
+            </button>
+            <button
+              onClick={() => setTransform({ x: 0, y: 0, k: 1 })}
+              className="w-7 h-7 rounded-lg border flex items-center justify-center hover:bg-[var(--brand-red-tint)]"
+              style={{ background: "var(--surface)", borderColor: "var(--border)", color: "var(--text-primary)" }}
+            >
+              <RotateCcw size={13} />
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
