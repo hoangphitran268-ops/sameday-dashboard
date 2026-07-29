@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
-import type { ArrivalPageData, DashboardData, RawDashboardData, RangePresetKey, ReasonPageData } from "./types";
-import { aggregateArrivalHours, aggregateRange, aggregateReasonPage } from "./aggregate";
+import type { DashboardData, HourPageData, RawDashboardData, RangePresetKey, ReasonPageData } from "./types";
+import { aggregateHourPage, aggregateRange, aggregateReasonPage } from "./aggregate";
 import { resolvePreset } from "./dateRanges";
 
 const DATA_PATH = path.join(process.cwd(), "src", "data", "dashboard-data.json");
@@ -65,10 +65,11 @@ export function getReasonPageData(
   return { data, range, khu };
 }
 
-/** Đọc query string (?preset=&from=&to=&khu=&bc=) cho biểu đồ giờ hàng đến bưu cục phát. */
-export function getArrivalPageData(
+/** Đọc query string (?preset=&from=&to=&akhu=&abc=) cho trang Theo giờ trong ngày
+ * (biểu đồ gộp lấy hàng/ký nhận/hàng đến + bảng chi tiết bưu cục). */
+export function getHourPageData(
   searchParams: SearchParams
-): { data: ArrivalPageData; range: ReturnType<typeof resolvePreset>; khu: string | null; bc: string | null } {
+): { data: HourPageData; range: ReturnType<typeof resolvePreset>; khu: string | null; bc: string | null } {
   const raw = readRawData();
   const presetParam = firstParam(searchParams.preset);
   const preset: RangePresetKey = VALID_PRESETS.includes(presetParam as RangePresetKey)
@@ -80,6 +81,6 @@ export function getArrivalPageData(
   const bc = firstParam(searchParams.abc) ?? null;
 
   const range = resolvePreset(preset, { customFrom, customTo });
-  const data = aggregateArrivalHours(raw, range, khu, bc);
+  const data = aggregateHourPage(raw, range, khu, bc);
   return { data, range, khu, bc };
 }

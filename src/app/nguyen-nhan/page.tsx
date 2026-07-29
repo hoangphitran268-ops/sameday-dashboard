@@ -16,7 +16,7 @@ export default async function NguyenNhanPage({ searchParams }: { searchParams: P
   }
 
   return (
-    <div className="space-y-6 max-w-6xl">
+    <div className="space-y-6 w-full">
       <div className="flex justify-end">
         <KhuFilter options={data.khu_options} />
       </div>

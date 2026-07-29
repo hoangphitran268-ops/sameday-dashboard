@@ -3,7 +3,7 @@ import { Inbox } from "lucide-react";
 export default function EmptyState({ label }: { label: string }) {
   return (
     <div
-      className="rounded-2xl border p-12 flex flex-col items-center justify-center text-center max-w-6xl"
+      className="rounded-2xl border p-12 flex flex-col items-center justify-center text-center w-full"
       style={{ background: "var(--surface)", borderColor: "var(--border)", boxShadow: "var(--shadow-sm)" }}
     >
       <div

@@ -15,7 +15,7 @@ export default async function KpiPage({ searchParams }: { searchParams: Promise<
   }
 
   return (
-    <div className="space-y-6 max-w-6xl">
+    <div className="space-y-6 w-full">
       <ChartCard
         title="Tỷ lệ ký nhận / có vấn đề theo ngày (%)"
         note={rangeDisplayLabel(range)}

@@ -57,7 +57,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
   }
 
   return (
-    <div className="space-y-6 max-w-6xl">
+    <div className="space-y-6 w-full">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <StatTile
           label={`Tổng số đơn (${meta.so_ngay} ngày)`}

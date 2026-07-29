@@ -27,19 +27,16 @@ export interface RawNodeDay {
   duration_count: number;
 }
 
+/** Giờ lấy hàng / ký nhận / hàng đến, theo BC cuối + Khu cuối (bưu cục PHÁT cuối cùng của
+ * đơn — khác với "Bưu cục đang thao tác"), để lọc theo khu/bưu cục phát trên cùng 1 biểu đồ. */
 export interface RawHourDay {
-  iso_date: string;
-  gio: number;
-  pickup: number;
-  sign: number;
-}
-
-export interface RawArrivalDay {
   iso_date: string;
   buu_cuc: string;
   khu: string | null;
   gio: number;
-  so_luong: number;
+  pickup: number;
+  sign: number;
+  arrival: number;
 }
 
 export interface RawDashboardData {
@@ -50,7 +47,6 @@ export interface RawDashboardData {
   bc_by_day: RawNodeDay[];
   khu_by_day: RawNodeDay[];
   hour_by_day: RawHourDay[];
-  arrival_by_day: RawArrivalDay[];
 }
 
 // ---- Dữ liệu đã tổng hợp cho 1 khoảng ngày cụ thể (tính bởi src/lib/aggregate.ts) ----
@@ -93,12 +89,6 @@ export interface NodePerfRow {
   so_don_van_de: number;
 }
 
-export interface HourRow {
-  gio: number;
-  so_don_lay_hang: number;
-  so_don_ky_nhan: number;
-}
-
 export interface DashboardMeta {
   tu_ngay: string | null;
   den_ngay: string | null;
@@ -117,7 +107,6 @@ export interface DashboardData {
   bc_worst15: NodePerfRow[];
   bc_best15: NodePerfRow[];
   khu_perf: NodePerfRow[];
-  hour_trend: HourRow[];
   has_data: boolean;
 }
 
@@ -128,15 +117,27 @@ export interface ReasonPageData {
   has_data: boolean;
 }
 
-export interface HourCountRow {
+export interface HourFlowRow {
   gio: number;
-  so_luong: number;
+  pickup: number;
+  sign: number;
+  arrival: number;
 }
 
-export interface ArrivalPageData {
-  hours: HourCountRow[];
+export interface HourBcDetailRow {
+  buu_cuc: string;
+  khu: string | null;
+  pickup: number;
+  sign: number;
+  arrival: number;
+  tong: number;
+}
+
+export interface HourPageData {
+  hours: HourFlowRow[];
   khu_options: string[];
   bc_options: string[];
+  bc_detail: HourBcDetailRow[];
   has_data: boolean;
 }
 

@@ -141,33 +141,32 @@ function main() {
   // ---- khu theo ngày ----
   const khuByDay = nodeByDay(availableDates, byDate, "khu");
 
-  // ---- giờ trong ngày, theo ngày ----
+  // ---- giờ trong ngày, chi tiết theo BC cuối + Khu cuối (bưu cục PHÁT cuối cùng của đơn,
+  // khác với "Bưu cục đang thao tác") — gộp cả 3 mốc lấy hàng/ký nhận/hàng đến vào 1 cấu trúc
+  // để trang Theo giờ dùng chung 1 bộ lọc Khu/Bưu cục cho cả 3 đường trên cùng 1 biểu đồ ----
   const hourByDay = [];
   for (const date of availableDates) {
-    const g = byDate[date];
-    const pickupMap = {};
-    const signMap = {};
-    for (const r of g) {
-      if (r.pickup_hour != null) pickupMap[r.pickup_hour] = (pickupMap[r.pickup_hour] || 0) + 1;
-      if (r.is_signed && r.sign_hour != null) signMap[r.sign_hour] = (signMap[r.sign_hour] || 0) + 1;
-    }
-    const hours = new Set([...Object.keys(pickupMap), ...Object.keys(signMap)].map(Number));
-    for (const gio of hours) {
-      hourByDay.push({ iso_date: date, gio, pickup: pickupMap[gio] || 0, sign: signMap[gio] || 0 });
-    }
-  }
-
-  // ---- giờ hàng đến bưu cục phát, chi tiết theo BC cuối + Khu cuối (khác với
-  // "Bưu cục đang thao tác" — đây là điểm phát cuối cùng của đơn) ----
-  const arrivalByDay = [];
-  for (const date of availableDates) {
     const g = groupBy(
-      byDate[date].filter((r) => r.arrival_hour != null && r.bc_cuoi),
-      (r) => JSON.stringify([r.bc_cuoi, r.khu_cuoi ?? null, r.arrival_hour])
+      byDate[date].filter((r) => r.bc_cuoi && (r.pickup_hour != null || r.sign_hour != null || r.arrival_hour != null)),
+      (r) => JSON.stringify([r.bc_cuoi, r.khu_cuoi ?? null])
     );
     for (const [key, items] of Object.entries(g)) {
-      const [buu_cuc, khu, gio] = JSON.parse(key);
-      arrivalByDay.push({ iso_date: date, buu_cuc, khu, gio, so_luong: items.length });
+      const [buu_cuc, khu] = JSON.parse(key);
+      const hourMap = new Map();
+      const bump = (gio, field) => {
+        if (gio == null) return;
+        const acc = hourMap.get(gio) ?? { pickup: 0, sign: 0, arrival: 0 };
+        acc[field] += 1;
+        hourMap.set(gio, acc);
+      };
+      for (const r of items) {
+        bump(r.pickup_hour, "pickup");
+        if (r.is_signed) bump(r.sign_hour, "sign");
+        bump(r.arrival_hour, "arrival");
+      }
+      for (const [gio, counts] of hourMap.entries()) {
+        hourByDay.push({ iso_date: date, buu_cuc, khu, gio, ...counts });
+      }
     }
   }
 
@@ -179,7 +178,6 @@ function main() {
     bc_by_day: bcByDay,
     khu_by_day: khuByDay,
     hour_by_day: hourByDay,
-    arrival_by_day: arrivalByDay,
   };
 
   fs.mkdirSync(path.dirname(OUT_PATH), { recursive: true });

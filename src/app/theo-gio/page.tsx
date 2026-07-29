@@ -1,96 +1,94 @@
-import { getArrivalPageData, getDashboardData, type SearchParams } from "@/lib/data";
+import { getHourPageData, type SearchParams } from "@/lib/data";
 import { rangeDisplayLabel } from "@/lib/dateRanges";
 import ChartCard, { LegendItem } from "@/components/ChartCard";
-import HourTrendLine from "@/components/charts/HourTrendLine";
-import ArrivalHourChart from "@/components/charts/ArrivalHourChart";
-import ArrivalFilters from "@/components/ArrivalFilters";
+import HourFlowChart from "@/components/charts/HourFlowChart";
+import HourFilters from "@/components/HourFilters";
+import HourBcDetailTable from "@/components/HourBcDetailTable";
 import EmptyState from "@/components/EmptyState";
 
 export const dynamic = "force-dynamic";
 
 export default async function TheoGioPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
-  const params = await searchParams;
-  const { data, range } = getDashboardData(params);
-  const { data: arrival, khu: arrivalKhu, bc: arrivalBc } = getArrivalPageData(params);
+  const { data, range, khu, bc } = getHourPageData(await searchParams);
 
-  if (!data.has_data || data.hour_trend.length === 0) {
+  if (!data.has_data) {
     return <EmptyState label={rangeDisplayLabel(range)} />;
   }
 
-  const peakPickup = [...data.hour_trend].sort((a, b) => b.so_don_lay_hang - a.so_don_lay_hang)[0];
-  const peakSign = [...data.hour_trend].sort((a, b) => b.so_don_ky_nhan - a.so_don_ky_nhan)[0];
-  const peakArrival = arrival.hours.length ? [...arrival.hours].sort((a, b) => b.so_luong - a.so_luong)[0] : null;
+  const noteParts = [rangeDisplayLabel(range)];
+  if (khu) noteParts.push(`Khu ${khu}`);
+  if (bc) noteParts.push(`Bưu cục ${bc}`);
+  const note = noteParts.join(" · ");
 
-  const arrivalNoteParts = [rangeDisplayLabel(range)];
-  if (arrivalKhu) arrivalNoteParts.push(`Khu ${arrivalKhu}`);
-  if (arrivalBc) arrivalNoteParts.push(`Bưu cục ${arrivalBc}`);
+  const peakPickup = data.hours.length ? [...data.hours].sort((a, b) => b.pickup - a.pickup)[0] : null;
+  const peakSign = data.hours.length ? [...data.hours].sort((a, b) => b.sign - a.sign)[0] : null;
+  const peakArrival = data.hours.length ? [...data.hours].sort((a, b) => b.arrival - a.arrival)[0] : null;
 
   return (
-    <div className="space-y-6 max-w-6xl">
-      <div className="grid grid-cols-2 gap-3 max-w-md">
-        <div className="rounded-xl border p-4" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-          <div className="text-xs mb-1" style={{ color: "var(--text-secondary)" }}>
-            Giờ lấy hàng cao điểm
-          </div>
-          <div className="text-xl font-semibold" style={{ color: "var(--text-primary)" }}>
-            {peakPickup.gio}h ({peakPickup.so_don_lay_hang.toLocaleString("vi-VN")} đơn)
-          </div>
+    <div className="space-y-6 w-full">
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="grid grid-cols-3 gap-3 max-w-2xl w-full">
+          <PeakTile label="Giờ lấy hàng cao điểm" peak={peakPickup} field="pickup" />
+          <PeakTile label="Giờ ký nhận cao điểm" peak={peakSign} field="sign" />
+          <PeakTile label="Giờ hàng đến cao điểm" peak={peakArrival} field="arrival" />
         </div>
-        <div className="rounded-xl border p-4" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-          <div className="text-xs mb-1" style={{ color: "var(--text-secondary)" }}>
-            Giờ ký nhận cao điểm
-          </div>
-          <div className="text-xl font-semibold" style={{ color: "var(--text-primary)" }}>
-            {peakSign.gio}h ({peakSign.so_don_ky_nhan.toLocaleString("vi-VN")} đơn)
-          </div>
-        </div>
+        <HourFilters khuOptions={data.khu_options} bcOptions={data.bc_options} />
       </div>
 
-      <ChartCard
-        title="Số đơn theo giờ trong ngày: Lấy hàng vs Ký nhận"
-        note={rangeDisplayLabel(range)}
-        legend={
-          <>
-            <LegendItem color="var(--series-primary)" label="Số đơn lấy hàng" />
-            <LegendItem color="var(--series-secondary)" label="Số đơn ký nhận" />
-          </>
-        }
-      >
-        <HourTrendLine data={data.hour_trend} />
-      </ChartCard>
+      {data.hours.length > 0 ? (
+        <>
+          <ChartCard
+            title="Số đơn theo giờ trong ngày: Lấy hàng · Ký nhận · Hàng đến bưu cục phát"
+            note={note}
+            legend={
+              <>
+                <LegendItem color="var(--series-primary)" label="Số đơn lấy hàng" />
+                <LegendItem color="var(--series-secondary)" label="Số đơn ký nhận" />
+                <LegendItem color="var(--series-tertiary)" label="Số đơn hàng đến bưu cục phát" />
+              </>
+            }
+          >
+            <HourFlowChart data={data.hours} />
+          </ChartCard>
 
-      <div>
-        <div className="flex items-center justify-between mb-3 flex-wrap gap-3">
-          <h2 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-            Giờ hàng đến bưu cục phát
-          </h2>
-          <ArrivalFilters khuOptions={arrival.khu_options} bcOptions={arrival.bc_options} />
-        </div>
+          <div
+            className="rounded-2xl border p-5"
+            style={{ background: "var(--surface)", borderColor: "var(--border)", boxShadow: "var(--shadow-sm)" }}
+          >
+            <h3 className="text-sm font-semibold mb-1" style={{ color: "var(--text-primary)" }}>
+              Chi tiết theo bưu cục phát
+            </h3>
+            <p className="text-[11px] mb-4" style={{ color: "var(--text-muted)" }}>
+              Đúng theo bộ lọc Khu/Bưu cục của biểu đồ trên — sắp xếp theo tổng khối lượng giảm dần.
+            </p>
+            <HourBcDetailTable rows={data.bc_detail} />
+          </div>
+        </>
+      ) : (
+        <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+          Không có dữ liệu cho lựa chọn hiện tại — thử chọn khu/bưu cục khác.
+        </p>
+      )}
+    </div>
+  );
+}
 
-        {arrival.hours.length > 0 ? (
-          <>
-            {peakArrival && (
-              <div
-                className="rounded-xl border p-4 mb-4 max-w-xs"
-                style={{ background: "var(--surface)", borderColor: "var(--border)" }}
-              >
-                <div className="text-xs mb-1" style={{ color: "var(--text-secondary)" }}>
-                  Giờ hàng đến cao điểm
-                </div>
-                <div className="text-xl font-semibold" style={{ color: "var(--text-primary)" }}>
-                  {peakArrival.gio}h ({peakArrival.so_luong.toLocaleString("vi-VN")} đơn)
-                </div>
-              </div>
-            )}
-            <ChartCard title="Số đơn hàng đến bưu cục phát theo giờ" note={arrivalNoteParts.join(" · ")}>
-              <ArrivalHourChart data={arrival.hours} />
-            </ChartCard>
-          </>
-        ) : (
-          <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-            Không có dữ liệu giờ hàng đến cho lựa chọn hiện tại — thử chọn khu/bưu cục khác.
-          </p>
-        )}
+function PeakTile({
+  label,
+  peak,
+  field,
+}: {
+  label: string;
+  peak: { gio: number; pickup: number; sign: number; arrival: number } | null;
+  field: "pickup" | "sign" | "arrival";
+}) {
+  return (
+    <div className="rounded-xl border p-4" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+      <div className="text-xs mb-1" style={{ color: "var(--text-secondary)" }}>
+        {label}
+      </div>
+      <div className="text-xl font-semibold" style={{ color: "var(--text-primary)" }}>
+        {peak ? `${peak.gio}h (${peak[field].toLocaleString("vi-VN")} đơn)` : "—"}
       </div>
     </div>
   );

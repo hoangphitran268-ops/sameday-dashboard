@@ -18,7 +18,7 @@ export default async function HieuSuatPage({ searchParams }: { searchParams: Pro
   const khuSorted = data.khu_perf;
 
   return (
-    <div className="space-y-6 max-w-6xl">
+    <div className="space-y-6 w-full">
       {khuSorted.length > 0 ? (
         <ChartCard
           title="Hiệu suất theo Khu (tỷ lệ ký nhận %, khu ≥ 1.000 đơn)"
