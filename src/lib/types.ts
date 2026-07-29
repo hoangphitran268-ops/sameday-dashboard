@@ -133,11 +133,21 @@ export interface HourBcDetailRow {
   tong: number;
 }
 
+export interface HourBcHourRow {
+  buu_cuc: string;
+  khu: string | null;
+  gio: number;
+  pickup: number;
+  sign: number;
+  arrival: number;
+}
+
 export interface HourPageData {
   hours: HourFlowRow[];
   khu_options: string[];
   bc_options: string[];
   bc_detail: HourBcDetailRow[];
+  bc_hour: HourBcHourRow[];
   has_data: boolean;
 }
 

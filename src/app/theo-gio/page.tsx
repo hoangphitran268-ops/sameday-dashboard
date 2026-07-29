@@ -4,12 +4,22 @@ import ChartCard, { LegendItem } from "@/components/ChartCard";
 import HourFlowChart from "@/components/charts/HourFlowChart";
 import HourFilters from "@/components/HourFilters";
 import HourBcDetailTable from "@/components/HourBcDetailTable";
+import HourBcPivotTable from "@/components/HourBcPivotTable";
 import EmptyState from "@/components/EmptyState";
 
 export const dynamic = "force-dynamic";
 
+const METRIC_TITLE: Record<string, string> = {
+  pickup: "Lấy hàng",
+  sign: "Ký nhận",
+  arrival: "Hàng đến bưu cục phát",
+};
+
 export default async function TheoGioPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
-  const { data, range, khu, bc } = getHourPageData(await searchParams);
+  const params = await searchParams;
+  const { data, range, khu, bc } = getHourPageData(params);
+  const metricParam = Array.isArray(params.metric) ? params.metric[0] : params.metric;
+  const metric = metricParam === "pickup" || metricParam === "sign" || metricParam === "arrival" ? metricParam : null;
 
   if (!data.has_data) {
     return <EmptyState label={rangeDisplayLabel(range)} />;
@@ -56,12 +66,18 @@ export default async function TheoGioPage({ searchParams }: { searchParams: Prom
             style={{ background: "var(--surface)", borderColor: "var(--border)", boxShadow: "var(--shadow-sm)" }}
           >
             <h3 className="text-sm font-semibold mb-1" style={{ color: "var(--text-primary)" }}>
-              Chi tiết theo bưu cục phát
+              Chi tiết theo bưu cục phát{metric ? ` · ${METRIC_TITLE[metric]}` : ""}
             </h3>
             <p className="text-[11px] mb-4" style={{ color: "var(--text-muted)" }}>
-              Đúng theo bộ lọc Khu/Bưu cục của biểu đồ trên — sắp xếp theo tổng khối lượng giảm dần.
+              {metric
+                ? `Đúng theo bộ lọc Khu/Bưu cục ở trên — mỗi bưu cục, mỗi giờ đạt bao nhiêu đơn "${METRIC_TITLE[metric]}".`
+                : "Đúng theo bộ lọc Khu/Bưu cục của biểu đồ trên — sắp xếp theo tổng khối lượng giảm dần. Chọn 1 loại (Lấy hàng/Ký nhận/Hàng đến) ở bộ lọc để xem chi tiết theo từng giờ."}
             </p>
-            <HourBcDetailTable rows={data.bc_detail} />
+            {metric ? (
+              <HourBcPivotTable metric={metric} bcDetail={data.bc_detail} bcHour={data.bc_hour} hours={data.hours} />
+            ) : (
+              <HourBcDetailTable rows={data.bc_detail} />
+            )}
           </div>
         </>
       ) : (

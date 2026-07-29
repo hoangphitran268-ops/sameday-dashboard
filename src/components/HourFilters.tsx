@@ -1,7 +1,14 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { MapPin, Building2 } from "lucide-react";
+import { MapPin, Building2, Filter } from "lucide-react";
+
+const METRIC_OPTIONS: { value: string; label: string }[] = [
+  { value: "", label: "Tất cả (3 loại)" },
+  { value: "pickup", label: "Lấy hàng" },
+  { value: "sign", label: "Ký nhận" },
+  { value: "arrival", label: "Hàng đến bưu cục phát" },
+];
 
 export default function HourFilters({ khuOptions, bcOptions }: { khuOptions: string[]; bcOptions: string[] }) {
   const router = useRouter();
@@ -9,6 +16,7 @@ export default function HourFilters({ khuOptions, bcOptions }: { khuOptions: str
   const searchParams = useSearchParams();
   const currentKhu = searchParams.get("akhu") ?? "";
   const currentBc = searchParams.get("abc") ?? "";
+  const currentMetric = searchParams.get("metric") ?? "";
 
   function onKhuChange(value: string) {
     const params = new URLSearchParams(searchParams.toString());
@@ -25,10 +33,35 @@ export default function HourFilters({ khuOptions, bcOptions }: { khuOptions: str
     router.push(`${pathname}?${params.toString()}`);
   }
 
+  function onMetricChange(value: string) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (value) params.set("metric", value);
+    else params.delete("metric");
+    router.push(`${pathname}?${params.toString()}`);
+  }
+
   return (
     <div className="flex items-center gap-2 flex-wrap">
       <FilterSelect icon={MapPin} value={currentKhu} onChange={onKhuChange} placeholder="Tất cả khu" options={khuOptions} />
       <FilterSelect icon={Building2} value={currentBc} onChange={onBcChange} placeholder="Tất cả bưu cục phát" options={bcOptions} />
+      <label
+        className="flex items-center gap-2 text-xs font-semibold px-3.5 py-1.5 rounded-full border"
+        style={{ borderColor: "var(--border)", color: "var(--text-primary)", background: "var(--surface)", boxShadow: "var(--shadow-sm)" }}
+      >
+        <Filter size={13} style={{ color: "var(--brand-red)" }} />
+        <select
+          value={currentMetric}
+          onChange={(e) => onMetricChange(e.target.value)}
+          className="bg-transparent outline-none cursor-pointer font-semibold"
+          style={{ color: "var(--text-primary)" }}
+        >
+          {METRIC_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+      </label>
     </div>
   );
 }
