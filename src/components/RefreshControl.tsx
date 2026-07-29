@@ -38,8 +38,12 @@ export default function RefreshControl({ generatedAt }: { generatedAt?: string }
       <button
         onClick={handleRefresh}
         disabled={loading}
-        className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors disabled:opacity-60"
-        style={{ borderColor: "var(--brand-red)", color: "var(--brand-red)", background: "var(--brand-red-tint)" }}
+        className="flex items-center gap-1.5 text-xs font-semibold px-3.5 py-1.5 rounded-full transition-all duration-150 disabled:opacity-60 hover:-translate-y-px active:translate-y-0"
+        style={{
+          background: "linear-gradient(135deg, var(--brand-red) 0%, var(--brand-red-dark) 100%)",
+          color: "#fff",
+          boxShadow: "var(--shadow-red)",
+        }}
       >
         <RefreshCw size={13} className={loading ? "animate-spin" : ""} />
         {loading ? "Đang quét dữ liệu..." : "Cập nhật ngay"}

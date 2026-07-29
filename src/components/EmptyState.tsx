@@ -3,10 +3,15 @@ import { Inbox } from "lucide-react";
 export default function EmptyState({ label }: { label: string }) {
   return (
     <div
-      className="rounded-xl border p-12 flex flex-col items-center justify-center text-center max-w-6xl"
-      style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+      className="rounded-2xl border p-12 flex flex-col items-center justify-center text-center max-w-6xl"
+      style={{ background: "var(--surface)", borderColor: "var(--border)", boxShadow: "var(--shadow-sm)" }}
     >
-      <Inbox size={32} style={{ color: "var(--text-muted)" }} />
+      <div
+        className="w-14 h-14 rounded-2xl flex items-center justify-center mb-1"
+        style={{ background: "var(--brand-red-tint)" }}
+      >
+        <Inbox size={26} style={{ color: "var(--brand-red)" }} />
+      </div>
       <p className="mt-3 text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
         Không có dữ liệu cho khoảng thời gian đã chọn
       </p>

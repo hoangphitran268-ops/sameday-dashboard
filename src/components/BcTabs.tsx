@@ -26,10 +26,15 @@ function TabButton({ active, onClick, children }: { active: boolean; onClick: ()
   return (
     <button
       onClick={onClick}
-      className="text-xs font-semibold px-3.5 py-1.5 rounded-full border transition-colors"
+      className="text-xs font-semibold px-3.5 py-1.5 rounded-full border transition-all duration-150"
       style={
         active
-          ? { background: "var(--brand-red)", borderColor: "var(--brand-red)", color: "#fff" }
+          ? {
+              background: "linear-gradient(135deg, var(--brand-red) 0%, var(--brand-red-dark) 100%)",
+              borderColor: "var(--brand-red)",
+              color: "#fff",
+              boxShadow: "var(--shadow-red)",
+            }
           : { background: "transparent", borderColor: "var(--border)", color: "var(--text-secondary)" }
       }
     >

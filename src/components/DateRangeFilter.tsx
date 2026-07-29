@@ -54,18 +54,23 @@ export default function DateRangeFilter() {
     <div className="relative" ref={panelRef}>
       <button
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors"
-        style={{ borderColor: "var(--border)", color: "var(--text-primary)", background: "var(--surface)" }}
+        className="flex items-center gap-2 text-xs font-semibold px-3.5 py-1.5 rounded-full border transition-all duration-150 hover:-translate-y-px"
+        style={{
+          borderColor: "var(--border)",
+          color: "var(--text-primary)",
+          background: "var(--surface)",
+          boxShadow: "var(--shadow-sm)",
+        }}
       >
         <Calendar size={13} style={{ color: "var(--brand-red)" }} />
         {rangeDisplayLabel(range)}
-        <ChevronDown size={13} style={{ color: "var(--text-muted)" }} />
+        <ChevronDown size={13} style={{ color: "var(--text-muted)", transform: open ? "rotate(180deg)" : undefined, transition: "transform 150ms" }} />
       </button>
 
       {open && (
         <div
-          className="absolute right-0 mt-2 w-72 rounded-xl border shadow-lg z-50 overflow-hidden"
-          style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+          className="absolute right-0 mt-2 w-72 rounded-2xl border z-50 overflow-hidden"
+          style={{ background: "var(--surface)", borderColor: "var(--border)", boxShadow: "var(--shadow-md)" }}
         >
           <div className="py-1.5">
             {PRESET_ORDER.map((key) => {
@@ -109,8 +114,12 @@ export default function DateRangeFilter() {
             <button
               onClick={applyCustom}
               disabled={!draftFrom || !draftTo}
-              className="w-full mt-2 text-xs font-semibold py-1.5 rounded-md disabled:opacity-50"
-              style={{ background: "var(--brand-red)", color: "#fff" }}
+              className="w-full mt-2 text-xs font-semibold py-1.5 rounded-lg disabled:opacity-50 transition-transform hover:-translate-y-px"
+              style={{
+                background: "linear-gradient(135deg, var(--brand-red) 0%, var(--brand-red-dark) 100%)",
+                color: "#fff",
+                boxShadow: "var(--shadow-red)",
+              }}
             >
               Áp dụng
             </button>

@@ -5,6 +5,7 @@ import ChartCard, { LegendItem } from "@/components/ChartCard";
 import KpiTrendLine from "@/components/charts/KpiTrendLine";
 import WeekdayBarChart from "@/components/charts/WeekdayBarChart";
 import EmptyState from "@/components/EmptyState";
+import { Package, CheckCircle2, Clock3, AlertTriangle, Lightbulb } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -19,17 +20,27 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
   return (
     <div className="space-y-6 max-w-6xl">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatTile label={`Tổng số đơn (${meta.so_ngay} ngày)`} value={meta.tong_don_21_ngay.toLocaleString("vi-VN")} />
-        <StatTile label="Tỷ lệ ký nhận (đã xử lý xong trong ngày N)" value={`${meta.ty_le_ky_nhan_pct}%`} />
-        <StatTile label="TG xử lý trung bình" value={`${meta.tg_xu_ly_tb_h} giờ`} />
-        <StatTile label="Tỷ lệ đơn có vấn đề" value={`${meta.ty_le_van_de_pct}%`} critical />
+        <StatTile
+          label={`Tổng số đơn (${meta.so_ngay} ngày)`}
+          value={meta.tong_don_21_ngay.toLocaleString("vi-VN")}
+          icon={Package}
+        />
+        <StatTile
+          label="Tỷ lệ ký nhận (đã xử lý xong trong ngày N)"
+          value={`${meta.ty_le_ky_nhan_pct}%`}
+          icon={CheckCircle2}
+        />
+        <StatTile label="TG xử lý trung bình" value={`${meta.tg_xu_ly_tb_h} giờ`} icon={Clock3} />
+        <StatTile label="Tỷ lệ đơn có vấn đề" value={`${meta.ty_le_van_de_pct}%`} icon={AlertTriangle} critical />
       </div>
 
       <div
-        className="rounded-xl border p-5"
-        style={{ background: "var(--brand-red-tint)", borderColor: "var(--brand-red-light)" }}
+        className="relative rounded-2xl border p-5 pl-6 overflow-hidden"
+        style={{ background: "var(--brand-red-tint)", borderColor: "var(--brand-red-light)", boxShadow: "var(--shadow-sm)" }}
       >
-        <h3 className="text-sm font-semibold mb-2" style={{ color: "var(--brand-red-dark)" }}>
+        <div className="absolute inset-y-0 left-0 w-1.5" style={{ background: "var(--brand-red)" }} />
+        <h3 className="text-sm font-semibold mb-2 flex items-center gap-2" style={{ color: "var(--brand-red-dark)" }}>
+          <Lightbulb size={16} strokeWidth={2.2} />
           Phát hiện chính · {rangeDisplayLabel(range)}
         </h3>
         <ul className="space-y-1.5 text-[13px]" style={{ color: "var(--text-secondary)" }}>

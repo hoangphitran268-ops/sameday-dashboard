@@ -11,15 +11,16 @@ export default function ChartCard({
 }) {
   return (
     <div
-      className="rounded-xl border p-5"
-      style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+      className="rounded-2xl border p-5 transition-shadow duration-200 hover:shadow-[var(--shadow-md)]"
+      style={{ background: "var(--surface)", borderColor: "var(--border)", boxShadow: "var(--shadow-sm)" }}
     >
-      <div className="flex items-baseline justify-between mb-1">
-        <h3 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+      <div className="flex items-baseline justify-between mb-1 gap-3">
+        <h3 className="text-sm font-semibold flex items-center gap-2" style={{ color: "var(--text-primary)" }}>
+          <span className="inline-block w-1 h-3.5 rounded-full" style={{ background: "var(--brand-red)" }} />
           {title}
         </h3>
         {note && (
-          <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+          <span className="text-[11px] shrink-0" style={{ color: "var(--text-muted)" }}>
             {note}
           </span>
         )}

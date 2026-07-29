@@ -40,7 +40,7 @@ export default async function HieuSuatPage({ searchParams }: { searchParams: Pro
         </p>
       )}
 
-      <div className="rounded-xl border p-5" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+      <div className="rounded-2xl border p-5" style={{ background: "var(--surface)", borderColor: "var(--border)", boxShadow: "var(--shadow-sm)" }}>
         <h3 className="text-sm font-semibold mb-3" style={{ color: "var(--text-primary)" }}>
           Hiệu suất theo Bưu cục (tỷ lệ ký nhận %, bưu cục ≥ 300 đơn)
         </h3>
@@ -54,7 +54,7 @@ export default async function HieuSuatPage({ searchParams }: { searchParams: Pro
       </div>
 
       {khuSorted.length > 0 && (
-        <div className="rounded-xl border p-5" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+        <div className="rounded-2xl border p-5" style={{ background: "var(--surface)", borderColor: "var(--border)", boxShadow: "var(--shadow-sm)" }}>
           <h3 className="text-sm font-semibold mb-3" style={{ color: "var(--text-primary)" }}>
             Bảng chi tiết theo Khu
           </h3>
