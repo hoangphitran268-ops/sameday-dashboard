@@ -3,19 +3,24 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { LayoutDashboard, TrendingUp, Building2, AlertTriangle, Clock, Gavel, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { LayoutDashboard, TrendingUp, Building2, AlertTriangle, Clock, Gavel, PackageCheck, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { rangeDisplayLabel, resolvePreset } from "@/lib/dateRanges";
 import { getLang, dict } from "@/lib/i18n";
 import type { RangePresetKey } from "@/lib/types";
 
 const STORAGE_KEY = "jt-sidebar-collapsed";
 
-const NAV: { href: string; navKey: "overview" | "kpi" | "hieuSuat" | "nguyenNhan" | "theoGio" | "phat"; icon: typeof LayoutDashboard }[] = [
+const NAV: {
+  href: string;
+  navKey: "overview" | "kpi" | "hieuSuat" | "nguyenNhan" | "theoGio" | "phat" | "receiving";
+  icon: typeof LayoutDashboard;
+}[] = [
   { href: "/", navKey: "overview", icon: LayoutDashboard },
   { href: "/kpi", navKey: "kpi", icon: TrendingUp },
   { href: "/hieu-suat", navKey: "hieuSuat", icon: Building2 },
   { href: "/nguyen-nhan", navKey: "nguyenNhan", icon: AlertTriangle },
   { href: "/theo-gio", navKey: "theoGio", icon: Clock },
+  { href: "/nhan-kien", navKey: "receiving", icon: PackageCheck },
   { href: "/phat", navKey: "phat", icon: Gavel },
 ];
 

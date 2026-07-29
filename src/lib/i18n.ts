@@ -48,6 +48,21 @@ export function localizeWeekday(weekday: string, lang: Lang): string {
   return WEEKDAY_ZH[weekday] ?? weekday;
 }
 
+// "Nguyên nhân lấy hàng thất bại" trong file Khâu nhận chỉ có tiếng Việt (không có sẵn bản tiếng
+// Trung ghép chuỗi như nguyen_nhan/tinh_trang ở các file khác) — dịch thủ công cho 5 giá trị đã biết.
+const RECEIVING_REASON_ZH: Record<string, string> = {
+  "Chưa có hàng để lấy": "暂无货物可取",
+  "Người gửi hẹn lại ngày lấy": "寄件人改约取件时间",
+  "Đóng gói không đảm bảo": "包装不符合要求",
+  "Người gửi đăng ký sai trọng lượng": "寄件人登记重量有误",
+  "Khách báo hủy đơn": "客户通知取消订单",
+};
+
+export function localizeReceivingReason(reason: string, lang: Lang): string {
+  if (lang === "vi") return reason;
+  return RECEIVING_REASON_ZH[reason] ?? reason;
+}
+
 const vi = {
   langSwitcher: { vi: "Tiếng Việt", zh: "中文" },
 
@@ -71,6 +86,7 @@ const vi = {
     nguyenNhan: "Nguyên nhân & Trạng thái",
     theoGio: "Theo giờ trong ngày",
     phat: "Phạt vi phạm",
+    receiving: "Nhận kiện",
   },
 
   dateRange: {
@@ -118,6 +134,7 @@ const vi = {
     khuLabel: "Khu",
     buuCucLabel: "Bưu cục",
     currencySuffix: "đ",
+    unknownKhu: "Không xác định",
   },
 
   chartNames: {
@@ -130,6 +147,32 @@ const vi = {
     penaltyAmount: "Tiền phạt",
     signRate: "Tỷ lệ ký nhận",
     quantity: "Số lượng",
+    receivingSuccessPct: "Tỷ lệ nhận kiện %",
+    cancelPct: "Tỷ lệ hủy đơn %",
+  },
+
+  receivingPerfTable: {
+    bc: "Bưu cục",
+    khu: "Khu",
+    tongDon: "Tổng đơn",
+    thanhCong: "Thành công",
+    tyLeThanhCongPct: "Tỷ lệ nhận kiện %",
+    huy: "Hủy đơn",
+  },
+
+  receivingSellerTable: {
+    seller: "Seller",
+    tongDon: "Tổng đơn",
+    thanhCong: "Thành công",
+    tyLeThanhCongPct: "Tỷ lệ nhận kiện %",
+    huy: "Hủy đơn",
+  },
+
+  sellerReason: {
+    empty: "Không có seller nào ghi nhận nguyên nhân này trong khoảng đã chọn.",
+    seller: "Seller",
+    soDonReason: "Số đơn (nguyên nhân này)",
+    sharePct: "% trong tổng số đơn có vấn đề của seller",
   },
 
   perfTable: {
@@ -254,6 +297,32 @@ const vi = {
       bcSectionDesc:
         'Chọn 1 loại vi phạm để xem 15 bưu cục bị phạt nhiều nhất (theo "Mã bc chịu trách nhiệm"), sắp xếp theo tổng tiền phạt giảm dần.',
     },
+    receiving: {
+      pageTitle: "Nhận kiện — Khâu Nhận",
+      subtitle: 'Nguồn: thư mục "Khâu nhận" · gộp theo Mã vận đơn, cộng dồn khi có file mới',
+      statTongDon: "Tổng đơn",
+      statThanhCong: "Tỷ lệ nhận kiện thành công",
+      statHuy: "Tỷ lệ hủy đơn",
+      trendChartTitle: "Tỷ lệ nhận kiện thành công / hủy theo ngày (%)",
+      khuChartTitle: "Xếp hạng theo Khu (tỷ lệ nhận kiện %, khu ≥ 1.000 đơn)",
+      khuChartNote: "Sắp xếp tăng dần — khu ở đầu danh sách cần chú ý nhất",
+      khuEmptyMsg: "Không có khu nào đạt ngưỡng ≥ 1.000 đơn trong khoảng thời gian này.",
+      bcSectionTitle: "Xếp hạng theo Bưu cục lấy hàng (tỷ lệ nhận kiện %, bưu cục ≥ 300 đơn)",
+      bcEmptyMsg: "Không có bưu cục nào đạt ngưỡng ≥ 300 đơn trong khoảng thời gian này.",
+      reasonChartTitle: "Nguyên nhân lấy hàng thất bại (số đơn)",
+      reasonBcSectionTitle: "Bưu cục thường xuyên ghi nhận nguyên nhân này",
+      reasonBcSectionDesc:
+        "Chọn 1 nguyên nhân để xem 15 bưu cục ghi nhận nhiều nhất — kèm tỷ lệ nguyên nhân đó chiếm bao nhiêu % trong tổng số đơn có vấn đề của chính bưu cục đó.",
+      sellerSectionTitle: "Xếp hạng theo Seller (tỷ lệ nhận kiện %, seller ≥ 50 đơn)",
+      sellerEmptyMsg: "Không có seller nào đạt ngưỡng ≥ 50 đơn trong khoảng thời gian này.",
+      sellerReasonSectionTitle: "Seller thường xuyên ghi nhận nguyên nhân này",
+      sellerReasonSectionDesc:
+        "Chọn 1 nguyên nhân để xem 15 seller ghi nhận nhiều nhất — giúp xác định seller nào đang ảnh hưởng đến tỷ lệ nhận kiện của bưu cục.",
+      mapSectionTitle: "Bản đồ phân bố theo Tỉnh/Thành (đơn nhận thành công)",
+      mapLoading: "Đang tải bản đồ...",
+      mapEmpty: "Không có dữ liệu",
+      mapUnit: "đơn",
+    },
   },
 };
 
@@ -280,6 +349,7 @@ const zh: typeof vi = {
     nguyenNhan: "原因与状态",
     theoGio: "每日时段分析",
     phat: "违规处罚",
+    receiving: "揽收成功率",
   },
 
   dateRange: {
@@ -327,6 +397,7 @@ const zh: typeof vi = {
     khuLabel: "片区",
     buuCucLabel: "网点",
     currencySuffix: "越南盾",
+    unknownKhu: "未知片区",
   },
 
   chartNames: {
@@ -339,6 +410,32 @@ const zh: typeof vi = {
     penaltyAmount: "罚款金额",
     signRate: "签收率",
     quantity: "数量",
+    receivingSuccessPct: "揽收成功率 %",
+    cancelPct: "取消率 %",
+  },
+
+  receivingPerfTable: {
+    bc: "网点",
+    khu: "片区",
+    tongDon: "总单量",
+    thanhCong: "成功揽收",
+    tyLeThanhCongPct: "揽收成功率 %",
+    huy: "取消单量",
+  },
+
+  receivingSellerTable: {
+    seller: "商家",
+    tongDon: "总单量",
+    thanhCong: "成功揽收",
+    tyLeThanhCongPct: "揽收成功率 %",
+    huy: "取消单量",
+  },
+
+  sellerReason: {
+    empty: "所选时间范围内没有商家记录该原因。",
+    seller: "商家",
+    soDonReason: "单量（该原因）",
+    sharePct: "占该商家问题单总数的比例 %",
   },
 
   perfTable: {
@@ -458,6 +555,30 @@ const zh: typeof vi = {
       dailyChartTitle: "每日罚款金额",
       bcSectionTitle: "各违规类型责任网点排名",
       bcSectionDesc: '选择1个违规类型查看被罚最多的15个网点（按"责任网点代码"），按罚款总额从高到低排列。',
+    },
+    receiving: {
+      pageTitle: "揽收成功率 — 揽收环节",
+      subtitle: '数据来源："Khâu nhận" 文件夹 · 按运单号合并，新文件到达时累加',
+      statTongDon: "总单量",
+      statThanhCong: "揽收成功率",
+      statHuy: "取消率",
+      trendChartTitle: "每日揽收成功率／取消率 (%)",
+      khuChartTitle: "各片区揽收成功率（%，片区单量≥1,000）",
+      khuChartNote: "按升序排列 — 列表最前的片区最需要关注",
+      khuEmptyMsg: "所选时间范围内没有片区单量达到 ≥1,000 的门槛。",
+      bcSectionTitle: "各揽收网点排名（揽收成功率 %，网点单量≥300）",
+      bcEmptyMsg: "所选时间范围内没有网点单量达到 ≥300 的门槛。",
+      reasonChartTitle: "揽收失败原因分布（单量）",
+      reasonBcSectionTitle: "经常记录该原因的网点",
+      reasonBcSectionDesc: "选择1个原因查看记录最多的15个网点 — 并显示该原因占该网点问题单总数的百分比。",
+      sellerSectionTitle: "各商家排名（揽收成功率 %，商家单量≥50）",
+      sellerEmptyMsg: "所选时间范围内没有商家单量达到 ≥50 的门槛。",
+      sellerReasonSectionTitle: "经常记录该原因的商家",
+      sellerReasonSectionDesc: "选择1个原因查看记录最多的15个商家 — 帮助找出正在影响网点揽收成功率的商家。",
+      mapSectionTitle: "各省市分布地图（成功揽收单量）",
+      mapLoading: "地图加载中...",
+      mapEmpty: "暂无数据",
+      mapUnit: "单",
     },
   },
 };

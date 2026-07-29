@@ -11,7 +11,18 @@ import XLSX from "xlsx";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const RAW_DIR = process.env.SAMEDAY_RAW_DIR || "D:\\Claude CODE\\data\\raw\\sameday";
 const PENALTY_DIR = path.join(RAW_DIR, "PHẠT Khâu Nhận");
+const RECEIVING_DIR = path.join(RAW_DIR, "Khâu nhận");
 const OUT_PATH = path.join(__dirname, "..", "src", "data", "dashboard-data.json");
+
+// Mã "Bưu cục lấy hàng" là điểm pickup riêng (HUB/Pickup...) không xuất hiện trong file "data"
+// hằng ngày nên không đối chiếu Khu qua bcKhuMap được. Điền Khu thật vào đây khi biết (điền chuỗi
+// dạng "8C区" giống định dạng Khu trong dashboard) — mã còn null sẽ hiện "Không xác định".
+const BC_KHU_OVERRIDES = {
+  "028P25": null,
+  "028P28": null,
+  "028P22": null,
+  "028H04": null,
+};
 
 const DATE_RE = /(\d{2})\.(\d{2})\.(\d{4})/;
 
@@ -176,6 +187,12 @@ function main() {
   // nên chỉ đọc đúng 1 file mới nhất (theo thời gian sửa đổi) trong thư mục này. ----
   const penaltyByDay = readPenaltyByDay();
 
+  // ---- Nhận kiện (lấy hàng) — thư mục riêng "Khâu nhận", quét TOÀN BỘ file (khác Phạt: mỗi
+  // file ở đây là 1 lô đơn theo khoảng ngày/theo ngày, cộng dồn dần theo Mã vận đơn, không phải
+  // snapshot lũy kế) ----
+  const bcKhuMap = buildBcKhuMap(rows);
+  const receiving = readReceivingByDay(bcKhuMap);
+
   const data = {
     generated_at: new Date().toISOString(),
     available_dates: availableDates,
@@ -185,6 +202,11 @@ function main() {
     khu_by_day: khuByDay,
     hour_by_day: hourByDay,
     penalty_by_day: penaltyByDay,
+    receiving_bc_by_day: receiving.bcByDay,
+    receiving_reason_by_day: receiving.reasonByDay,
+    receiving_seller_by_day: receiving.sellerByDay,
+    receiving_seller_reason_by_day: receiving.sellerReasonByDay,
+    receiving_geo_by_day: receiving.geoByDay,
   };
 
   fs.mkdirSync(path.dirname(OUT_PATH), { recursive: true });
@@ -277,6 +299,165 @@ function sum(arr) {
 }
 function round4(v) {
   return Math.round(v * 10000) / 10000;
+}
+
+// Đối chiếu mã Bưu cục lấy hàng (file Khâu nhận) -> Khu, dựa trên các cặp bc/khu đã gom được từ
+// file "data" hằng ngày (buu_cuc/khu và bc_cuoi/khu_cuoi) — phủ được phần lớn mã BC giao hàng
+// thường, chỉ thiếu vài điểm pickup riêng (đã liệt kê thủ công ở BC_KHU_OVERRIDES).
+function buildBcKhuMap(rows) {
+  const map = new Map();
+  for (const r of rows) {
+    if (r.buu_cuc && r.khu) map.set(r.buu_cuc, r.khu);
+    if (r.bc_cuoi && r.khu_cuoi) map.set(r.bc_cuoi, r.khu_cuoi);
+  }
+  for (const [bc, khu] of Object.entries(BC_KHU_OVERRIDES)) {
+    if (khu) map.set(bc, khu);
+  }
+  return map;
+}
+
+function toISODate(d) {
+  return d.toISOString().slice(0, 10);
+}
+
+// Quy ước ngày N riêng cho Khâu nhận (khác 13H(N-1)-12H59(N) của Phạt): 1 mốc thời gian coi là
+// thuộc "ngày N" nếu rơi vào khung 12:00:00 ngày N-1 -> 11:59:59 ngày N.
+function noonWindowDay(dt) {
+  const totalSec = dt.getUTCHours() * 3600 + dt.getUTCMinutes() * 60 + dt.getUTCSeconds();
+  const base = new Date(Date.UTC(dt.getUTCFullYear(), dt.getUTCMonth(), dt.getUTCDate()));
+  if (totalSec >= 12 * 3600) base.setUTCDate(base.getUTCDate() + 1);
+  return base;
+}
+
+function readReceivingFiles() {
+  if (!fs.existsSync(RECEIVING_DIR)) return [];
+  return fs
+    .readdirSync(RECEIVING_DIR)
+    .filter((f) => f.toLowerCase().endsWith(".xlsx") && !f.startsWith("~$"))
+    .sort();
+}
+
+/** Đọc toàn bộ file trong thư mục "Khâu nhận" (mỗi file là 1 lô đơn theo khoảng ngày, không phải
+ * snapshot lũy kế như Phạt), gộp theo Mã vận đơn để tránh trùng khi các lô sau đè lô trước. */
+function readReceivingRows() {
+  const files = readReceivingFiles();
+  if (files.length === 0) return [];
+  const byWaybill = new Map();
+  for (const fname of files) {
+    const wb = XLSX.readFile(path.join(RECEIVING_DIR, fname));
+    const sheetName = wb.SheetNames[0];
+    const json = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { defval: null, raw: true });
+    for (const r of json) {
+      const waybill = r["Mã vận đơn"];
+      const entry = excelSerialToDate(r["Thời gian nhập đơn hàng"]);
+      if (!waybill || !entry) continue;
+      byWaybill.set(waybill, {
+        waybill,
+        entry,
+        pickup: excelSerialToDate(r["Ngày lấy hàng"]),
+        status: r["Trạng thái đơn đặt"] ?? null,
+        bc: r["Mã Bc lấy hàng"] ?? null,
+        seller: r["Tên shop"] ?? null,
+        reason: r["Nguyên nhân lấy hàng thất bại"] || null,
+        tinh_thanh: r["Tỉnh thành lấy"] ?? null,
+      });
+    }
+  }
+  console.log(`Đã đọc ${files.length} file Khâu nhận, tổng ${byWaybill.size} đơn (đã gộp theo Mã vận đơn).`);
+  return [...byWaybill.values()];
+}
+
+/** Xếp mỗi đơn vào ngày N theo "Thời gian nhập đơn hàng" (khung 12h(N-1)->11h59(N)), rồi xác định
+ * "thành công trong ngày N" nếu "Ngày lấy hàng" rơi trong khung 12h(N-1)->13h(N) (nới thêm 1 giờ so
+ * với khung tạo đơn). "Hủy" = Trạng thái đơn đặt = "Đã hủy". Tổng/thành công/hủy đều tính theo
+ * đúng ngày N của đơn đó (cohort theo ngày tạo), không phải theo ngày lấy hàng thực tế. */
+function classifyReceivingOrder(r) {
+  const dayN = noonWindowDay(r.entry);
+  const winStart = new Date(dayN);
+  winStart.setUTCDate(winStart.getUTCDate() - 1);
+  winStart.setUTCHours(12, 0, 0, 0);
+  const winEnd = new Date(dayN);
+  winEnd.setUTCHours(13, 0, 0, 0);
+  const thanhCong = r.pickup && r.pickup >= winStart && r.pickup <= winEnd ? 1 : 0;
+  const huy = r.status === "Đã hủy" ? 1 : 0;
+  return { iso_date: toISODate(dayN), thanh_cong: thanhCong, huy };
+}
+
+function readReceivingByDay(bcKhuMap) {
+  const rawRows = readReceivingRows();
+  if (rawRows.length === 0) {
+    return { bcByDay: [], reasonByDay: [], sellerByDay: [], sellerReasonByDay: [], geoByDay: [] };
+  }
+
+  const unmatchedBc = new Set();
+  const classified = rawRows.map((r) => {
+    const khu = r.bc ? bcKhuMap.get(r.bc) ?? null : null;
+    if (r.bc && khu == null) unmatchedBc.add(r.bc);
+    return { ...r, khu, ...classifyReceivingOrder(r) };
+  });
+  if (unmatchedBc.size > 0) {
+    console.log("Mã Bưu cục lấy hàng CHƯA xác định Khu (điền vào BC_KHU_OVERRIDES):", [...unmatchedBc].sort());
+  }
+
+  const bcGroups = groupBy(classified, (r) => JSON.stringify([r.iso_date, r.bc, r.khu]));
+  const bcByDay = Object.entries(bcGroups).map(([key, items]) => {
+    const [iso_date, bc, khu] = JSON.parse(key);
+    return {
+      iso_date,
+      bc,
+      khu,
+      tong_don: items.length,
+      thanh_cong: sum(items.map((r) => r.thanh_cong)),
+      huy: sum(items.map((r) => r.huy)),
+    };
+  });
+
+  const reasonGroups = groupBy(
+    classified.filter((r) => r.reason && r.bc),
+    (r) => JSON.stringify([r.iso_date, r.bc, r.khu, r.reason])
+  );
+  const reasonByDay = Object.entries(reasonGroups).map(([key, items]) => {
+    const [iso_date, bc, khu, reason] = JSON.parse(key);
+    return { iso_date, bc, khu, reason, so_luong: items.length };
+  });
+
+  const sellerGroups = groupBy(
+    classified.filter((r) => r.seller),
+    (r) => JSON.stringify([r.iso_date, r.seller, r.bc, r.khu])
+  );
+  const sellerByDay = Object.entries(sellerGroups).map(([key, items]) => {
+    const [iso_date, seller, bc, khu] = JSON.parse(key);
+    return {
+      iso_date,
+      seller,
+      bc,
+      khu,
+      tong_don: items.length,
+      thanh_cong: sum(items.map((r) => r.thanh_cong)),
+      huy: sum(items.map((r) => r.huy)),
+    };
+  });
+
+  const sellerReasonGroups = groupBy(
+    classified.filter((r) => r.reason && r.seller),
+    (r) => JSON.stringify([r.iso_date, r.seller, r.reason])
+  );
+  const sellerReasonByDay = Object.entries(sellerReasonGroups).map(([key, items]) => {
+    const [iso_date, seller, reason] = JSON.parse(key);
+    return { iso_date, seller, reason, so_luong: items.length };
+  });
+
+  // ---- theo tỉnh/thành (cho bản đồ Việt Nam) — chỉ cần đơn NHẬN THÀNH CÔNG ----
+  const geoGroups = groupBy(
+    classified.filter((r) => r.tinh_thanh),
+    (r) => JSON.stringify([r.iso_date, r.tinh_thanh])
+  );
+  const geoByDay = Object.entries(geoGroups).map(([key, items]) => {
+    const [iso_date, tinh_thanh] = JSON.parse(key);
+    return { iso_date, tinh_thanh, tong_don: items.length, thanh_cong: sum(items.map((r) => r.thanh_cong)) };
+  });
+
+  return { bcByDay, reasonByDay, sellerByDay, sellerReasonByDay, geoByDay };
 }
 
 main();

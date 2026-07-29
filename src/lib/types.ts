@@ -51,6 +51,51 @@ export interface RawPenaltyDay {
   tien_phat: number;
 }
 
+/** Nhận kiện (lấy hàng) — thư mục riêng "Khâu nhận", quét toàn bộ file (không phải snapshot lũy
+ * kế như Phạt). "Ngày N" ở đây theo khung 12h(N-1)->11h59(N) của "Thời gian nhập đơn hàng" (khác
+ * khung 13h(N-1)->12h59(N) của Phạt) — xem ghi chú trong scripts/regenerate-data.mjs. */
+export interface RawReceivingBcDay {
+  iso_date: string;
+  bc: string;
+  khu: string | null;
+  tong_don: number;
+  thanh_cong: number;
+  huy: number;
+}
+
+export interface RawReceivingReasonDay {
+  iso_date: string;
+  bc: string;
+  khu: string | null;
+  reason: string;
+  so_luong: number;
+}
+
+export interface RawReceivingSellerDay {
+  iso_date: string;
+  seller: string;
+  bc: string | null;
+  khu: string | null;
+  tong_don: number;
+  thanh_cong: number;
+  huy: number;
+}
+
+export interface RawReceivingSellerReasonDay {
+  iso_date: string;
+  seller: string;
+  reason: string;
+  so_luong: number;
+}
+
+/** Theo tỉnh/thành lấy hàng — dùng cho bản đồ Việt Nam (chỉ quan tâm đơn nhận thành công). */
+export interface RawReceivingGeoDay {
+  iso_date: string;
+  tinh_thanh: string;
+  tong_don: number;
+  thanh_cong: number;
+}
+
 export interface RawDashboardData {
   generated_at: string;
   available_dates: string[];
@@ -60,6 +105,11 @@ export interface RawDashboardData {
   khu_by_day: RawNodeDay[];
   hour_by_day: RawHourDay[];
   penalty_by_day: RawPenaltyDay[];
+  receiving_bc_by_day: RawReceivingBcDay[];
+  receiving_reason_by_day: RawReceivingReasonDay[];
+  receiving_seller_by_day: RawReceivingSellerDay[];
+  receiving_seller_reason_by_day: RawReceivingSellerReasonDay[];
+  receiving_geo_by_day: RawReceivingGeoDay[];
 }
 
 // ---- Dữ liệu đã tổng hợp cho 1 khoảng ngày cụ thể (tính bởi src/lib/aggregate.ts) ----
@@ -198,6 +248,62 @@ export interface PenaltyPageData {
   penalty_bc: PenaltyBcRow[];
   daily: PenaltyDailyRow[];
   khu_options: string[];
+  has_data: boolean;
+}
+
+export interface ReceivingMeta {
+  tong_don: number;
+  ty_le_thanh_cong_pct: number;
+  ty_le_huy_pct: number;
+}
+
+export interface ReceivingDailyRow {
+  report_date: string;
+  ty_le_thanh_cong_pct: number;
+  ty_le_huy_pct: number;
+}
+
+export interface ReceivingPerfRow {
+  bc?: string;
+  khu?: string;
+  tong_don: number;
+  thanh_cong: number;
+  ty_le_thanh_cong_pct: number;
+  huy: number;
+}
+
+export interface ReceivingSellerRow {
+  seller: string;
+  tong_don: number;
+  thanh_cong: number;
+  ty_le_thanh_cong_pct: number;
+  huy: number;
+}
+
+export interface ReceivingSellerReasonRow {
+  seller: string;
+  nguyen_nhan: string;
+  so_luong: number;
+}
+
+export interface ReceivingGeoRow {
+  tinh_thanh: string;
+  tong_don: number;
+  thanh_cong: number;
+}
+
+export interface ReceivingPageData {
+  meta: ReceivingMeta;
+  daily: ReceivingDailyRow[];
+  khu_perf: ReceivingPerfRow[];
+  bc_worst15: ReceivingPerfRow[];
+  bc_best15: ReceivingPerfRow[];
+  reason_overall: ReasonRow[];
+  reason_bc: ReasonBcRow[];
+  seller_worst15: ReceivingSellerRow[];
+  seller_best15: ReceivingSellerRow[];
+  seller_reason: ReceivingSellerReasonRow[];
+  geo: ReceivingGeoRow[];
   has_data: boolean;
 }
 
