@@ -1,10 +1,11 @@
-import { getDashboardData, type SearchParams } from "@/lib/data";
+import { getDashboardData, getReceivingPageData, type SearchParams } from "@/lib/data";
 import { rangeDisplayLabel } from "@/lib/dateRanges";
 import { getLang, dict, localizeWeekday } from "@/lib/i18n";
 import StatTile from "@/components/StatTile";
 import ChartCard, { LegendItem } from "@/components/ChartCard";
 import KpiTrendLine from "@/components/charts/KpiTrendLine";
 import WeekdayBarChart from "@/components/charts/WeekdayBarChart";
+import VietnamMap from "@/components/VietnamMap";
 import EmptyState from "@/components/EmptyState";
 import { Package, CheckCircle2, Clock3, AlertTriangle, Lightbulb } from "lucide-react";
 
@@ -16,6 +17,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
   const t = dict[lang].pages.overview;
   const { data, range } = getDashboardData(params);
   const { meta } = data;
+  const { data: receivingData } = getReceivingPageData(params);
 
   if (!data.has_data) {
     return <EmptyState label={rangeDisplayLabel(range, lang)} lang={lang} />;
@@ -107,6 +109,24 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
             ))}
           </ul>
         </div>
+      )}
+
+      {receivingData.geo_total.length > 0 && (
+        <ChartCard title={dict[lang].pages.receiving.mapSectionTitle} note={rangeDisplayLabel(range, lang)}>
+          <VietnamMap
+            pickupData={receivingData.geo}
+            deliveryData={receivingData.geo_phat}
+            totalData={receivingData.geo_total}
+            modeLabels={{
+              pickup: dict[lang].pages.receiving.mapModePickup,
+              delivery: dict[lang].pages.receiving.mapModeDelivery,
+              total: dict[lang].pages.receiving.mapModeTotal,
+            }}
+            loadingLabel={dict[lang].pages.receiving.mapLoading}
+            emptyLabel={dict[lang].pages.receiving.mapEmpty}
+            unitLabel={dict[lang].pages.receiving.mapUnit}
+          />
+        </ChartCard>
       )}
 
       <ChartCard

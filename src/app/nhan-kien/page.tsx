@@ -11,7 +11,6 @@ import ReasonBcBreakdown from "@/components/ReasonBcBreakdown";
 import SellerReasonBreakdown from "@/components/SellerReasonBreakdown";
 import StatTile from "@/components/StatTile";
 import EmptyState from "@/components/EmptyState";
-import VietnamMap from "@/components/VietnamMap";
 import { PackageCheck, CheckCircle2, AlertCircle, XCircle } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -73,24 +72,6 @@ export default async function ReceivingPage({ searchParams }: { searchParams: Pr
           critical
         />
       </div>
-
-      {data.geo_total.length > 0 && (
-        <ChartCard title={t.pages.receiving.mapSectionTitle} note={note}>
-          <VietnamMap
-            pickupData={data.geo}
-            deliveryData={data.geo_phat}
-            totalData={data.geo_total}
-            modeLabels={{
-              pickup: t.pages.receiving.mapModePickup,
-              delivery: t.pages.receiving.mapModeDelivery,
-              total: t.pages.receiving.mapModeTotal,
-            }}
-            loadingLabel={t.pages.receiving.mapLoading}
-            emptyLabel={t.pages.receiving.mapEmpty}
-            unitLabel={t.pages.receiving.mapUnit}
-          />
-        </ChartCard>
-      )}
 
       {data.daily.length > 1 && (
         <ChartCard title={t.pages.receiving.trendChartTitle} note={note}>
