@@ -17,7 +17,9 @@ interface WardCollection {
 const WIDTH = 720;
 const HEIGHT = 900;
 const MIN_K = 1;
-const MAX_K = 10;
+const MAX_K = 30;
+/** Chỉ hiện tên phường khi đã zoom đủ gần — tránh chữ chồng chéo lúc xem toàn cảnh 102 phường. */
+const LABEL_MIN_K = 2.2;
 
 function normalizeName(s: string): string {
   return s
@@ -26,6 +28,11 @@ function normalizeName(s: string): string {
     .replace(/^(phường|phuong|xã|xa)\.?\s*/i, "")
     .toLowerCase()
     .trim();
+}
+
+/** Bỏ tiền tố "Phường"/"Xã" để nhãn trên bản đồ ngắn gọn hơn — tên đầy đủ vẫn hiện khi hover. */
+function shortLabel(name: string): string {
+  return name.replace(/^(Phường|Xã)\s+/i, "");
 }
 
 function clampK(k: number) {
@@ -75,11 +82,16 @@ export default function VietnamMap({
     if (!geojson) return [];
     const projection = geoMercator().fitSize([WIDTH, HEIGHT], geojson as unknown as GeoJSON.GeoJSON);
     const pathGen = geoPath(projection);
-    return geojson.features.map((f) => ({
-      code: f.properties.code,
-      name: f.properties.name,
-      d: pathGen(f) ?? "",
-    }));
+    return geojson.features.map((f) => {
+      const [cx, cy] = pathGen.centroid(f);
+      return {
+        code: f.properties.code,
+        name: f.properties.name,
+        d: pathGen(f) ?? "",
+        cx,
+        cy,
+      };
+    });
   }, [geojson]);
 
   const data = mode === "pickup" ? pickupData : mode === "delivery" ? deliveryData : totalData;
@@ -208,6 +220,25 @@ export default function VietnamMap({
               />
             );
           })}
+          {transform.k >= LABEL_MIN_K &&
+            paths.map((p) => (
+              <text
+                key={`label-${p.code}`}
+                x={p.cx}
+                y={p.cy}
+                textAnchor="middle"
+                dominantBaseline="middle"
+                fontSize={4.5 / transform.k}
+                fontWeight={600}
+                fill="var(--text-primary)"
+                stroke="var(--surface)"
+                strokeWidth={1.4 / transform.k}
+                paintOrder="stroke"
+                style={{ pointerEvents: "none" }}
+              >
+                {shortLabel(p.name)}
+              </text>
+            ))}
         </g>
       </svg>
 

@@ -26,6 +26,7 @@ const BC_KHU_OVERRIDES = {
   "028P61": "6E区",
   "028P62": "6A区",
   "028Z69": "HUB VIP",
+  "028P26": "2A区",
 };
 
 const DATE_RE = /(\d{2})\.(\d{2})\.(\d{4})/;
