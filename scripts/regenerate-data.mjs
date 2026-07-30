@@ -197,11 +197,14 @@ function main() {
   // file ở đây là 1 lô đơn theo khoảng ngày/theo ngày, cộng dồn dần theo Mã vận đơn, không phải
   // snapshot lũy kế) ----
   const bcKhuMap = buildBcKhuMap(rows);
-  const receiving = readReceivingByDay(bcKhuMap);
+  const receivingRawRows = readReceivingRows();
+  const receiving = readReceivingByDay(receivingRawRows, bcKhuMap);
 
   // ---- Trung chuyển (HUB) — thư mục riêng "Trung chuyển - HUB", file rất nặng (hàng trăm nghìn
-  // dòng) nên PHẢI đọc ở chế độ dense (xem readTransitRows) để không bị treo. ----
-  const transit = readTransitByDay();
+  // dòng) nên PHẢI đọc ở chế độ dense (xem readTransitRows) để không bị treo. Đơn được match ngược
+  // theo "Mã vận đơn" với Khâu nhận để lấy ngày lấy hàng thành công (dùng rawRows đã đọc ở trên,
+  // tránh đọc lại file Khâu nhận lần 2). ----
+  const transit = readTransitByDay(receivingRawRows);
 
   const data = {
     generated_at: new Date().toISOString(),
@@ -400,8 +403,7 @@ function classifyReceivingOrder(r) {
   return { iso_date: toISODate(dayN), thanh_cong: thanhCong, huy };
 }
 
-function readReceivingByDay(bcKhuMap) {
-  const rawRows = readReceivingRows();
+function readReceivingByDay(rawRows, bcKhuMap) {
   if (rawRows.length === 0) {
     return { bcByDay: [], reasonByDay: [], sellerByDay: [], sellerReasonByDay: [], geoByDay: [] };
   }
@@ -479,6 +481,39 @@ function readReceivingByDay(bcKhuMap) {
 
 const NO_SHIFT_REASON = "Chưa gán ca gom hàng";
 const LATE_DESPITE_SHIFT_REASON = "Trễ dù đã gán ca";
+const GW_REASON = "Không trung chuyển HUB - HUB (về GW)";
+const GW_BUCKET_LABEL = "Hàng gửi về GW";
+
+// "Mã TTTC đầu" -> tên HUB lõi hiển thị trên báo cáo. 4 HUB lõi (7/8/11/13) nhận hàng trực tiếp;
+// HUB 18 (028H98) không có chặng trung chuyển riêng trong file này nên được tính gộp vào HUB 8
+// theo quy ước nghiệp vụ (không phải suy ra từ dữ liệu). Mọi mã khác — gồm cả HUB feeder 5/9/16
+// (028H85/028H89/028H96), ĐGP/TTKT/GW hoặc rỗng — đều KHÔNG có chặng HUB-HUB hợp lệ, gộp vào
+// "Hàng gửi về GW".
+const CORE_HUB_NAME_BY_CODE = {
+  "028H87": "(HCM) HUB 7",
+  "028H88": "(HCM) HUB 8",
+  "028H91": "(HCM) HUB 11",
+  "028H93": "(HCM) HUB 13",
+};
+const FEEDER_TO_HUB8_CODE = "028H98";
+
+function classifyTransitHub(maTTTCDau) {
+  if (maTTTCDau === FEEDER_TO_HUB8_CODE) return { hub: CORE_HUB_NAME_BY_CODE["028H88"], isGwBucket: false };
+  if (CORE_HUB_NAME_BY_CODE[maTTTCDau]) return { hub: CORE_HUB_NAME_BY_CODE[maTTTCDau], isGwBucket: false };
+  return { hub: GW_BUCKET_LABEL, isGwBucket: true };
+}
+
+// Đơn hàng SAMEDAY hợp lệ: TTTC đầu gửi hàng đi (Thời gian TTTC đầu gửi hàng) trong khung
+// 12:00:00 ngày N-1 -> 13:40:00 ngày N (N = ngày lấy hàng thành công, xem noonWindowDay).
+function transitOnTime(dispatch, dayN) {
+  if (!dispatch) return false;
+  const winStart = new Date(dayN);
+  winStart.setUTCDate(winStart.getUTCDate() - 1);
+  winStart.setUTCHours(12, 0, 0, 0);
+  const winEnd = new Date(dayN);
+  winEnd.setUTCHours(13, 40, 0, 0);
+  return dispatch >= winStart && dispatch <= winEnd;
+}
 
 function readTransitFiles() {
   if (!fs.existsSync(TRANSIT_DIR)) return [];
@@ -507,23 +542,20 @@ function readTransitRows() {
     const rowsArr = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { header: 1, defval: null, raw: true });
     const header = rowsArr[0];
     const iWaybill = header.indexOf("Mã vận đơn");
-    const iNgay = header.indexOf("Ngày");
-    const iHub = header.indexOf("Tên TTTC đầu");
+    const iMaTTTCDau = header.indexOf("Mã TTTC đầu");
     const iBcGui = header.indexOf("Mã bưu cục gửi");
     const iCa = header.indexOf("Ca gom hàng");
-    const iOnTime = header.indexOf("Kiện có gửi đúng giờ không?");
+    const iThoiGianGui = header.indexOf("Thời gian TTTC đầu gửi hàng");
     for (let i = 1; i < rowsArr.length; i++) {
       const r = rowsArr[i];
       const waybill = r[iWaybill];
-      const ngay = r[iNgay];
-      if (!waybill || !ngay) continue;
+      if (!waybill) continue;
       byWaybill.set(waybill, {
         waybill,
-        iso_date: String(ngay).slice(0, 10),
-        hub: r[iHub] || null,
+        maTTTCDau: r[iMaTTTCDau] || null,
         bc_gui: r[iBcGui] || null,
         coCa: !!r[iCa],
-        onTime: r[iOnTime] === "Y" ? true : r[iOnTime] === "N" ? false : null,
+        dispatch: excelSerialToDate(r[iThoiGianGui]),
       });
     }
   }
@@ -531,8 +563,28 @@ function readTransitRows() {
   return [...byWaybill.values()];
 }
 
-function readTransitByDay() {
-  const rows = readTransitRows().filter((r) => r.onTime !== null && r.hub);
+/** Match ngược từng kiện Trung chuyển với ngày lấy hàng thành công bên Khâu nhận (theo Mã vận
+ * đơn) để xác định kiện đó thuộc đơn SAMEDAY của ngày N nào — kiện không match được (chưa có/không
+ * lấy hàng thành công) bị loại vì không xác định được ngày N. `receivingRawRows` là kết quả
+ * readReceivingRows() đã đọc sẵn ở main(), tránh đọc lại file Khâu nhận lần 2. */
+function readTransitByDay(receivingRawRows) {
+  const pickupMap = new Map();
+  for (const r of receivingRawRows) {
+    if (r.pickup) pickupMap.set(r.waybill, r.pickup);
+  }
+
+  const rawRows = readTransitRows();
+  const rows = [];
+  for (const r of rawRows) {
+    const pickup = pickupMap.get(r.waybill);
+    if (!pickup) continue;
+    const dayN = noonWindowDay(pickup);
+    const iso_date = toISODate(dayN);
+    const { hub, isGwBucket } = classifyTransitHub(r.maTTTCDau);
+    const onTime = isGwBucket ? false : transitOnTime(r.dispatch, dayN);
+    rows.push({ iso_date, hub, bc_gui: r.bc_gui, coCa: r.coCa, onTime, isGwBucket });
+  }
+
   if (rows.length === 0) {
     return { hubByDay: [], bcByDay: [], reasonByDay: [] };
   }
@@ -560,7 +612,13 @@ function readTransitByDay() {
 
   const reasonGroups = groupBy(
     rows.filter((r) => !r.onTime),
-    (r) => JSON.stringify([r.iso_date, r.hub, r.bc_gui ?? null, r.coCa ? LATE_DESPITE_SHIFT_REASON : NO_SHIFT_REASON])
+    (r) =>
+      JSON.stringify([
+        r.iso_date,
+        r.hub,
+        r.bc_gui ?? null,
+        r.isGwBucket ? GW_REASON : r.coCa ? LATE_DESPITE_SHIFT_REASON : NO_SHIFT_REASON,
+      ])
   );
   const reasonByDay = Object.entries(reasonGroups).map(([key, items]) => {
     const [iso_date, hub, bc_gui, reason] = JSON.parse(key);

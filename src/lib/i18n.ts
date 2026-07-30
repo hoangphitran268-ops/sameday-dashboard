@@ -68,6 +68,7 @@ export function localizeReceivingReason(reason: string, lang: Lang): string {
 const TRANSIT_REASON_ZH: Record<string, string> = {
   "Chưa gán ca gom hàng": "尚未分配收件班次",
   "Trễ dù đã gán ca": "已分配班次但仍延误",
+  "Không trung chuyển HUB - HUB (về GW)": "未经HUB-HUB转运（发往GW）",
 };
 
 export function localizeTransitReason(reason: string, lang: Lang): string {
@@ -384,7 +385,7 @@ const vi = {
       reasonBcSectionDesc:
         "Chọn 1 nguyên nhân để xem 15 bưu cục gửi ghi nhận nhiều nhất — kèm tỷ lệ nguyên nhân đó chiếm bao nhiêu % trong tổng số đơn trễ của chính bưu cục đó.",
       rootCauseNote:
-        'Gốc rễ chính của việc gửi trễ là chưa được gán "Ca gom hàng" — các đơn có gán ca thường đạt tỷ lệ đúng giờ 80-95%, trong khi đơn chưa gán ca gần như luôn trễ.',
+        'Đơn được xét theo ngày lấy hàng thành công (khớp Mã vận đơn với Khâu nhận) — "đúng giờ" nghĩa là TTTC đầu gửi hàng đi trong khung 12:00 (N-1) đến 13:40 (N). Đơn không trung chuyển qua HUB (về GW/ĐGP/TTKT, hoặc qua HUB feeder 5/9/16) luôn tính là trễ; đơn qua HUB 18 được gộp vào HUB 8. Trong số đơn có qua HUB, gốc rễ trễ chính vẫn là chưa được gán "Ca gom hàng".',
     },
     weeklyMeeting: {
       pageTitle: "Báo cáo họp tuần",
@@ -730,7 +731,8 @@ const zh: typeof vi = {
       reasonChartTitle: "延误原因分布（单量）",
       reasonBcSectionTitle: "经常记录该原因的发件网点",
       reasonBcSectionDesc: "选择1个原因查看记录最多的15个发件网点 — 并显示该原因占该网点延误单总数的百分比。",
-      rootCauseNote: "延误的主要根源是尚未分配「收件班次」— 已分配班次的订单准时率通常为80-95%，而未分配班次的订单几乎总是延误。",
+      rootCauseNote:
+        "订单按成功揽收日期计算（通过运单号与揽收数据匹配）—「准时」指HUB始发中心在N-1日12:00至N日13:40期间发出货物。未经HUB转运的订单（发往GW/ĐGP/TTKT，或经过5/9/16号支线HUB）一律视为延误；经过18号HUB的订单归入8号HUB统计。在有效经过HUB的订单中，延误的主要根源仍是尚未分配「收件班次」。",
     },
     weeklyMeeting: {
       pageTitle: "周会报告",
