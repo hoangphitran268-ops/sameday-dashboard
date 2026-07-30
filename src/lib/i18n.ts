@@ -87,6 +87,7 @@ const vi = {
     theoGio: "Theo giờ trong ngày",
     phat: "Phạt vi phạm",
     receiving: "Nhận kiện",
+    weeklyMeeting: "Họp tuần",
   },
 
   dateRange: {
@@ -332,6 +333,38 @@ const vi = {
       mapModeDelivery: "Phát",
       mapModeTotal: "Tổng",
     },
+    weeklyMeeting: {
+      pageTitle: "Báo cáo họp tuần",
+      subtitle:
+        "Tổng hợp Nhận kiện + Phát hàng cho khoảng thời gian đang chọn ở trên — đổi bộ lọc ngày (ví dụ \"Tuần trước\") để xem kỳ khác.",
+      receivingSectionTitle: "Nhận kiện",
+      deliverySectionTitle: "Phát hàng",
+      insightsTitle: "Phát hiện chính",
+      recommendationsTitle: "Phương án cải thiện",
+      bcReceivingSectionTitle: "Bưu cục lấy hàng nổi bật trong kỳ",
+      bcDeliverySectionTitle: "Bưu cục phát hàng nổi bật trong kỳ",
+      noInsight: "Không có phát hiện đáng chú ý trong khoảng thời gian này.",
+      noRecommendation: "Không phát hiện vấn đề nổi bật cần cải thiện trong khoảng thời gian này.",
+      findingReceivingWorstBc: (bc: string, pct: number, total: string) =>
+        `Nhận kiện: bưu cục ${bc} có tỷ lệ nhận kiện thấp nhất (${pct}%, trên ${total} đơn).`,
+      findingReceivingTopReason: (reason: string, pct: number) =>
+        `Nguyên nhân lấy hàng thất bại phổ biến nhất: "${reason}" (chiếm ${pct}% số đơn có vấn đề khi lấy hàng).`,
+      findingDeliveryWorstBc: (bc: string, pct: number, total: string) =>
+        `Phát hàng: bưu cục ${bc} có tỷ lệ ký nhận thấp nhất (${pct}%, trên ${total} đơn).`,
+      findingDeliveryWorstWeekday: (weekday: string, pct: number, gap: number) =>
+        `${weekday} là ngày có tỷ lệ ký nhận thấp nhất trong kỳ (${pct}%) — thấp hơn ${gap} điểm % so với trung bình các ngày còn lại.`,
+      findingDeliveryWorstIssueDay: (date: string, pct: number) => `Ngày ${date} có tỷ lệ đơn phát sinh vấn đề cao nhất trong kỳ (${pct}%).`,
+      recoReceivingBc: (bc: string, pct: number) =>
+        `Rà soát nhân sự/tuyến lấy hàng tại bưu cục ${bc} — tỷ lệ nhận kiện chỉ ${pct}%, thấp hơn đáng kể so với mặt bằng chung.`,
+      recoReceivingReason: (reason: string) =>
+        `Phối hợp đội kinh doanh nhắc seller chuẩn bị hàng đúng hẹn — nguyên nhân "${reason}" đang chiếm tỷ trọng lớn nhất trong các đơn lấy hàng thất bại.`,
+      recoReceivingSeller: (seller: string, pct: number) =>
+        `Làm việc trực tiếp với seller "${seller}" — tỷ lệ nhận kiện chỉ ${pct}%, đang kéo tỷ lệ chung của bưu cục xuống.`,
+      recoDeliveryBc: (bc: string, pct: number) => `Kiểm tra tuyến giao/nhân sự phát hàng tại bưu cục ${bc} — tỷ lệ ký nhận chỉ ${pct}%.`,
+      recoDeliveryWeekday: (weekday: string) =>
+        `Xem xét bổ sung nhân sự hoặc điều chỉnh ca làm việc vào ${weekday} — đây là ngày có tỷ lệ ký nhận thấp nhất trong kỳ.`,
+      recoIssueDay: (pct: number) => `Rà soát nguyên nhân khiến tỷ lệ đơn có vấn đề tăng đột biến (${pct}%) để tránh lặp lại ở kỳ sau.`,
+    },
   },
 };
 
@@ -359,6 +392,7 @@ const zh: typeof vi = {
     theoGio: "每日时段分析",
     phat: "违规处罚",
     receiving: "揽收成功率",
+    weeklyMeeting: "周会报告",
   },
 
   dateRange: {
@@ -597,6 +631,30 @@ const zh: typeof vi = {
       mapModePickup: "揽收",
       mapModeDelivery: "派件",
       mapModeTotal: "总计",
+    },
+    weeklyMeeting: {
+      pageTitle: "周会报告",
+      subtitle: '汇总当前所选时间范围的揽收成功率 + 派送数据 — 可切换上方日期筛选（例如"上周"）查看其他周期。',
+      receivingSectionTitle: "揽收成功率",
+      deliverySectionTitle: "派送情况",
+      insightsTitle: "关键发现",
+      recommendationsTitle: "改进建议",
+      bcReceivingSectionTitle: "本期表现突出的揽收网点",
+      bcDeliverySectionTitle: "本期表现突出的派送网点",
+      noInsight: "所选时间范围内没有值得注意的发现。",
+      noRecommendation: "所选时间范围内没有发现需要改进的突出问题。",
+      findingReceivingWorstBc: (bc: string, pct: number, total: string) => `揽收：网点 ${bc} 揽收成功率最低（${pct}%，共 ${total} 单）。`,
+      findingReceivingTopReason: (reason: string, pct: number) => `最常见的揽收失败原因："${reason}"（占揽收问题单的 ${pct}%）。`,
+      findingDeliveryWorstBc: (bc: string, pct: number, total: string) => `派送：网点 ${bc} 签收率最低（${pct}%，共 ${total} 单）。`,
+      findingDeliveryWorstWeekday: (weekday: string, pct: number, gap: number) =>
+        `${weekday}是本期签收率最低的一天（${pct}%）— 比其余日期平均值低 ${gap} 个百分点。`,
+      findingDeliveryWorstIssueDay: (date: string, pct: number) => `${date} 是本期问题单占比最高的一天（${pct}%）。`,
+      recoReceivingBc: (bc: string, pct: number) => `建议排查网点 ${bc} 的揽收人力/路线安排 — 揽收成功率仅 ${pct}%，明显低于整体水平。`,
+      recoReceivingReason: (reason: string) => `建议与业务团队协调，提醒商家按约定时间备货 — "${reason}" 是当前揽收失败单中占比最高的原因。`,
+      recoReceivingSeller: (seller: string, pct: number) => `建议直接与商家"${seller}"沟通 — 其揽收成功率仅 ${pct}%，正在拉低该网点整体水平。`,
+      recoDeliveryBc: (bc: string, pct: number) => `建议检查网点 ${bc} 的派送路线/人力安排 — 签收率仅 ${pct}%。`,
+      recoDeliveryWeekday: (weekday: string) => `建议考虑在${weekday}增加人手或调整排班 — 该日是本期签收率最低的一天。`,
+      recoIssueDay: (pct: number) => `建议排查导致问题单占比骤增（${pct}%）的原因，避免下期再次发生。`,
     },
   },
 };

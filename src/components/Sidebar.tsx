@@ -3,7 +3,18 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { LayoutDashboard, TrendingUp, Building2, AlertTriangle, Clock, Gavel, PackageCheck, ChevronsLeft, ChevronsRight } from "lucide-react";
+import {
+  LayoutDashboard,
+  TrendingUp,
+  Building2,
+  AlertTriangle,
+  Clock,
+  Gavel,
+  PackageCheck,
+  Presentation,
+  ChevronsLeft,
+  ChevronsRight,
+} from "lucide-react";
 import { rangeDisplayLabel, resolvePreset } from "@/lib/dateRanges";
 import { getLang, dict } from "@/lib/i18n";
 import type { RangePresetKey } from "@/lib/types";
@@ -12,7 +23,7 @@ const STORAGE_KEY = "jt-sidebar-collapsed";
 
 const NAV: {
   href: string;
-  navKey: "overview" | "kpi" | "hieuSuat" | "nguyenNhan" | "theoGio" | "phat" | "receiving";
+  navKey: "overview" | "kpi" | "hieuSuat" | "nguyenNhan" | "theoGio" | "phat" | "receiving" | "weeklyMeeting";
   icon: typeof LayoutDashboard;
 }[] = [
   { href: "/", navKey: "overview", icon: LayoutDashboard },
@@ -22,6 +33,7 @@ const NAV: {
   { href: "/nguyen-nhan", navKey: "nguyenNhan", icon: AlertTriangle },
   { href: "/theo-gio", navKey: "theoGio", icon: Clock },
   { href: "/phat", navKey: "phat", icon: Gavel },
+  { href: "/hop-tuan", navKey: "weeklyMeeting", icon: Presentation },
 ];
 
 export default function Sidebar() {
