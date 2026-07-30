@@ -12,6 +12,7 @@ import {
   Gavel,
   PackageCheck,
   Presentation,
+  Truck,
   ChevronsLeft,
   ChevronsRight,
 } from "lucide-react";
@@ -23,11 +24,12 @@ const STORAGE_KEY = "jt-sidebar-collapsed";
 
 const NAV: {
   href: string;
-  navKey: "overview" | "kpi" | "hieuSuat" | "nguyenNhan" | "theoGio" | "phat" | "receiving" | "weeklyMeeting";
+  navKey: "overview" | "kpi" | "hieuSuat" | "nguyenNhan" | "theoGio" | "phat" | "receiving" | "transit" | "weeklyMeeting";
   icon: typeof LayoutDashboard;
 }[] = [
   { href: "/", navKey: "overview", icon: LayoutDashboard },
   { href: "/nhan-kien", navKey: "receiving", icon: PackageCheck },
+  { href: "/trung-chuyen", navKey: "transit", icon: Truck },
   { href: "/kpi", navKey: "kpi", icon: TrendingUp },
   { href: "/hieu-suat", navKey: "hieuSuat", icon: Building2 },
   { href: "/nguyen-nhan", navKey: "nguyenNhan", icon: AlertTriangle },

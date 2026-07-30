@@ -97,6 +97,33 @@ export interface RawReceivingGeoDay {
   thanh_cong: number;
 }
 
+/** Trung chuyển (HUB) — thư mục "Trung chuyển - HUB". "dung_gio"/"co_ca" đều tính trên đơn đã có
+ * kết quả (Y/N), "co_ca" = đã được gán "Ca gom hàng" hay chưa (gốc rễ chính của việc gửi trễ). */
+export interface RawTransitHubDay {
+  iso_date: string;
+  hub: string;
+  tong_don: number;
+  dung_gio: number;
+  co_ca: number;
+}
+
+export interface RawTransitBcDay {
+  iso_date: string;
+  hub: string;
+  bc_gui: string;
+  tong_don: number;
+  dung_gio: number;
+}
+
+/** Nguyên nhân trễ, chỉ ghi cho các kiện gửi KHÔNG đúng giờ. */
+export interface RawTransitReasonDay {
+  iso_date: string;
+  hub: string;
+  bc_gui: string | null;
+  reason: string;
+  so_luong: number;
+}
+
 export interface RawDashboardData {
   generated_at: string;
   available_dates: string[];
@@ -111,6 +138,9 @@ export interface RawDashboardData {
   receiving_seller_by_day: RawReceivingSellerDay[];
   receiving_seller_reason_by_day: RawReceivingSellerReasonDay[];
   receiving_geo_by_day: RawReceivingGeoDay[];
+  transit_hub_by_day: RawTransitHubDay[];
+  transit_bc_by_day: RawTransitBcDay[];
+  transit_reason_by_day: RawTransitReasonDay[];
 }
 
 // ---- Dữ liệu đã tổng hợp cho 1 khoảng ngày cụ thể (tính bởi src/lib/aggregate.ts) ----
@@ -315,6 +345,53 @@ export interface ReceivingPageData {
   geo: ReceivingGeoRow[];
   geo_phat: ReceivingGeoRow[];
   geo_total: ReceivingGeoRow[];
+  has_data: boolean;
+}
+
+export interface TransitMeta {
+  tong_don: number;
+  dung_gio: number;
+  tre: number;
+  ty_le_dung_gio_pct: number;
+  ty_le_tre_pct: number;
+  ty_le_chua_gan_ca_pct: number;
+}
+
+export interface TransitDailyRow {
+  report_date: string;
+  ty_le_dung_gio_pct: number;
+}
+
+export interface TransitPerfRow {
+  hub?: string;
+  bc_gui?: string;
+  tong_don: number;
+  dung_gio: number;
+  ty_le_dung_gio_pct: number;
+  ty_le_chua_gan_ca_pct: number;
+  nguyen_nhan_chinh: string | null;
+}
+
+export interface TransitReasonRow {
+  reason: string;
+  so_luong: number;
+}
+
+export interface TransitReasonBcRow {
+  hub: string;
+  bc_gui: string;
+  reason: string;
+  so_luong: number;
+}
+
+export interface TransitPageData {
+  meta: TransitMeta;
+  daily: TransitDailyRow[];
+  hub_perf: TransitPerfRow[];
+  bc_worst15: TransitPerfRow[];
+  bc_best15: TransitPerfRow[];
+  reason_overall: TransitReasonRow[];
+  reason_bc: TransitReasonBcRow[];
   has_data: boolean;
 }
 

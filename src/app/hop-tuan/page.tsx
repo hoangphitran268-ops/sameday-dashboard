@@ -1,9 +1,10 @@
-import { getDashboardData, getReceivingPageData, type SearchParams } from "@/lib/data";
+import { getDashboardData, getReceivingPageData, getTransitPageData, type SearchParams } from "@/lib/data";
 import { rangeDisplayLabel } from "@/lib/dateRanges";
-import { getLang, dict, localizeWeekday, localizeReceivingReason } from "@/lib/i18n";
+import { getLang, dict, localizeWeekday, localizeReceivingReason, localizeTransitReason } from "@/lib/i18n";
 import StatTile from "@/components/StatTile";
 import BcTabs from "@/components/BcTabs";
 import ReceivingBcTabs from "@/components/ReceivingBcTabs";
+import TransitBcTabs from "@/components/TransitBcTabs";
 import EmptyState from "@/components/EmptyState";
 import {
   Package,
@@ -13,6 +14,7 @@ import {
   PackageCheck,
   AlertCircle,
   XCircle,
+  Truck,
   Lightbulb,
   Wrench,
 } from "lucide-react";
@@ -26,8 +28,9 @@ export default async function WeeklyMeetingPage({ searchParams }: { searchParams
   const wm = t.pages.weeklyMeeting;
   const { data: dashboardData, range } = getDashboardData(params);
   const { data: receivingData } = getReceivingPageData(params);
+  const { data: transitData } = getTransitPageData(params);
 
-  if (!dashboardData.has_data && !receivingData.has_data) {
+  if (!dashboardData.has_data && !receivingData.has_data && !transitData.has_data) {
     return <EmptyState label={rangeDisplayLabel(range, lang)} lang={lang} />;
   }
 
@@ -38,6 +41,12 @@ export default async function WeeklyMeetingPage({ searchParams }: { searchParams
   }
   const rcvBcWorstLocalized = receivingData.bc_worst15.map(localizeTopReason);
   const rcvBcBestLocalized = receivingData.bc_best15.map(localizeTopReason);
+  function localizeTransitTopReason<T extends { nguyen_nhan_chinh: string | null }>(r: T): T {
+    return { ...r, nguyen_nhan_chinh: r.nguyen_nhan_chinh ? localizeTransitReason(r.nguyen_nhan_chinh, lang) : null };
+  }
+  const trWorstHub = transitData.hub_perf[0];
+  const trBcWorstLocalized = transitData.bc_worst15.map(localizeTransitTopReason);
+  const trBcBestLocalized = transitData.bc_best15.map(localizeTransitTopReason);
 
   // ---- Phát hiện chính (nhận kiện + phát hàng) ----
   const insights: string[] = [];
@@ -53,6 +62,13 @@ export default async function WeeklyMeetingPage({ searchParams }: { searchParams
   if (topReason && totalReasonCount > 0) {
     topReasonSharePct = Math.round((topReason.so_luong / totalReasonCount) * 1000) / 10;
     insights.push(wm.findingReceivingTopReason(localizeReceivingReason(topReason.nguyen_nhan, lang), topReasonSharePct));
+  }
+
+  if (trWorstHub && trWorstHub.ty_le_dung_gio_pct < 85) {
+    insights.push(wm.findingTransitWorstHub(trWorstHub.hub ?? "", trWorstHub.ty_le_dung_gio_pct, trWorstHub.tong_don.toLocaleString("vi-VN")));
+  }
+  if (trWorstHub && trWorstHub.ty_le_chua_gan_ca_pct >= 30) {
+    insights.push(wm.findingTransitChuaGanCa(trWorstHub.hub ?? "", trWorstHub.ty_le_chua_gan_ca_pct));
   }
 
   const dlvWorstBc = dashboardData.bc_worst15[0];
@@ -90,6 +106,9 @@ export default async function WeeklyMeetingPage({ searchParams }: { searchParams
   const rcvWorstSeller = receivingData.seller_worst15[0];
   if (rcvWorstSeller && rcvWorstSeller.ty_le_thanh_cong_pct < 50) {
     recommendations.push(wm.recoReceivingSeller(rcvWorstSeller.seller, rcvWorstSeller.ty_le_thanh_cong_pct));
+  }
+  if (trWorstHub && trWorstHub.ty_le_dung_gio_pct < 85) {
+    recommendations.push(wm.recoTransitHub(trWorstHub.hub ?? "", trWorstHub.ty_le_dung_gio_pct));
   }
   if (dlvWorstBc && dlvWorstBc.ty_le_ky_nhan_pct < 85) {
     recommendations.push(wm.recoDeliveryBc(dlvWorstBc.buu_cuc ?? "", dlvWorstBc.ty_le_ky_nhan_pct));
@@ -139,6 +158,29 @@ export default async function WeeklyMeetingPage({ searchParams }: { searchParams
               icon={XCircle}
               critical
             />
+          </div>
+        </div>
+      )}
+
+      {transitData.has_data && (
+        <div>
+          <h3 className="text-sm font-semibold mb-3" style={{ color: "var(--text-primary)" }}>
+            {wm.transitSectionTitle} <span style={{ color: "var(--text-muted)", fontWeight: 400 }}>· {note}</span>
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <StatTile label={t.pages.transit.statTongDon} value={transitData.meta.tong_don.toLocaleString("vi-VN")} icon={Truck} />
+            <StatTile
+              label={t.pages.transit.statDungGio}
+              value={t.pages.transit.statCountPct(transitData.meta.dung_gio.toLocaleString("vi-VN"), transitData.meta.ty_le_dung_gio_pct)}
+              icon={CheckCircle2}
+            />
+            <StatTile
+              label={t.pages.transit.statTre}
+              value={t.pages.transit.statCountPct(transitData.meta.tre.toLocaleString("vi-VN"), transitData.meta.ty_le_tre_pct)}
+              icon={AlertCircle}
+              critical
+            />
+            <StatTile label={t.pages.transit.statChuaGanCa} value={`${transitData.meta.ty_le_chua_gan_ca_pct}%`} icon={AlertTriangle} critical />
           </div>
         </div>
       )}
@@ -218,6 +260,18 @@ export default async function WeeklyMeetingPage({ searchParams }: { searchParams
             {wm.bcReceivingSectionTitle}
           </h3>
           <ReceivingBcTabs worst={rcvBcWorstLocalized} best={rcvBcBestLocalized} lang={lang} />
+        </div>
+      )}
+
+      {trBcWorstLocalized.length > 0 && (
+        <div
+          className="rounded-2xl border p-5"
+          style={{ background: "var(--surface)", borderColor: "var(--border)", boxShadow: "var(--shadow-sm)" }}
+        >
+          <h3 className="text-sm font-semibold mb-3" style={{ color: "var(--text-primary)" }}>
+            {wm.bcTransitSectionTitle}
+          </h3>
+          <TransitBcTabs worst={trBcWorstLocalized} best={trBcBestLocalized} lang={lang} />
         </div>
       )}
 

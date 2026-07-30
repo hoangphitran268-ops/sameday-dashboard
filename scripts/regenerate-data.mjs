@@ -12,6 +12,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const RAW_DIR = process.env.SAMEDAY_RAW_DIR || "D:\\Claude CODE\\data\\raw\\sameday";
 const PENALTY_DIR = path.join(RAW_DIR, "PHẠT Khâu Nhận");
 const RECEIVING_DIR = path.join(RAW_DIR, "Khâu nhận");
+const TRANSIT_DIR = path.join(RAW_DIR, "Trung chuyển - HUB");
 const OUT_PATH = path.join(__dirname, "..", "src", "data", "dashboard-data.json");
 
 // Mã "Bưu cục lấy hàng" là điểm pickup riêng (HUB/Pickup...) không xuất hiện trong file "data"
@@ -198,6 +199,10 @@ function main() {
   const bcKhuMap = buildBcKhuMap(rows);
   const receiving = readReceivingByDay(bcKhuMap);
 
+  // ---- Trung chuyển (HUB) — thư mục riêng "Trung chuyển - HUB", file rất nặng (hàng trăm nghìn
+  // dòng) nên PHẢI đọc ở chế độ dense (xem readTransitRows) để không bị treo. ----
+  const transit = readTransitByDay();
+
   const data = {
     generated_at: new Date().toISOString(),
     available_dates: availableDates,
@@ -212,6 +217,9 @@ function main() {
     receiving_seller_by_day: receiving.sellerByDay,
     receiving_seller_reason_by_day: receiving.sellerReasonByDay,
     receiving_geo_by_day: receiving.geoByDay,
+    transit_hub_by_day: transit.hubByDay,
+    transit_bc_by_day: transit.bcByDay,
+    transit_reason_by_day: transit.reasonByDay,
   };
 
   fs.mkdirSync(path.dirname(OUT_PATH), { recursive: true });
@@ -467,6 +475,99 @@ function readReceivingByDay(bcKhuMap) {
   });
 
   return { bcByDay, reasonByDay, sellerByDay, sellerReasonByDay, geoByDay };
+}
+
+const NO_SHIFT_REASON = "Chưa gán ca gom hàng";
+const LATE_DESPITE_SHIFT_REASON = "Trễ dù đã gán ca";
+
+function readTransitFiles() {
+  if (!fs.existsSync(TRANSIT_DIR)) return [];
+  return fs
+    .readdirSync(TRANSIT_DIR)
+    .filter((f) => f.toLowerCase().endsWith(".xlsx") && !f.startsWith("~$"))
+    .sort();
+}
+
+/** Đọc toàn bộ file trong thư mục "Trung chuyển - HUB" và gộp theo Mã vận đơn. File ở đây RẤT
+ * nặng (hàng trăm nghìn dòng, 40+ cột) — phải đọc ở chế độ `dense: true` và bỏ style/formula/HTML,
+ * kết hợp header:1 (mảng, không phải object theo tên cột) — nhanh hơn cách đọc thông thường hàng
+ * chục lần (thử nghiệm: ~20-25s cho toàn bộ file thay vì treo >10 phút không xong). */
+function readTransitRows() {
+  const files = readTransitFiles();
+  if (files.length === 0) return [];
+  const byWaybill = new Map();
+  for (const fname of files) {
+    const wb = XLSX.readFile(path.join(TRANSIT_DIR, fname), {
+      dense: true,
+      cellStyles: false,
+      cellHTML: false,
+      cellFormula: false,
+    });
+    const sheetName = wb.SheetNames[0];
+    const rowsArr = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { header: 1, defval: null, raw: true });
+    const header = rowsArr[0];
+    const iWaybill = header.indexOf("Mã vận đơn");
+    const iNgay = header.indexOf("Ngày");
+    const iHub = header.indexOf("Tên TTTC đầu");
+    const iBcGui = header.indexOf("Mã bưu cục gửi");
+    const iCa = header.indexOf("Ca gom hàng");
+    const iOnTime = header.indexOf("Kiện có gửi đúng giờ không?");
+    for (let i = 1; i < rowsArr.length; i++) {
+      const r = rowsArr[i];
+      const waybill = r[iWaybill];
+      const ngay = r[iNgay];
+      if (!waybill || !ngay) continue;
+      byWaybill.set(waybill, {
+        waybill,
+        iso_date: String(ngay).slice(0, 10),
+        hub: r[iHub] || null,
+        bc_gui: r[iBcGui] || null,
+        coCa: !!r[iCa],
+        onTime: r[iOnTime] === "Y" ? true : r[iOnTime] === "N" ? false : null,
+      });
+    }
+  }
+  console.log(`Đã đọc ${files.length} file Trung chuyển, tổng ${byWaybill.size} kiện (đã gộp theo Mã vận đơn).`);
+  return [...byWaybill.values()];
+}
+
+function readTransitByDay() {
+  const rows = readTransitRows().filter((r) => r.onTime !== null && r.hub);
+  if (rows.length === 0) {
+    return { hubByDay: [], bcByDay: [], reasonByDay: [] };
+  }
+
+  const hubGroups = groupBy(rows, (r) => JSON.stringify([r.iso_date, r.hub]));
+  const hubByDay = Object.entries(hubGroups).map(([key, items]) => {
+    const [iso_date, hub] = JSON.parse(key);
+    return {
+      iso_date,
+      hub,
+      tong_don: items.length,
+      dung_gio: sum(items.map((r) => (r.onTime ? 1 : 0))),
+      co_ca: sum(items.map((r) => (r.coCa ? 1 : 0))),
+    };
+  });
+
+  const bcGroups = groupBy(
+    rows.filter((r) => r.bc_gui),
+    (r) => JSON.stringify([r.iso_date, r.hub, r.bc_gui])
+  );
+  const bcByDay = Object.entries(bcGroups).map(([key, items]) => {
+    const [iso_date, hub, bc_gui] = JSON.parse(key);
+    return { iso_date, hub, bc_gui, tong_don: items.length, dung_gio: sum(items.map((r) => (r.onTime ? 1 : 0))) };
+  });
+
+  const reasonGroups = groupBy(
+    rows.filter((r) => !r.onTime),
+    (r) => JSON.stringify([r.iso_date, r.hub, r.bc_gui ?? null, r.coCa ? LATE_DESPITE_SHIFT_REASON : NO_SHIFT_REASON])
+  );
+  const reasonByDay = Object.entries(reasonGroups).map(([key, items]) => {
+    const [iso_date, hub, bc_gui, reason] = JSON.parse(key);
+    return { iso_date, hub, bc_gui, reason, so_luong: items.length };
+  });
+
+  return { hubByDay, bcByDay, reasonByDay };
 }
 
 main();
