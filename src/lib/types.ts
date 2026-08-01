@@ -395,6 +395,41 @@ export interface TransitPageData {
   has_data: boolean;
 }
 
+/** Trang Nhận kiện theo 3 cấp (HCM / Khu / BC) — biểu đồ theo ngày (cột = số đơn thành công,
+ * đường = tỷ lệ thành công %) cho 1 cấp/thực thể đang chọn, cộng bảng tóm tắt đầy đủ cho cả 3 cấp. */
+export type ReceivingLevel = "hcm" | "khu" | "bc";
+
+export interface ReceivingLevelDailyRow {
+  report_date: string;
+  thanh_cong: number;
+  ty_le_thanh_cong_pct: number;
+}
+
+export interface ReceivingLevelSummaryRow {
+  key: string;
+  khu?: string | null;
+  tong_don: number;
+  thanh_cong: number;
+  ty_le_thanh_cong_pct: number;
+  so_ngay: number;
+  tb_thanh_cong_ngay: number;
+}
+
+export interface ReceivingLevelPageData {
+  chart: {
+    level: ReceivingLevel;
+    entity: string | null;
+    daily: ReceivingLevelDailyRow[];
+    summary: ReceivingLevelSummaryRow | null;
+  };
+  hcm: ReceivingLevelSummaryRow | null;
+  khu_table: ReceivingLevelSummaryRow[];
+  bc_table: ReceivingLevelSummaryRow[];
+  khu_options: string[];
+  bc_options: string[];
+  has_data: boolean;
+}
+
 export type RangePresetKey =
   | "all"
   | "yesterday"

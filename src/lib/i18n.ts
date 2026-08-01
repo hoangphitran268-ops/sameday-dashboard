@@ -100,6 +100,7 @@ const vi = {
     theoGio: "Theo giờ trong ngày",
     phat: "Phạt vi phạm",
     receiving: "Nhận kiện",
+    receivingLevel: "Nhận kiện theo cấp",
     transit: "Trung chuyển",
     weeklyMeeting: "Họp tuần",
   },
@@ -150,6 +151,7 @@ const vi = {
     buuCucLabel: "Bưu cục",
     currencySuffix: "đ",
     unknownKhu: "Không xác định",
+    exportImage: "Xuất ảnh",
   },
 
   chartNames: {
@@ -165,6 +167,7 @@ const vi = {
     receivingSuccessPct: "Tỷ lệ nhận kiện %",
     cancelPct: "Tỷ lệ hủy đơn %",
     transitOnTimePct: "Tỷ lệ gửi đúng giờ %",
+    receivingSuccessCount: "Số đơn nhận thành công",
   },
 
   receivingPerfTable: {
@@ -231,6 +234,17 @@ const vi = {
     bcGui: "Bưu cục gửi",
     soDonReason: "Số đơn (nguyên nhân này)",
     sharePct: "% trong tổng số đơn trễ của bưu cục gửi",
+  },
+
+  receivingLevelTable: {
+    empty: "Không có dữ liệu cho lựa chọn hiện tại.",
+    key: "Tên",
+    khu: "Khu",
+    tongDon: "Tổng đơn",
+    thanhCong: "Thành công",
+    tyLeThanhCongPct: "Tỷ lệ thành công %",
+    soNgay: "Số ngày có dữ liệu",
+    tbThanhCongNgay: "TB thành công/ngày",
   },
 
   penaltyBc: {
@@ -366,6 +380,22 @@ const vi = {
       mapModeDelivery: "Phát",
       mapModeTotal: "Tổng",
     },
+    receivingLevel: {
+      pageTitle: "Nhận kiện theo cấp — HCM / Khu / BC",
+      subtitle: "Số đơn nhận thành công bình quân/ngày và tỷ lệ nhận thành công, theo 3 cấp: toàn HCM, Khu, Bưu cục lấy hàng.",
+      levelHcm: "HCM",
+      levelKhu: "Khu",
+      levelBc: "Bưu cục",
+      entityPlaceholderKhu: "Chọn khu",
+      entityPlaceholderBc: "Chọn bưu cục",
+      statAvgLabel: "TB đơn thành công/ngày",
+      statRateLabel: "Tỷ lệ thành công",
+      chartTitle: "Số đơn nhận thành công & tỷ lệ thành công theo ngày",
+      chartEmptyMsg: "Chọn 1 khu hoặc bưu cục ở bộ lọc trên để xem biểu đồ.",
+      detailTitle: "Chi tiết theo cấp",
+      khuEmptyMsg: "Không có khu nào đạt ngưỡng ≥ 1.000 đơn trong khoảng thời gian này.",
+      bcEmptyMsg: "Không có bưu cục nào đạt ngưỡng ≥ 300 đơn trong khoảng thời gian này.",
+    },
     transit: {
       pageTitle: "Trung chuyển — HUB",
       subtitle: 'Nguồn: thư mục "Trung chuyển - HUB" · gộp theo Mã vận đơn, cộng dồn khi có file mới',
@@ -454,6 +484,7 @@ const zh: typeof vi = {
     theoGio: "每日时段分析",
     phat: "违规处罚",
     receiving: "揽收成功率",
+    receivingLevel: "揽收分级表现",
     transit: "转运",
     weeklyMeeting: "周会报告",
   },
@@ -504,6 +535,7 @@ const zh: typeof vi = {
     buuCucLabel: "网点",
     currencySuffix: "越南盾",
     unknownKhu: "未知片区",
+    exportImage: "导出图片",
   },
 
   chartNames: {
@@ -519,6 +551,7 @@ const zh: typeof vi = {
     receivingSuccessPct: "揽收成功率 %",
     cancelPct: "取消率 %",
     transitOnTimePct: "准时发货率 %",
+    receivingSuccessCount: "成功揽收单量",
   },
 
   receivingPerfTable: {
@@ -585,6 +618,17 @@ const zh: typeof vi = {
     bcGui: "发件网点",
     soDonReason: "单量（该原因）",
     sharePct: "占该发件网点延误单总数的比例 %",
+  },
+
+  receivingLevelTable: {
+    empty: "当前所选条件下没有数据。",
+    key: "名称",
+    khu: "片区",
+    tongDon: "总单量",
+    thanhCong: "成功揽收",
+    tyLeThanhCongPct: "揽收成功率 %",
+    soNgay: "有数据天数",
+    tbThanhCongNgay: "日均成功揽收",
   },
 
   penaltyBc: {
@@ -713,6 +757,22 @@ const zh: typeof vi = {
       mapModePickup: "揽收",
       mapModeDelivery: "派件",
       mapModeTotal: "总计",
+    },
+    receivingLevel: {
+      pageTitle: "揽收分级表现 — HCM / 片区 / 网点",
+      subtitle: "日均成功揽收单量与揽收成功率，按3个层级查看：全市（HCM）、片区、揽收网点。",
+      levelHcm: "HCM",
+      levelKhu: "片区",
+      levelBc: "网点",
+      entityPlaceholderKhu: "选择片区",
+      entityPlaceholderBc: "选择网点",
+      statAvgLabel: "日均成功揽收单量",
+      statRateLabel: "揽收成功率",
+      chartTitle: "每日成功揽收单量与揽收成功率",
+      chartEmptyMsg: "请在上方筛选中选择1个片区或网点以查看图表。",
+      detailTitle: "分级明细",
+      khuEmptyMsg: "所选时间范围内没有片区单量达到 ≥1,000 的门槛。",
+      bcEmptyMsg: "所选时间范围内没有网点单量达到 ≥300 的门槛。",
     },
     transit: {
       pageTitle: "转运 — HUB",
