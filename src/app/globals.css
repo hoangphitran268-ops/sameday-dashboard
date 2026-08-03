@@ -86,3 +86,36 @@ body {
   background: var(--brand-red);
   color: #fff;
 }
+
+/* VietnamMap.tsx (Leaflet) — không dùng nền tile bản đồ thật, chỉ vẽ vùng phủ HCM tự dựng. */
+.leaflet-container {
+  background: var(--grid) !important;
+  font-family: inherit;
+}
+.leaflet-tooltip.vn-map-tooltip {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 12px;
+  padding: 6px 10px;
+  box-shadow: var(--shadow-md);
+}
+.leaflet-tooltip.vn-map-tooltip::before {
+  border-top-color: var(--surface);
+}
+.vn-map-label {
+  pointer-events: none;
+}
+.vn-map-label > div {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-shadow:
+    -1px -1px 0 var(--surface),
+    1px -1px 0 var(--surface),
+    -1px 1px 0 var(--surface),
+    1px 1px 0 var(--surface);
+  white-space: nowrap;
+  transform: translate(-50%, -50%);
+}
