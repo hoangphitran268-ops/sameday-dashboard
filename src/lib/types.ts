@@ -325,10 +325,22 @@ export interface ReceivingSellerReasonRow {
   so_luong: number;
 }
 
+/** "phuong_xa" được tái dùng làm tên đơn vị hiển thị trên bản đồ nói chung — với lớp Quận/Huyện
+ * hoặc Khu thì đây là tên Quận/Huyện hoặc mã Khu, không chỉ riêng Phường/Xã. */
 export interface ReceivingGeoRow {
   phuong_xa: string;
   tong_don: number;
   thanh_cong: number;
+}
+
+export type MapLayerKey = "ward" | "district" | "khu";
+
+/** Dữ liệu bản đồ cho 1 cấp ranh giới (Phường/Quận/Khu), đủ 3 chế độ Nhận/Phát/Tổng — xem
+ * VietnamMap.tsx. "delivery" hiện luôn rỗng (chưa có nguồn "Phường Phát"), "total" == "pickup". */
+export interface ReceivingGeoLayerData {
+  pickup: ReceivingGeoRow[];
+  delivery: ReceivingGeoRow[];
+  total: ReceivingGeoRow[];
 }
 
 export interface ReceivingPageData {
@@ -342,9 +354,7 @@ export interface ReceivingPageData {
   seller_worst15: ReceivingSellerRow[];
   seller_best15: ReceivingSellerRow[];
   seller_reason: ReceivingSellerReasonRow[];
-  geo: ReceivingGeoRow[];
-  geo_phat: ReceivingGeoRow[];
-  geo_total: ReceivingGeoRow[];
+  geo_layers: Record<MapLayerKey, ReceivingGeoLayerData>;
   has_data: boolean;
 }
 

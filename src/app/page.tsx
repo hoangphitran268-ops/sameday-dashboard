@@ -111,12 +111,15 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
         </div>
       )}
 
-      {receivingData.geo_total.length > 0 && (
+      {receivingData.geo_layers.ward.total.length > 0 && (
         <ChartCard title={dict[lang].pages.receiving.mapSectionTitle} note={rangeDisplayLabel(range, lang)}>
           <VietnamMap
-            pickupData={receivingData.geo}
-            deliveryData={receivingData.geo_phat}
-            totalData={receivingData.geo_total}
+            data={receivingData.geo_layers}
+            layerLabels={{
+              ward: dict[lang].pages.receiving.mapLayerWard,
+              district: dict[lang].pages.receiving.mapLayerDistrict,
+              khu: dict[lang].pages.receiving.mapLayerKhu,
+            }}
             modeLabels={{
               pickup: dict[lang].pages.receiving.mapModePickup,
               delivery: dict[lang].pages.receiving.mapModeDelivery,

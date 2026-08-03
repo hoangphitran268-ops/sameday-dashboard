@@ -379,6 +379,9 @@ const vi = {
       mapModePickup: "Nhận",
       mapModeDelivery: "Phát",
       mapModeTotal: "Tổng",
+      mapLayerWard: "Phường/Xã",
+      mapLayerDistrict: "Quận/Huyện",
+      mapLayerKhu: "Khu",
     },
     receivingLevel: {
       pageTitle: "Nhận kiện theo cấp — HCM / Khu / BC",
@@ -760,6 +763,9 @@ const zh: typeof vi = {
       mapModePickup: "揽收",
       mapModeDelivery: "派件",
       mapModeTotal: "总计",
+      mapLayerWard: "坊/社",
+      mapLayerDistrict: "郡/县",
+      mapLayerKhu: "片区",
     },
     receivingLevel: {
       pageTitle: "揽收分级表现 — HCM / 片区 / 网点",

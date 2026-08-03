@@ -3,23 +3,31 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from "react";
 import { geoMercator, geoPath } from "d3-geo";
 import { ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
+import type { MapLayerKey, ReceivingGeoLayerData, ReceivingGeoRow } from "@/lib/types";
 
-interface WardFeature {
+interface MapFeature {
   type: "Feature";
-  properties: { code: string; name: string };
+  properties: { code?: string; name: string; ward_count?: number };
   geometry: GeoJSON.Geometry;
 }
-interface WardCollection {
+interface MapCollection {
   type: "FeatureCollection";
-  features: WardFeature[];
+  features: MapFeature[];
 }
 
 const WIDTH = 720;
 const HEIGHT = 900;
 const MIN_K = 1;
 const MAX_K = 30;
-/** Chỉ hiện tên phường khi đã zoom đủ gần — tránh chồng chữ lúc xem toàn cảnh 102 phường. */
-const LABEL_MIN_K = 2.2;
+/** Chỉ hiện tên phường khi đã zoom đủ gần — tránh chồng chữ lúc xem toàn cảnh. Quận/Khu ít đơn vị
+ * hơn hẳn nên hiện tên ngay từ đầu cũng không bị rối. */
+const LABEL_MIN_K: Record<MapLayerKey, number> = { ward: 2.2, district: 1, khu: 1 };
+
+const GEOJSON_URL: Record<MapLayerKey, string> = {
+  ward: "/geo/hcm-wards.geojson",
+  district: "/geo/hcm-districts.geojson",
+  khu: "/geo/hcm-khu.geojson",
+};
 
 function normalizeName(s: string): string {
   return s
@@ -39,27 +47,25 @@ function clampK(k: number) {
   return Math.min(MAX_K, Math.max(MIN_K, k));
 }
 
-type GeoRow = { phuong_xa: string; thanh_cong: number };
 type MapMode = "pickup" | "delivery" | "total";
 
 export default function VietnamMap({
-  pickupData,
-  deliveryData,
-  totalData,
+  data,
+  layerLabels,
   modeLabels,
   loadingLabel,
   emptyLabel,
   unitLabel,
 }: {
-  pickupData: GeoRow[];
-  deliveryData: GeoRow[];
-  totalData: GeoRow[];
+  data: Record<MapLayerKey, ReceivingGeoLayerData>;
+  layerLabels: { ward: string; district: string; khu: string };
   modeLabels: { pickup: string; delivery: string; total: string };
   loadingLabel: string;
   emptyLabel: string;
   unitLabel: string;
 }) {
-  const [geojson, setGeojson] = useState<WardCollection | null>(null);
+  const [layer, setLayer] = useState<MapLayerKey>("ward");
+  const [geojson, setGeojson] = useState<MapCollection | null>(null);
   const [transform, setTransform] = useState({ x: 0, y: 0, k: 1 });
   const [hover, setHover] = useState<{ name: string; value: number; x: number; y: number } | null>(null);
   const [dragging, setDragging] = useState(false);
@@ -70,13 +76,15 @@ export default function VietnamMap({
   const wheelFrame = useRef<number | null>(null);
 
   useEffect(() => {
-    fetch("/geo/hcm-wards.geojson")
+    setGeojson(null);
+    setTransform({ x: 0, y: 0, k: 1 });
+    fetch(GEOJSON_URL[layer])
       .then((r) => r.json())
       .then(setGeojson)
       .catch(() => setGeojson(null));
-  }, []);
+  }, [layer]);
 
-  // Chỉ tính lại projection + chuỗi "d" của từng phường 1 LẦN khi geojson thay đổi — đây là phần
+  // Chỉ tính lại projection + chuỗi "d" của từng vùng 1 LẦN khi geojson thay đổi — đây là phần
   // nặng nhất (fitSize duyệt toàn bộ toạ độ). Trước đây tính lại mỗi lần render (kể cả mỗi pixel
   // di chuột / mỗi tick zoom) khiến bản đồ giật/văng khi tương tác nhiều.
   const paths = useMemo(() => {
@@ -86,7 +94,7 @@ export default function VietnamMap({
     return geojson.features.map((f) => {
       const [cx, cy] = pathGen.centroid(f);
       return {
-        code: f.properties.code,
+        code: f.properties.code ?? f.properties.name,
         name: f.properties.name,
         d: pathGen(f) ?? "",
         cx,
@@ -95,17 +103,18 @@ export default function VietnamMap({
     });
   }, [geojson]);
 
-  const data = mode === "pickup" ? pickupData : mode === "delivery" ? deliveryData : totalData;
+  const layerData = data[layer];
+  const rows: ReceivingGeoRow[] = mode === "pickup" ? layerData.pickup : mode === "delivery" ? layerData.delivery : layerData.total;
 
   const valueMap = useMemo(() => {
     const m = new Map<string, number>();
-    for (const d of data) {
+    for (const d of rows) {
       const key = normalizeName(d.phuong_xa);
       m.set(key, (m.get(key) ?? 0) + d.thanh_cong);
     }
     return m;
-  }, [data]);
-  const maxVal = Math.max(1, ...data.map((d) => d.thanh_cong));
+  }, [rows]);
+  const maxVal = Math.max(1, ...rows.map((d) => d.thanh_cong));
 
   function colorFor(v: number) {
     if (v <= 0) return "var(--grid)";
@@ -176,33 +185,56 @@ export default function VietnamMap({
 
   return (
     <div ref={containerRef} className="relative" style={{ overscrollBehavior: "contain" }}>
+      <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
+        <div className="flex gap-1 p-1 rounded-full border" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
+          {(["ward", "district", "khu"] as MapLayerKey[]).map((lv) => (
+            <button
+              key={lv}
+              onClick={() => setLayer(lv)}
+              className="text-xs font-semibold px-3.5 py-1.5 rounded-full transition-all duration-150"
+              style={
+                layer === lv
+                  ? {
+                      background: "linear-gradient(135deg, var(--brand-red) 0%, var(--brand-red-dark) 100%)",
+                      color: "#fff",
+                      boxShadow: "var(--shadow-red)",
+                    }
+                  : { background: "transparent", color: "var(--text-secondary)" }
+              }
+            >
+              {layerLabels[lv]}
+            </button>
+          ))}
+        </div>
+        <div className="flex gap-2">
+          {(["pickup", "delivery", "total"] as const).map((m) => (
+            <button
+              key={m}
+              onClick={() => setMode(m)}
+              className="text-xs font-semibold px-3.5 py-1.5 rounded-full border transition-all duration-150"
+              style={
+                mode === m
+                  ? {
+                      background: "linear-gradient(135deg, var(--brand-red) 0%, var(--brand-red-dark) 100%)",
+                      borderColor: "var(--brand-red)",
+                      color: "#fff",
+                      boxShadow: "var(--shadow-red)",
+                    }
+                  : { background: "transparent", borderColor: "var(--border)", color: "var(--text-secondary)" }
+              }
+            >
+              {modeLabels[m]}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {!geojson ? (
         <div className="flex items-center justify-center text-sm" style={{ height: 400, color: "var(--text-muted)" }}>
           {loadingLabel}
         </div>
       ) : (
         <>
-          <div className="flex gap-2 mb-3">
-            {(["pickup", "delivery", "total"] as const).map((m) => (
-              <button
-                key={m}
-                onClick={() => setMode(m)}
-                className="text-xs font-semibold px-3.5 py-1.5 rounded-full border transition-all duration-150"
-                style={
-                  mode === m
-                    ? {
-                        background: "linear-gradient(135deg, var(--brand-red) 0%, var(--brand-red-dark) 100%)",
-                        borderColor: "var(--brand-red)",
-                        color: "#fff",
-                        boxShadow: "var(--shadow-red)",
-                      }
-                    : { background: "transparent", borderColor: "var(--border)", color: "var(--text-secondary)" }
-                }
-              >
-                {modeLabels[m]}
-              </button>
-            ))}
-          </div>
           <svg
             ref={svgRef}
             viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
@@ -234,7 +266,7 @@ export default function VietnamMap({
                   />
                 );
               })}
-              {transform.k >= LABEL_MIN_K &&
+              {transform.k >= LABEL_MIN_K[layer] &&
                 paths.map((p) => (
                   <text
                     key={`label-${p.code}`}
