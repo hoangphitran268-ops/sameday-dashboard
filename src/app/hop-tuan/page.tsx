@@ -158,7 +158,7 @@ export default async function WeeklyMeetingPage({ searchParams }: { searchParams
           <h3 className="text-sm font-semibold mb-3" style={{ color: "var(--text-primary)" }}>
             {wm.transitSectionTitle} <span style={{ color: "var(--text-muted)", fontWeight: 400 }}>· {note}</span>
           </h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-w-2xl">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             <StatTile label={t.pages.transit.statTongDon} value={transitData.meta.tong_don.toLocaleString("vi-VN")} icon={Truck} />
             <StatTile
               label={t.pages.transit.statDungGio}

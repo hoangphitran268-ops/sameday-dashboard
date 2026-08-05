@@ -36,11 +36,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
 
   return (
     <html lang="vi" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
-      <body className="min-h-full flex" style={{ background: "var(--background)" }}>
+      <body className="h-screen flex overflow-hidden" style={{ background: "var(--background)" }}>
         <Suspense fallback={null}>
           <Sidebar />
         </Suspense>
-        <div className="flex-1 min-w-0 flex flex-col">
+        <div className="flex-1 min-w-0 flex flex-col overflow-y-auto">
           <header
             className="relative flex items-center justify-between px-8 py-4 gap-4"
             style={{ background: "var(--surface)", boxShadow: "var(--shadow-sm)" }}

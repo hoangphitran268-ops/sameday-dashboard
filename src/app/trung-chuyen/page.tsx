@@ -39,7 +39,7 @@ export default async function TransitPage({ searchParams }: { searchParams: Prom
         </p>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-w-2xl">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         <StatTile label={t.pages.transit.statTongDon} value={data.meta.tong_don.toLocaleString("vi-VN")} icon={Truck} />
         <StatTile
           label={t.pages.transit.statDungGio}
