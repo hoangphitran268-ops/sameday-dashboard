@@ -207,7 +207,7 @@ function main() {
   // dòng) nên PHẢI đọc ở chế độ dense (xem readTransitRows) để không bị treo. Đơn được match ngược
   // theo "Mã vận đơn" với Khâu nhận để lấy ngày lấy hàng thành công (dùng rawRows đã đọc ở trên,
   // tránh đọc lại file Khâu nhận lần 2). ----
-  const transit = readTransitByDay(receivingRawRows);
+  const transit = readTransitByDay(receivingRawRows, bcKhuMap);
 
   const data = {
     generated_at: new Date().toISOString(),
@@ -224,8 +224,8 @@ function main() {
     receiving_seller_reason_by_day: receiving.sellerReasonByDay,
     receiving_geo_by_day: receiving.geoByDay,
     transit_hub_by_day: transit.hubByDay,
-    transit_bc_by_day: transit.bcByDay,
     transit_reason_by_day: transit.reasonByDay,
+    transit_bc_status_by_day: transit.bcStatusByDay,
   };
 
   fs.mkdirSync(path.dirname(OUT_PATH), { recursive: true });
@@ -482,16 +482,17 @@ function readReceivingByDay(rawRows, bcKhuMap) {
   return { bcByDay, reasonByDay, sellerByDay, sellerReasonByDay, geoByDay };
 }
 
-const NO_SHIFT_REASON = "Chưa gán ca gom hàng";
-const LATE_DESPITE_SHIFT_REASON = "Trễ dù đã gán ca";
-const GW_REASON = "Không trung chuyển HUB - HUB (về GW)";
-const GW_BUCKET_LABEL = "Hàng gửi về GW";
+const REASON_BC_NHAN_TRE = "Do BC - Nhận hàng trễ";
+const REASON_BC_GUI_TRE = "Do BC - Gửi hàng về trễ";
+const REASON_HUB_THAO_TAC_TRE = "Do HUB - Thao tác trễ";
+const REASON_HUB_XE_TRUC_TRAC = "Do HUB - Do xe trục trặc";
+const REASON_KHAC = "Khác";
 
 // "Mã TTTC đầu" -> tên HUB lõi hiển thị trên báo cáo. 4 HUB lõi (7/8/11/13) nhận hàng trực tiếp;
 // HUB 18 (028H98) không có chặng trung chuyển riêng trong file này nên được tính gộp vào HUB 8
 // theo quy ước nghiệp vụ (không phải suy ra từ dữ liệu). Mọi mã khác — gồm cả HUB feeder 5/9/16
-// (028H85/028H89/028H96), ĐGP/TTKT/GW hoặc rỗng — đều KHÔNG có chặng HUB-HUB hợp lệ, gộp vào
-// "Hàng gửi về GW".
+// (028H85/028H89/028H96), ĐGP/TTKT/GW hoặc rỗng — đều KHÔNG có chặng HUB-HUB hợp lệ, xếp
+// "Gửi sai đích".
 const CORE_HUB_NAME_BY_CODE = {
   "028H87": "(HCM) HUB 7",
   "028H88": "(HCM) HUB 8",
@@ -501,14 +502,14 @@ const CORE_HUB_NAME_BY_CODE = {
 const FEEDER_TO_HUB8_CODE = "028H98";
 
 function classifyTransitHub(maTTTCDau) {
-  if (maTTTCDau === FEEDER_TO_HUB8_CODE) return { hub: CORE_HUB_NAME_BY_CODE["028H88"], isGwBucket: false };
-  if (CORE_HUB_NAME_BY_CODE[maTTTCDau]) return { hub: CORE_HUB_NAME_BY_CODE[maTTTCDau], isGwBucket: false };
-  return { hub: GW_BUCKET_LABEL, isGwBucket: true };
+  if (maTTTCDau === FEEDER_TO_HUB8_CODE) return { hub: CORE_HUB_NAME_BY_CODE["028H88"], isWrongDestination: false };
+  if (CORE_HUB_NAME_BY_CODE[maTTTCDau]) return { hub: CORE_HUB_NAME_BY_CODE[maTTTCDau], isWrongDestination: false };
+  return { hub: null, isWrongDestination: true };
 }
 
-// Đơn hàng SAMEDAY hợp lệ: TTTC đầu gửi hàng đi (Thời gian TTTC đầu gửi hàng) trong khung
-// 12:00:00 ngày N-1 -> 13:40:00 ngày N (N = ngày lấy hàng thành công, xem noonWindowDay).
-function transitOnTime(dispatch, dayN) {
+/** Chỉ số của Bưu cục gửi: TTTC đầu gửi hàng đi (Thời gian TTTC đầu gửi hàng) trong khung
+ * 12:00:00 ngày N-1 -> 13:40:00 ngày N (N = ngày lấy hàng thành công, xem noonWindowDay). */
+function bcOnTime(dispatch, dayN) {
   if (!dispatch) return false;
   const winStart = new Date(dayN);
   winStart.setUTCDate(winStart.getUTCDate() - 1);
@@ -516,6 +517,40 @@ function transitOnTime(dispatch, dayN) {
   const winEnd = new Date(dayN);
   winEnd.setUTCHours(13, 40, 0, 0);
   return dispatch >= winStart && dispatch <= winEnd;
+}
+
+/** Chỉ số của HUB: chỉ cần TTTC đầu gửi hàng đi trước 14:00 ngày N (không có mốc dưới). */
+function hubOnTime(dispatch, dayN) {
+  if (!dispatch) return false;
+  const winEnd = new Date(dayN);
+  winEnd.setUTCHours(14, 0, 0, 0);
+  return dispatch < winEnd;
+}
+
+function atTime(dayN, h, m) {
+  const d = new Date(dayN);
+  d.setUTCHours(h, m, 0, 0);
+  return d;
+}
+/** true nếu t nằm trong khoảng MỞ (from, to) của ngày N — "sau X đến trước Y". */
+function betweenOpen(t, dayN, fromH, fromM, toH, toM) {
+  if (!t) return false;
+  return t > atTime(dayN, fromH, fromM) && t < atTime(dayN, toH, toM);
+}
+function beforeTime(t, dayN, h, m) {
+  if (!t) return false;
+  return t < atTime(dayN, h, m);
+}
+
+/** Nguyên nhân trễ — chỉ gọi cho kiện đã xác định trễ theo hubOnTime. Xét theo thứ tự ưu tiên,
+ * dừng ở điều kiện đầu tiên khớp; "Khác" là lưới an toàn cho kiện không khớp điều kiện nào (ví dụ
+ * hàng đến TTTC đầu rất trễ, sau 13:50) để tổng nguyên nhân luôn khớp tổng số kiện trễ. */
+function reasonFor(r, dayN) {
+  if (betweenOpen(r.receivedAt, dayN, 12, 30, 13, 0)) return REASON_BC_NHAN_TRE;
+  if (betweenOpen(r.bcDispatchAt, dayN, 12, 30, 13, 0) || betweenOpen(r.arrivedAtHub, dayN, 12, 50, 13, 50)) return REASON_BC_GUI_TRE;
+  if (beforeTime(r.arrivedAtHub, dayN, 12, 30)) return REASON_HUB_THAO_TAC_TRE;
+  if (beforeTime(r.bagCloseAt, dayN, 13, 20)) return REASON_HUB_XE_TRUC_TRAC;
+  return REASON_KHAC;
 }
 
 function readTransitFiles() {
@@ -547,8 +582,11 @@ function readTransitRows() {
     const iWaybill = header.indexOf("Mã vận đơn");
     const iMaTTTCDau = header.indexOf("Mã TTTC đầu");
     const iBcGui = header.indexOf("Mã bưu cục gửi");
-    const iCa = header.indexOf("Ca gom hàng");
     const iThoiGianGui = header.indexOf("Thời gian TTTC đầu gửi hàng");
+    const iNhanHang = header.indexOf("Thời gian nhận hàng");
+    const iBcGuiHang = header.indexOf("Thời gian gửi hàng của bưu cục");
+    const iHangDenTTTC = header.indexOf("Thời gian hàng đến TTTC đầu");
+    const iDongBao = header.indexOf("Thời gian TTTC đầu quét đóng bao");
     for (let i = 1; i < rowsArr.length; i++) {
       const r = rowsArr[i];
       const waybill = r[iWaybill];
@@ -557,8 +595,11 @@ function readTransitRows() {
         waybill,
         maTTTCDau: r[iMaTTTCDau] || null,
         bc_gui: r[iBcGui] || null,
-        coCa: !!r[iCa],
         dispatch: excelSerialToDate(r[iThoiGianGui]),
+        receivedAt: excelSerialToDate(r[iNhanHang]),
+        bcDispatchAt: excelSerialToDate(r[iBcGuiHang]),
+        arrivedAtHub: excelSerialToDate(r[iHangDenTTTC]),
+        bagCloseAt: excelSerialToDate(r[iDongBao]),
       });
     }
   }
@@ -569,8 +610,10 @@ function readTransitRows() {
 /** Match ngược từng kiện Trung chuyển với ngày lấy hàng thành công bên Khâu nhận (theo Mã vận
  * đơn) để xác định kiện đó thuộc đơn SAMEDAY của ngày N nào — kiện không match được (chưa có/không
  * lấy hàng thành công) bị loại vì không xác định được ngày N. `receivingRawRows` là kết quả
- * readReceivingRows() đã đọc sẵn ở main(), tránh đọc lại file Khâu nhận lần 2. */
-function readTransitByDay(receivingRawRows) {
+ * readReceivingRows() đã đọc sẵn ở main(), tránh đọc lại file Khâu nhận lần 2. `bcKhuMap` (Mã BC ->
+ * Khu, đã build sẵn ở main()) dùng để gắn Khu cho transit_bc_status_by_day, phục vụ trang Nhận
+ * kiện theo cấp gộp lên Khu/HCM. */
+function readTransitByDay(receivingRawRows, bcKhuMap) {
   const pickupMap = new Map();
   for (const r of receivingRawRows) {
     if (r.pickup) pickupMap.set(r.waybill, r.pickup);
@@ -583,52 +626,52 @@ function readTransitByDay(receivingRawRows) {
     if (!pickup) continue;
     const dayN = noonWindowDay(pickup);
     const iso_date = toISODate(dayN);
-    const { hub, isGwBucket } = classifyTransitHub(r.maTTTCDau);
-    const onTime = isGwBucket ? false : transitOnTime(r.dispatch, dayN);
-    rows.push({ iso_date, hub, bc_gui: r.bc_gui, coCa: r.coCa, onTime, isGwBucket });
+    const { hub, isWrongDestination } = classifyTransitHub(r.maTTTCDau);
+    rows.push({ iso_date, dayN, hub, bc_gui: r.bc_gui, isWrongDestination, raw: r });
   }
 
   if (rows.length === 0) {
-    return { hubByDay: [], bcByDay: [], reasonByDay: [] };
+    return { hubByDay: [], reasonByDay: [], bcStatusByDay: [] };
   }
 
-  const hubGroups = groupBy(rows, (r) => JSON.stringify([r.iso_date, r.hub]));
+  // ---- HUB: chỉ kiện đi qua HUB thật, đúng giờ theo mốc 14:00 ngày N ----
+  const hubRows = rows.filter((r) => !r.isWrongDestination);
+  const hubGroups = groupBy(hubRows, (r) => JSON.stringify([r.iso_date, r.hub]));
   const hubByDay = Object.entries(hubGroups).map(([key, items]) => {
     const [iso_date, hub] = JSON.parse(key);
     return {
       iso_date,
       hub,
       tong_don: items.length,
-      dung_gio: sum(items.map((r) => (r.onTime ? 1 : 0))),
-      co_ca: sum(items.map((r) => (r.coCa ? 1 : 0))),
+      dung_gio: sum(items.map((r) => (hubOnTime(r.raw.dispatch, r.dayN) ? 1 : 0))),
     };
   });
 
-  const bcGroups = groupBy(
-    rows.filter((r) => r.bc_gui),
-    (r) => JSON.stringify([r.iso_date, r.hub, r.bc_gui])
-  );
-  const bcByDay = Object.entries(bcGroups).map(([key, items]) => {
-    const [iso_date, hub, bc_gui] = JSON.parse(key);
-    return { iso_date, hub, bc_gui, tong_don: items.length, dung_gio: sum(items.map((r) => (r.onTime ? 1 : 0))) };
-  });
-
-  const reasonGroups = groupBy(
-    rows.filter((r) => !r.onTime),
-    (r) =>
-      JSON.stringify([
-        r.iso_date,
-        r.hub,
-        r.bc_gui ?? null,
-        r.isGwBucket ? GW_REASON : r.coCa ? LATE_DESPITE_SHIFT_REASON : NO_SHIFT_REASON,
-      ])
-  );
+  // ---- Nguyên nhân: chỉ kiện HUB trễ (theo mốc 14:00) ----
+  const lateHubRows = hubRows.filter((r) => !hubOnTime(r.raw.dispatch, r.dayN));
+  const reasonGroups = groupBy(lateHubRows, (r) => JSON.stringify([r.iso_date, r.hub, reasonFor(r.raw, r.dayN)]));
   const reasonByDay = Object.entries(reasonGroups).map(([key, items]) => {
-    const [iso_date, hub, bc_gui, reason] = JSON.parse(key);
-    return { iso_date, hub, bc_gui, reason, so_luong: items.length };
+    const [iso_date, hub, reason] = JSON.parse(key);
+    return { iso_date, hub, reason, so_luong: items.length };
   });
 
-  return { hubByDay, bcByDay, reasonByDay };
+  // ---- Bưu cục gửi: gửi trễ (chỉ tính trong số kiện qua HUB thật) + gửi sai đích ----
+  const bcStatusGroups = groupBy(
+    rows.filter((r) => r.bc_gui),
+    (r) => JSON.stringify([r.iso_date, r.bc_gui])
+  );
+  const bcStatusByDay = Object.entries(bcStatusGroups).map(([key, items]) => {
+    const [iso_date, bc_gui] = JSON.parse(key);
+    return {
+      iso_date,
+      bc_gui,
+      khu: bcKhuMap.get(bc_gui) ?? null,
+      gui_tre: sum(items.map((r) => (!r.isWrongDestination && !bcOnTime(r.raw.dispatch, r.dayN) ? 1 : 0))),
+      gui_sai_dich: sum(items.map((r) => (r.isWrongDestination ? 1 : 0))),
+    };
+  });
+
+  return { hubByDay, reasonByDay, bcStatusByDay };
 }
 
 main();

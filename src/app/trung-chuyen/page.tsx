@@ -5,11 +5,9 @@ import ChartCard from "@/components/ChartCard";
 import HBarChart from "@/components/charts/HBarChart";
 import TransitTrendLine from "@/components/charts/TransitTrendLine";
 import TransitPerfTable from "@/components/TransitPerfTable";
-import TransitBcTabs from "@/components/TransitBcTabs";
-import TransitReasonBreakdown from "@/components/TransitReasonBreakdown";
 import StatTile from "@/components/StatTile";
 import EmptyState from "@/components/EmptyState";
-import { Truck, CheckCircle2, AlertCircle, AlertTriangle } from "lucide-react";
+import { Truck, CheckCircle2, AlertCircle } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -25,13 +23,10 @@ export default async function TransitPage({ searchParams }: { searchParams: Prom
 
   const note = rangeDisplayLabel(range, lang);
   const reasonOverallLocalized = data.reason_overall.map((r) => ({ ...r, reason: localizeTransitReason(r.reason, lang) }));
-  const reasonBcLocalized = data.reason_bc.map((r) => ({ ...r, reason: localizeTransitReason(r.reason, lang) }));
   function localizeTopReason<T extends { nguyen_nhan_chinh: string | null }>(r: T): T {
     return { ...r, nguyen_nhan_chinh: r.nguyen_nhan_chinh ? localizeTransitReason(r.nguyen_nhan_chinh, lang) : null };
   }
   const hubPerfLocalized = data.hub_perf.map(localizeTopReason);
-  const bcWorst15Localized = data.bc_worst15.map(localizeTopReason);
-  const bcBest15Localized = data.bc_best15.map(localizeTopReason);
 
   return (
     <div className="space-y-6 w-full">
@@ -44,7 +39,7 @@ export default async function TransitPage({ searchParams }: { searchParams: Prom
         </p>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-w-2xl">
         <StatTile label={t.pages.transit.statTongDon} value={data.meta.tong_don.toLocaleString("vi-VN")} icon={Truck} />
         <StatTile
           label={t.pages.transit.statDungGio}
@@ -55,12 +50,6 @@ export default async function TransitPage({ searchParams }: { searchParams: Prom
           label={t.pages.transit.statTre}
           value={t.pages.transit.statCountPct(data.meta.tre.toLocaleString("vi-VN"), data.meta.ty_le_tre_pct)}
           icon={AlertCircle}
-          critical
-        />
-        <StatTile
-          label={t.pages.transit.statChuaGanCa}
-          value={`${data.meta.ty_le_chua_gan_ca_pct}%`}
-          icon={AlertTriangle}
           critical
         />
       </div>
@@ -97,52 +86,21 @@ export default async function TransitPage({ searchParams }: { searchParams: Prom
           <h3 className="text-sm font-semibold mb-3" style={{ color: "var(--text-primary)" }}>
             {t.pages.transit.hubTableTitle}
           </h3>
-          <TransitPerfTable rows={hubPerfLocalized} labelKey="hub" lang={lang} />
+          <TransitPerfTable rows={hubPerfLocalized} lang={lang} />
         </div>
       )}
 
-      <div
-        className="rounded-2xl border p-5"
-        style={{ background: "var(--surface)", borderColor: "var(--border)", boxShadow: "var(--shadow-sm)" }}
-      >
-        <h3 className="text-sm font-semibold mb-3" style={{ color: "var(--text-primary)" }}>
-          {t.pages.transit.bcSectionTitle}
-        </h3>
-        {data.bc_worst15.length > 0 ? (
-          <TransitBcTabs worst={bcWorst15Localized} best={bcBest15Localized} lang={lang} />
-        ) : (
-          <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-            {t.pages.transit.bcEmptyMsg}
-          </p>
-        )}
-      </div>
-
       {reasonOverallLocalized.length > 0 && (
-        <>
-          <ChartCard title={t.pages.transit.reasonChartTitle} note={note}>
-            <HBarChart
-              data={reasonOverallLocalized as unknown as Record<string, unknown>[]}
-              dataKey="so_luong"
-              categoryKey="reason"
-              name={t.chartNames.quantity}
-              width={260}
-              color="var(--series-primary)"
-            />
-          </ChartCard>
-
-          <div
-            className="rounded-2xl border p-5"
-            style={{ background: "var(--surface)", borderColor: "var(--border)", boxShadow: "var(--shadow-sm)" }}
-          >
-            <h3 className="text-sm font-semibold mb-1" style={{ color: "var(--text-primary)" }}>
-              {t.pages.transit.reasonBcSectionTitle}
-            </h3>
-            <p className="text-[11px] mb-4" style={{ color: "var(--text-muted)" }}>
-              {t.pages.transit.reasonBcSectionDesc}
-            </p>
-            <TransitReasonBreakdown reasonOverall={reasonOverallLocalized} reasonBc={reasonBcLocalized} lang={lang} />
-          </div>
-        </>
+        <ChartCard title={t.pages.transit.reasonChartTitle} note={note}>
+          <HBarChart
+            data={reasonOverallLocalized as unknown as Record<string, unknown>[]}
+            dataKey="so_luong"
+            categoryKey="reason"
+            name={t.chartNames.quantity}
+            width={200}
+            color="var(--series-primary)"
+          />
+        </ChartCard>
       )}
     </div>
   );

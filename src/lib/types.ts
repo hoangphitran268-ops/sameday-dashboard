@@ -97,31 +97,34 @@ export interface RawReceivingGeoDay {
   thanh_cong: number;
 }
 
-/** Trung chuyển (HUB) — thư mục "Trung chuyển - HUB". "dung_gio"/"co_ca" đều tính trên đơn đã có
- * kết quả (Y/N), "co_ca" = đã được gán "Ca gom hàng" hay chưa (gốc rễ chính của việc gửi trễ). */
+/** Trung chuyển (HUB) — thư mục "Trung chuyển - HUB". Chỉ gồm kiện đi qua HUB thật (không tính
+ * "Gửi sai đích"); "dung_gio" tính theo mốc HUB (trước 14:00 ngày N — xem hubOnTime trong
+ * regenerate-data.mjs). */
 export interface RawTransitHubDay {
   iso_date: string;
   hub: string;
   tong_don: number;
   dung_gio: number;
-  co_ca: number;
 }
 
-export interface RawTransitBcDay {
-  iso_date: string;
-  hub: string;
-  bc_gui: string;
-  tong_don: number;
-  dung_gio: number;
-}
-
-/** Nguyên nhân trễ, chỉ ghi cho các kiện gửi KHÔNG đúng giờ. */
+/** Nguyên nhân trễ theo HUB (Do BC - Nhận/Gửi hàng trễ, Do HUB - Thao tác trễ/Xe trục trặc, Khác),
+ * chỉ ghi cho kiện qua HUB thật và trễ theo mốc HUB. */
 export interface RawTransitReasonDay {
   iso_date: string;
   hub: string;
-  bc_gui: string | null;
   reason: string;
   so_luong: number;
+}
+
+/** Trạng thái theo Bưu cục gửi — dùng để gộp vào trang Nhận kiện theo cấp (HCM/Khu/BC), không
+ * hiển thị trên trang Trung chuyển (trang đó chỉ tính số liệu của HUB). "gui_tre" chỉ tính trong
+ * số kiện đi qua HUB thật (rớt mốc BC 13:40 ngày N); "gui_sai_dich" là kiện không qua HUB nào. */
+export interface RawTransitBcStatusDay {
+  iso_date: string;
+  bc_gui: string;
+  khu: string | null;
+  gui_tre: number;
+  gui_sai_dich: number;
 }
 
 export interface RawDashboardData {
@@ -139,8 +142,8 @@ export interface RawDashboardData {
   receiving_seller_reason_by_day: RawReceivingSellerReasonDay[];
   receiving_geo_by_day: RawReceivingGeoDay[];
   transit_hub_by_day: RawTransitHubDay[];
-  transit_bc_by_day: RawTransitBcDay[];
   transit_reason_by_day: RawTransitReasonDay[];
+  transit_bc_status_by_day: RawTransitBcStatusDay[];
 }
 
 // ---- Dữ liệu đã tổng hợp cho 1 khoảng ngày cụ thể (tính bởi src/lib/aggregate.ts) ----
@@ -364,7 +367,6 @@ export interface TransitMeta {
   tre: number;
   ty_le_dung_gio_pct: number;
   ty_le_tre_pct: number;
-  ty_le_chua_gan_ca_pct: number;
 }
 
 export interface TransitDailyRow {
@@ -373,12 +375,10 @@ export interface TransitDailyRow {
 }
 
 export interface TransitPerfRow {
-  hub?: string;
-  bc_gui?: string;
+  hub: string;
   tong_don: number;
   dung_gio: number;
   ty_le_dung_gio_pct: number;
-  ty_le_chua_gan_ca_pct: number;
   nguyen_nhan_chinh: string | null;
 }
 
@@ -387,21 +387,11 @@ export interface TransitReasonRow {
   so_luong: number;
 }
 
-export interface TransitReasonBcRow {
-  hub: string;
-  bc_gui: string;
-  reason: string;
-  so_luong: number;
-}
-
 export interface TransitPageData {
   meta: TransitMeta;
   daily: TransitDailyRow[];
   hub_perf: TransitPerfRow[];
-  bc_worst15: TransitPerfRow[];
-  bc_best15: TransitPerfRow[];
   reason_overall: TransitReasonRow[];
-  reason_bc: TransitReasonBcRow[];
   has_data: boolean;
 }
 
@@ -423,6 +413,9 @@ export interface ReceivingLevelSummaryRow {
   ty_le_thanh_cong_pct: number;
   so_ngay: number;
   tb_thanh_cong_ngay: number;
+  /** Gộp từ dữ liệu Trung chuyển (Mã bưu cục gửi) — xem transit_bc_status_by_day. */
+  gui_tre: number;
+  gui_sai_dich: number;
 }
 
 export interface ReceivingLevelPageData {

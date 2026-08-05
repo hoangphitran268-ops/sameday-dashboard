@@ -66,9 +66,11 @@ export function localizeReceivingReason(reason: string, lang: Lang): string {
 // Nguyên nhân trễ ở Trung chuyển cũng chỉ có tiếng Việt (2 giá trị cố định, xem
 // NO_SHIFT_REASON/LATE_DESPITE_SHIFT_REASON trong scripts/regenerate-data.mjs).
 const TRANSIT_REASON_ZH: Record<string, string> = {
-  "Chưa gán ca gom hàng": "尚未分配收件班次",
-  "Trễ dù đã gán ca": "已分配班次但仍延误",
-  "Không trung chuyển HUB - HUB (về GW)": "未经HUB-HUB转运（发往GW）",
+  "Do BC - Nhận hàng trễ": "网点原因 - 收件延误",
+  "Do BC - Gửi hàng về trễ": "网点原因 - 发件延误",
+  "Do HUB - Thao tác trễ": "HUB原因 - 操作延误",
+  "Do HUB - Do xe trục trặc": "HUB原因 - 车辆故障",
+  "Khác": "其他",
 };
 
 export function localizeTransitReason(reason: string, lang: Lang): string {
@@ -220,20 +222,10 @@ const vi = {
 
   transitPerfTable: {
     hub: "TTTC (HUB)",
-    bcGui: "Bưu cục gửi",
     tongDon: "Tổng đơn",
     dungGio: "Đúng giờ",
     tyLeDungGioPct: "Tỷ lệ đúng giờ %",
-    tyLeChuaGanCaPct: "Chưa gán ca %",
     nguyenNhanChinh: "Nguyên nhân chính",
-  },
-
-  transitReasonBc: {
-    empty: "Không có bưu cục gửi nào ghi nhận nguyên nhân này trong khoảng đã chọn.",
-    hub: "TTTC (HUB)",
-    bcGui: "Bưu cục gửi",
-    soDonReason: "Số đơn (nguyên nhân này)",
-    sharePct: "% trong tổng số đơn trễ của bưu cục gửi",
   },
 
   receivingLevelTable: {
@@ -245,6 +237,8 @@ const vi = {
     tyLeThanhCongPct: "Tỷ lệ thành công %",
     soNgay: "Số ngày có dữ liệu",
     tbThanhCongNgay: "TB thành công/ngày",
+    guiTre: "Gửi trễ (TC)",
+    guiSaiDich: "Gửi sai đích",
   },
 
   penaltyBc: {
@@ -404,24 +398,18 @@ const vi = {
     },
     transit: {
       pageTitle: "Trung chuyển — HUB",
-      subtitle: 'Nguồn: thư mục "Trung chuyển - HUB" · gộp theo Mã vận đơn, cộng dồn khi có file mới',
-      statTongDon: "Tổng đơn trung chuyển",
-      statDungGio: "Gửi đúng giờ",
-      statTre: "Gửi trễ",
-      statChuaGanCa: "Chưa gán ca gom hàng",
+      subtitle: 'Nguồn: thư mục "Trung chuyển - HUB" · chỉ tính đơn có trung chuyển qua HUB thật',
+      statTongDon: "Tổng đơn qua HUB",
+      statDungGio: "Đúng giờ",
+      statTre: "Trễ",
       statCountPct: (count: string, pct: number) => `${count} (${pct}%)`,
-      trendChartTitle: "Tỷ lệ gửi đúng giờ theo ngày (%)",
-      hubChartTitle: "Xếp hạng theo TTTC (HUB) — tỷ lệ gửi đúng giờ %",
+      trendChartTitle: "Tỷ lệ đúng giờ theo ngày (%)",
+      hubChartTitle: "Xếp hạng theo TTTC (HUB) — tỷ lệ đúng giờ %",
       hubChartNote: "Sắp xếp tăng dần — HUB ở đầu danh sách cần chú ý nhất",
       hubTableTitle: "Bảng chi tiết theo TTTC (HUB)",
-      bcSectionTitle: "Xếp hạng theo Bưu cục gửi (tỷ lệ đúng giờ %, bưu cục ≥ 300 đơn)",
-      bcEmptyMsg: "Không có bưu cục gửi nào đạt ngưỡng ≥ 300 đơn trong khoảng thời gian này.",
-      reasonChartTitle: "Nguyên nhân gửi trễ (số đơn)",
-      reasonBcSectionTitle: "Bưu cục gửi thường xuyên ghi nhận nguyên nhân này",
-      reasonBcSectionDesc:
-        "Chọn 1 nguyên nhân để xem 15 bưu cục gửi ghi nhận nhiều nhất — kèm tỷ lệ nguyên nhân đó chiếm bao nhiêu % trong tổng số đơn trễ của chính bưu cục đó.",
+      reasonChartTitle: "Nguyên nhân trễ (số đơn)",
       rootCauseNote:
-        'Đơn được xét theo ngày lấy hàng thành công (khớp Mã vận đơn với Khâu nhận) — "đúng giờ" nghĩa là TTTC đầu gửi hàng đi trong khung 12:00 (N-1) đến 13:40 (N). Đơn không trung chuyển qua HUB (về GW/ĐGP/TTKT, hoặc qua HUB feeder 5/9/16) luôn tính là trễ; đơn qua HUB 18 được gộp vào HUB 8. Trong số đơn có qua HUB, gốc rễ trễ chính vẫn là chưa được gán "Ca gom hàng".',
+        'Đơn được xét theo ngày lấy hàng thành công (khớp Mã vận đơn với Khâu nhận). Chỉ tính đơn có trung chuyển qua 1 trong 4 HUB (7/8/11/13, HUB 18 gộp vào HUB 8) — đơn "Gửi sai đích" (không qua HUB nào) không tính ở đây, xem số liệu theo Bưu cục ở trang "Nhận kiện theo cấp". "Đúng giờ" nghĩa là TTTC đầu gửi hàng đi trước 14:00 ngày N. Nguyên nhân trễ chia theo gốc rễ Do BC (nhận hàng trễ, gửi hàng về trễ) hoặc Do HUB (thao tác trễ, xe trục trặc).',
     },
     weeklyMeeting: {
       pageTitle: "Báo cáo họp tuần",
@@ -433,7 +421,6 @@ const vi = {
       insightsTitle: "Phát hiện chính",
       recommendationsTitle: "Phương án cải thiện",
       bcReceivingSectionTitle: "Bưu cục lấy hàng nổi bật trong kỳ",
-      bcTransitSectionTitle: "Bưu cục gửi (trung chuyển) nổi bật trong kỳ",
       bcDeliverySectionTitle: "Bưu cục phát hàng nổi bật trong kỳ",
       noInsight: "Không có phát hiện đáng chú ý trong khoảng thời gian này.",
       noRecommendation: "Không phát hiện vấn đề nổi bật cần cải thiện trong khoảng thời gian này.",
@@ -442,9 +429,7 @@ const vi = {
       findingReceivingTopReason: (reason: string, pct: number) =>
         `Nguyên nhân lấy hàng thất bại phổ biến nhất: "${reason}" (chiếm ${pct}% số đơn có vấn đề khi lấy hàng).`,
       findingTransitWorstHub: (hub: string, pct: number, total: string) =>
-        `Trung chuyển: TTTC ${hub} có tỷ lệ gửi đúng giờ thấp nhất (${pct}%, trên ${total} đơn).`,
-      findingTransitChuaGanCa: (hub: string, pct: number) =>
-        `TTTC ${hub} có ${pct}% số đơn chưa được gán "Ca gom hàng" — đây là gốc rễ chính khiến tỷ lệ gửi đúng giờ thấp.`,
+        `Trung chuyển: TTTC ${hub} có tỷ lệ đúng giờ thấp nhất (${pct}%, trên ${total} đơn).`,
       findingDeliveryWorstBc: (bc: string, pct: number, total: string) =>
         `Phát hàng: bưu cục ${bc} có tỷ lệ ký nhận thấp nhất (${pct}%, trên ${total} đơn).`,
       findingDeliveryWorstWeekday: (weekday: string, pct: number, gap: number) =>
@@ -457,7 +442,7 @@ const vi = {
       recoReceivingSeller: (seller: string, pct: number) =>
         `Làm việc trực tiếp với seller "${seller}" — tỷ lệ nhận kiện chỉ ${pct}%, đang kéo tỷ lệ chung của bưu cục xuống.`,
       recoTransitHub: (hub: string, pct: number) =>
-        `Rà soát quy trình gán "Ca gom hàng" tại TTTC ${hub} — tỷ lệ gửi đúng giờ chỉ ${pct}%, thấp hơn đáng kể so với mặt bằng chung.`,
+        `Rà soát quy trình vận hành tại TTTC ${hub} — tỷ lệ đúng giờ chỉ ${pct}%, thấp hơn đáng kể so với mặt bằng chung.`,
       recoDeliveryBc: (bc: string, pct: number) => `Kiểm tra tuyến giao/nhân sự phát hàng tại bưu cục ${bc} — tỷ lệ ký nhận chỉ ${pct}%.`,
       recoDeliveryWeekday: (weekday: string) =>
         `Xem xét bổ sung nhân sự hoặc điều chỉnh ca làm việc vào ${weekday} — đây là ngày có tỷ lệ ký nhận thấp nhất trong kỳ.`,
@@ -610,21 +595,12 @@ const zh: typeof vi = {
 
   transitPerfTable: {
     hub: "转运中心 (HUB)",
-    bcGui: "发件网点",
     tongDon: "总单量",
     dungGio: "准时",
     tyLeDungGioPct: "准时率 %",
-    tyLeChuaGanCaPct: "未分配班次 %",
     nguyenNhanChinh: "主要原因",
   },
 
-  transitReasonBc: {
-    empty: "所选时间范围内没有发件网点记录该原因。",
-    hub: "转运中心 (HUB)",
-    bcGui: "发件网点",
-    soDonReason: "单量（该原因）",
-    sharePct: "占该发件网点延误单总数的比例 %",
-  },
 
   receivingLevelTable: {
     empty: "当前所选条件下没有数据。",
@@ -635,6 +611,8 @@ const zh: typeof vi = {
     tyLeThanhCongPct: "揽收成功率 %",
     soNgay: "有数据天数",
     tbThanhCongNgay: "日均成功揽收",
+    guiTre: "转运延误",
+    guiSaiDich: "发往错误目的地",
   },
 
   penaltyBc: {
@@ -788,23 +766,18 @@ const zh: typeof vi = {
     },
     transit: {
       pageTitle: "转运 — HUB",
-      subtitle: '数据来源："Trung chuyển - HUB" 文件夹 · 按运单号合并，新文件到达时累加',
-      statTongDon: "转运总单量",
-      statDungGio: "准时发出",
-      statTre: "延误发出",
-      statChuaGanCa: "未分配收件班次",
+      subtitle: '数据来源："Trung chuyển - HUB" 文件夹 · 仅统计经过真实HUB转运的订单',
+      statTongDon: "经HUB总单量",
+      statDungGio: "准时",
+      statTre: "延误",
       statCountPct: (count: string, pct: number) => `${count}（${pct}%）`,
-      trendChartTitle: "每日准时发出率 (%)",
-      hubChartTitle: "各转运中心（HUB）排名 — 准时发出率 %",
+      trendChartTitle: "每日准时率 (%)",
+      hubChartTitle: "各转运中心（HUB）排名 — 准时率 %",
       hubChartNote: "按升序排列 — 列表最前的 HUB 最需要关注",
       hubTableTitle: "各转运中心（HUB）明细表",
-      bcSectionTitle: "各发件网点排名（准时率 %，网点单量≥300）",
-      bcEmptyMsg: "所选时间范围内没有发件网点单量达到 ≥300 的门槛。",
       reasonChartTitle: "延误原因分布（单量）",
-      reasonBcSectionTitle: "经常记录该原因的发件网点",
-      reasonBcSectionDesc: "选择1个原因查看记录最多的15个发件网点 — 并显示该原因占该网点延误单总数的百分比。",
       rootCauseNote:
-        "订单按成功揽收日期计算（通过运单号与揽收数据匹配）—「准时」指HUB始发中心在N-1日12:00至N日13:40期间发出货物。未经HUB转运的订单（发往GW/ĐGP/TTKT，或经过5/9/16号支线HUB）一律视为延误；经过18号HUB的订单归入8号HUB统计。在有效经过HUB的订单中，延误的主要根源仍是尚未分配「收件班次」。",
+        "订单按成功揽收日期计算（通过运单号与揽收数据匹配）。仅统计经过4个HUB之一（7/8/11/13号，18号HUB归入8号HUB）的订单——「发往错误目的地」（未经任何HUB）的订单不计入此页，相关网点数据请查看「揽收分级表现」页面。「准时」指HUB始发中心在N日14:00前发出货物。延误原因分为网点原因（收件延误、发件延误）或HUB原因（操作延误、车辆故障）。",
     },
     weeklyMeeting: {
       pageTitle: "周会报告",
@@ -815,15 +788,12 @@ const zh: typeof vi = {
       insightsTitle: "关键发现",
       recommendationsTitle: "改进建议",
       bcReceivingSectionTitle: "本期表现突出的揽收网点",
-      bcTransitSectionTitle: "本期表现突出的发件（转运）网点",
       bcDeliverySectionTitle: "本期表现突出的派送网点",
       noInsight: "所选时间范围内没有值得注意的发现。",
       noRecommendation: "所选时间范围内没有发现需要改进的突出问题。",
       findingReceivingWorstBc: (bc: string, pct: number, total: string) => `揽收：网点 ${bc} 揽收成功率最低（${pct}%，共 ${total} 单）。`,
       findingReceivingTopReason: (reason: string, pct: number) => `最常见的揽收失败原因："${reason}"（占揽收问题单的 ${pct}%）。`,
-      findingTransitWorstHub: (hub: string, pct: number, total: string) => `转运：转运中心 ${hub} 准时发出率最低（${pct}%，共 ${total} 单）。`,
-      findingTransitChuaGanCa: (hub: string, pct: number) =>
-        `转运中心 ${hub} 有 ${pct}% 的订单尚未分配「收件班次」— 这是准时发出率偏低的主要根源。`,
+      findingTransitWorstHub: (hub: string, pct: number, total: string) => `转运：转运中心 ${hub} 准时率最低（${pct}%，共 ${total} 单）。`,
       findingDeliveryWorstBc: (bc: string, pct: number, total: string) => `派送：网点 ${bc} 签收率最低（${pct}%，共 ${total} 单）。`,
       findingDeliveryWorstWeekday: (weekday: string, pct: number, gap: number) =>
         `${weekday}是本期签收率最低的一天（${pct}%）— 比其余日期平均值低 ${gap} 个百分点。`,
@@ -831,7 +801,7 @@ const zh: typeof vi = {
       recoReceivingBc: (bc: string, pct: number) => `建议排查网点 ${bc} 的揽收人力/路线安排 — 揽收成功率仅 ${pct}%，明显低于整体水平。`,
       recoReceivingReason: (reason: string) => `建议与业务团队协调，提醒商家按约定时间备货 — "${reason}" 是当前揽收失败单中占比最高的原因。`,
       recoReceivingSeller: (seller: string, pct: number) => `建议直接与商家"${seller}"沟通 — 其揽收成功率仅 ${pct}%，正在拉低该网点整体水平。`,
-      recoTransitHub: (hub: string, pct: number) => `建议排查转运中心 ${hub} 的「收件班次」分配流程 — 准时发出率仅 ${pct}%，明显低于整体水平。`,
+      recoTransitHub: (hub: string, pct: number) => `建议排查转运中心 ${hub} 的运作流程 — 准时率仅 ${pct}%，明显低于整体水平。`,
       recoDeliveryBc: (bc: string, pct: number) => `建议检查网点 ${bc} 的派送路线/人力安排 — 签收率仅 ${pct}%。`,
       recoDeliveryWeekday: (weekday: string) => `建议考虑在${weekday}增加人手或调整排班 — 该日是本期签收率最低的一天。`,
       recoIssueDay: (pct: number) => `建议排查导致问题单占比骤增（${pct}%）的原因，避免下期再次发生。`,

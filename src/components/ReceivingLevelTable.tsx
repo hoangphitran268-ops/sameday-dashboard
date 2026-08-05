@@ -23,6 +23,8 @@ export default function ReceivingLevelTable({
             <Th>{t.tyLeThanhCongPct}</Th>
             <Th>{t.soNgay}</Th>
             <Th>{t.tbThanhCongNgay}</Th>
+            <Th>{t.guiTre}</Th>
+            <Th>{t.guiSaiDich}</Th>
           </tr>
         </thead>
         <tbody>
@@ -47,6 +49,8 @@ export default function ReceivingLevelTable({
               </Td>
               <Td>{r.so_ngay.toLocaleString("vi-VN")}</Td>
               <Td strong>{r.tb_thanh_cong_ngay.toLocaleString("vi-VN")}</Td>
+              <Td>{r.gui_tre.toLocaleString("vi-VN")}</Td>
+              <Td>{r.gui_sai_dich.toLocaleString("vi-VN")}</Td>
             </tr>
           ))}
         </tbody>
