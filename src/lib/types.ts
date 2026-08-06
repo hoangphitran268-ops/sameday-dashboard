@@ -97,6 +97,15 @@ export interface RawReceivingGeoDay {
   thanh_cong: number;
 }
 
+/** Theo Phường/Xã giao hàng (đích đến) — thư mục "Phường Phát", "thanh_cong" = đã ký nhận thành
+ * công (tra ngược theo Mã vận đơn với file "data" hằng ngày, xem regenerate-data.mjs). */
+export interface RawPhatGeoDay {
+  iso_date: string;
+  phuong_xa: string;
+  tong_don: number;
+  thanh_cong: number;
+}
+
 /** Trung chuyển (HUB) — thư mục "Trung chuyển - HUB". Chỉ gồm kiện đi qua HUB thật (không tính
  * "Gửi sai đích"); "dung_gio" tính theo mốc HUB (trước 14:00 ngày N — xem hubOnTime trong
  * regenerate-data.mjs). */
@@ -144,6 +153,7 @@ export interface RawDashboardData {
   transit_hub_by_day: RawTransitHubDay[];
   transit_reason_by_day: RawTransitReasonDay[];
   transit_bc_status_by_day: RawTransitBcStatusDay[];
+  phat_geo_by_day: RawPhatGeoDay[];
 }
 
 // ---- Dữ liệu đã tổng hợp cho 1 khoảng ngày cụ thể (tính bởi src/lib/aggregate.ts) ----

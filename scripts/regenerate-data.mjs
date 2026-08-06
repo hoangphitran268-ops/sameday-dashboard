@@ -13,6 +13,7 @@ const RAW_DIR = process.env.SAMEDAY_RAW_DIR || "D:\\Claude CODE\\data\\raw\\same
 const PENALTY_DIR = path.join(RAW_DIR, "PHẠT Khâu Nhận");
 const RECEIVING_DIR = path.join(RAW_DIR, "Khâu nhận");
 const TRANSIT_DIR = path.join(RAW_DIR, "Trung chuyển - HUB");
+const PHAT_GEO_DIR = path.join(RAW_DIR, "Phường Phát");
 const OUT_PATH = path.join(__dirname, "..", "src", "data", "dashboard-data.json");
 
 // Mã "Bưu cục lấy hàng" là điểm pickup riêng (HUB/Pickup...) không xuất hiện trong file "data"
@@ -109,6 +110,7 @@ function main() {
 
       rows.push({
         iso_date: reportDate,
+        waybill: r["Mã vận đơn"] ?? null,
         buu_cuc: r["Bưu cục đang thao tác"] ?? null,
         trang_thai: r["Trạng thái hiện tại"] ?? null,
         khu: r["khu"] ?? null,
@@ -209,6 +211,17 @@ function main() {
   // tránh đọc lại file Khâu nhận lần 2). ----
   const transit = readTransitByDay(receivingRawRows, bcKhuMap);
 
+  // ---- Phường Phát (giao hàng theo Phường/Xã) — thư mục riêng "Phường Phát", chỉ có Mã vận đơn +
+  // Đích đến + Mã bưu cục phát (không có trạng thái) nên phải tra ngược "đã ký nhận chưa" qua
+  // signedMap xây từ chính rows (file "data" hằng ngày) theo Mã vận đơn. Một vận đơn có thể xuất
+  // hiện ở nhiều file "data" (nhiều ngày) nên coi là "đã ký nhận" nếu BẤT KỲ lần nào có ký nhận. ----
+  const signedMap = new Map();
+  for (const r of rows) {
+    if (!r.waybill) continue;
+    signedMap.set(r.waybill, (signedMap.get(r.waybill) ?? false) || r.is_signed);
+  }
+  const phatGeoByDay = readPhatGeoByDay(signedMap);
+
   const data = {
     generated_at: new Date().toISOString(),
     available_dates: availableDates,
@@ -226,6 +239,7 @@ function main() {
     transit_hub_by_day: transit.hubByDay,
     transit_reason_by_day: transit.reasonByDay,
     transit_bc_status_by_day: transit.bcStatusByDay,
+    phat_geo_by_day: phatGeoByDay,
   };
 
   fs.mkdirSync(path.dirname(OUT_PATH), { recursive: true });
@@ -255,6 +269,77 @@ function nodeByDay(availableDates, byDate, field) {
     }
   }
   return out;
+}
+
+/** "Phường Tam Bình-02826803" -> "Phường Tam Bình" (bỏ hậu tố mã phường trong cột "Đích đến"). */
+function stripDestCode(s) {
+  return String(s).replace(/-\d+$/, "").trim();
+}
+
+function readPhatGeoFiles() {
+  if (!fs.existsSync(PHAT_GEO_DIR)) return [];
+  return fs
+    .readdirSync(PHAT_GEO_DIR)
+    .filter((f) => f.toLowerCase().endsWith(".xlsx") && !f.startsWith("~$"))
+    .sort();
+}
+
+/** Đọc toàn bộ file trong thư mục "Phường Phát" (sheet "Xuất vận đơn gửi hàng"), gộp theo Mã vận
+ * đơn. Đọc dense mode như Trung chuyển vì thư mục này dự kiến sẽ lớn dần theo thời gian. Chỉ giữ
+ * đơn giao trong TP.HCM (Tỉnh thành giao = "Hồ Chí Minh") — đúng phạm vi bản đồ hiện có. */
+function readPhatGeoRows() {
+  const files = readPhatGeoFiles();
+  if (files.length === 0) return [];
+  const byWaybill = new Map();
+  for (const fname of files) {
+    const wb = XLSX.readFile(path.join(PHAT_GEO_DIR, fname), {
+      dense: true,
+      cellStyles: false,
+      cellHTML: false,
+      cellFormula: false,
+    });
+    const sheetName = wb.SheetNames[0];
+    const rowsArr = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { header: 1, defval: null, raw: true });
+    const header = rowsArr[0];
+    const iWaybill = header.indexOf("Mã vận đơn");
+    const iDichDen = header.indexOf("Đích đến");
+    const iThoiGianNhap = header.indexOf("Thời gian nhập");
+    const iTinhGiao = header.indexOf("Tỉnh thành giao");
+    for (let i = 1; i < rowsArr.length; i++) {
+      const r = rowsArr[i];
+      const waybill = r[iWaybill];
+      if (!waybill) continue;
+      if (r[iTinhGiao] !== "Hồ Chí Minh") continue;
+      const dichDen = r[iDichDen];
+      if (!dichDen) continue;
+      byWaybill.set(waybill, {
+        waybill,
+        phuong_xa: stripDestCode(dichDen),
+        entry: excelSerialToDate(r[iThoiGianNhap]),
+      });
+    }
+  }
+  console.log(`Đã đọc ${files.length} file Phường Phát, tổng ${byWaybill.size} kiện (đã gộp theo Mã vận đơn).`);
+  return [...byWaybill.values()];
+}
+
+/** Xếp mỗi kiện vào ngày N theo "Thời gian nhập" (khung 12h(N-1)->11h59(N), cùng quy ước với Nhận
+ * kiện) rồi tra xem kiện đó có từng ký nhận thành công không (`signedMap`, xây từ "Mã vận đơn" +
+ * "ThƠì gian ký" của file "data" hằng ngày — vì thư mục "Phường Phát" không có cột trạng thái). */
+function readPhatGeoByDay(signedMap) {
+  const rows = readPhatGeoRows();
+  const geoMap = new Map();
+  for (const r of rows) {
+    if (!r.entry) continue;
+    const dayN = noonWindowDay(r.entry);
+    const iso_date = toISODate(dayN);
+    const key = JSON.stringify([iso_date, r.phuong_xa]);
+    const acc = geoMap.get(key) ?? { iso_date, phuong_xa: r.phuong_xa, tong_don: 0, thanh_cong: 0 };
+    acc.tong_don += 1;
+    if (signedMap.get(r.waybill)) acc.thanh_cong += 1;
+    geoMap.set(key, acc);
+  }
+  return [...geoMap.values()];
 }
 
 // "13H 7/7/2026 - 12H59 8/7/2026" -> ngày báo cáo N là mốc kết thúc (8/7/2026),
