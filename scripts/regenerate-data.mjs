@@ -271,9 +271,257 @@ function nodeByDay(availableDates, byDate, field) {
   return out;
 }
 
-/** "Phường Tam Bình-02826803" -> "Phường Tam Bình" (bỏ hậu tố mã phường trong cột "Đích đến"). */
-function stripDestCode(s) {
-  return String(s).replace(/-\d+$/, "").trim();
+// ---- Giải mã Phường/Xã CŨ (trước sáp nhập 7/2025) còn sót trong cột "Đích đến" của Phường Phát.
+// Phần lớn "Đích đến" đã là tên Phường/Xã MỚI + mã mới (vd "Phường Tam Bình-02826803", chỉ cần bỏ
+// hậu tố mã). Một số ít vẫn còn ghi theo tên + mã Phường CŨ (vd "Phường 7-028QQ807") — dùng bảng
+// tra cứu Quận/Huyện cũ -> Phường mới (Nghị quyết 1685/NQ-UBTVQH15, cùng nguồn với wardDistrict.ts
+// bên frontend) để quy đổi, vì nhiều tên phường cũ (đặc biệt tên số như "Phường 7") trùng nhau giữa
+// nhiều quận nên PHẢI biết đúng quận cũ mới tra được — quận cũ suy ra từ tiền tố trong chính mã
+// phường (vd "QQ8" = Quận 8, "QBN" = Quận Bình Tân). Nguồn:
+// D:\Claude CODE\web\vung-phu-map\scripts\ward_crosswalk.py ----
+const OLD_DISTRICT_WARDS = {
+  "Quận 1": [
+    ["Bến Thành", ["Bến Thành", "Phạm Ngũ Lão", "Cầu Ông Lãnh", "Nguyễn Thái Bình"]],
+    ["Tân Định", ["Tân Định", "Đa Kao"]],
+    ["Sài Gòn", ["Bến Nghé"]],
+    ["Cầu Ông Lãnh", ["Nguyễn Cư Trinh", "Cầu Kho", "Cô Giang"]],
+  ],
+  "Quận 3": [
+    ["Bàn Cờ", ["Phường 1", "Phường 2", "Phường 3", "Phường 5", "Phường 4"]],
+    ["Nhiêu Lộc", ["Phường 9", "Phường 11", "Phường 12", "Phường 14"]],
+    ["Xuân Hòa", ["Phường 6", "Phường 7", "Phường 8"]],
+    ["Hòa Bình", ["Phường 10", "Phường 13"]],
+  ],
+  "Quận 4": [
+    ["Vĩnh Hội", ["Phường 1", "Phường 3", "Phường 5", "Phường 4"]],
+    ["Khánh Hội", ["Phường 8", "Phường 9", "Phường 2", "Phường 15"]],
+    ["Xóm Chiếu", ["Phường 13", "Phường 16", "Phường 18"]],
+    ["Bình Đông", ["Phường 6", "Phường 10", "Phường 12", "Phường 14"]],
+  ],
+  "Quận 5": [
+    ["Chợ Quán", ["Phường 1", "Phường 2", "Phường 4"]],
+    ["An Đông", ["Phường 5", "Phường 7", "Phường 9"]],
+    ["Chợ Lớn", ["Phường 11", "Phường 12", "Phường 13", "Phường 14"]],
+    ["Diên Hồng", ["Phường 3", "Phường 6", "Phường 8", "Phường 10"]],
+  ],
+  "Quận 6": [
+    ["Bình Tiên", ["Phường 1", "Phường 7", "Phường 8"]],
+    ["Bình Tây", ["Phường 2", "Phường 9"]],
+    ["Bình Phú", ["Phường 10", "Phường 11"]],
+    ["Phú Lâm", ["Phường 12", "Phường 13", "Phường 14"]],
+  ],
+  "Quận 7": [
+    ["Tân Mỹ", ["Tân Phú", "Phú Mỹ"]],
+    ["Tân Hưng", ["Tân Phong", "Tân Hưng", "Tân Kiểng", "Tân Quy"]],
+    ["Tân Thuận", ["Bình Thuận", "Tân Thuận Đông", "Tân Thuận Tây"]],
+    ["Phú Thuận", ["Phú Thuận"]],
+  ],
+  "Quận 8": [
+    ["Chánh Hưng", ["Rạch Ông", "Hưng Phú", "Phường 4", "Phường 5"]],
+    ["Bình Đông", ["Phường 6", "Phường 7"]],
+    ["Phú Định", ["Xóm Củi", "Phường 14", "Phường 15", "Phường 16"]],
+  ],
+  "Quận 10": [
+    ["Vườn Lài", ["Phường 1", "Phường 2", "Phường 4", "Phường 9", "Phường 10"]],
+    ["Diên Hồng", ["Phường 6", "Phường 8", "Phường 14"]],
+    ["Hòa Hưng", ["Phường 12", "Phường 13", "Phường 15"]],
+  ],
+  "Quận 11": [
+    ["Phú Thọ", ["Phường 11", "Phường 15", "Phường 8"]],
+    ["Bình Thới", ["Phường 3", "Phường 10", "Phường 8"]],
+    ["Minh Phụng", ["Phường 1", "Phường 7", "Phường 16"]],
+  ],
+  "Quận 12": [
+    ["Đông Hưng Thuận", ["Tân Thới Nhất", "Tân Hưng Thuận", "Đông Hưng Thuận"]],
+    ["Trung Mỹ Tây", ["Trung Mỹ Tây", "Tân Chánh Hiệp"]],
+    ["Tân Thới Hiệp", ["Hiệp Thành", "Tân Thới Hiệp"]],
+    ["Thới An", ["Thới An", "Thạnh Xuân"]],
+    ["An Phú Đông", ["An Phú Đông", "Thạnh Lộc"]],
+  ],
+  "Quận Bình Thạnh": [
+    ["Gia Định", ["Phường 1", "Phường 2", "Phường 7", "Phường 17"]],
+    ["Bình Thạnh", ["Phường 12", "Phường 14", "Phường 26"]],
+    ["Bình Lợi Trung", ["Phường 5", "Phường 11", "Phường 13"]],
+    ["Thạnh Mỹ Tây", ["Phường 19", "Phường 22", "Phường 25"]],
+    ["Bình Quới", ["Phường 27", "Phường 28"]],
+  ],
+  "Quận Bình Tân": [
+    ["Bình Tân", ["Bình Hưng Hòa B", "Bình Trị Đông A", "Tân Tạo"]],
+    ["Bình Hưng Hòa", ["Bình Hưng Hòa", "Bình Hưng Hòa A", "Sơn Kỳ"]],
+    ["Bình Trị Đông", ["Bình Trị Đông", "Bình Trị Đông B"]],
+    ["An Lạc", ["An Lạc", "An Lạc A"]],
+    ["Tân Tạo", ["Tân Tạo A", "Tân Kiên"]],
+  ],
+  "Quận Gò Vấp": [
+    ["Hạnh Thông", ["Phường 1", "Phường 3"]],
+    ["An Nhơn", ["Phường 5", "Phường 6"]],
+    ["Gò Vấp", ["Phường 10", "Phường 17"]],
+    ["Thông Tây Hội", ["Phường 8", "Phường 11"]],
+    ["An Hội Tây", ["Phường 12", "Phường 14"]],
+    ["An Hội Đông", ["Phường 15", "Phường 16"]],
+  ],
+  "Quận Phú Nhuận": [
+    ["Đức Nhuận", ["Phường 4", "Phường 5", "Phường 9"]],
+    ["Cầu Kiệu", ["Phường 1", "Phường 2", "Phường 7"]],
+    ["Phú Nhuận", ["Phường 8", "Phường 10", "Phường 11", "Phường 13", "Phường 15"]],
+  ],
+  "Quận Tân Bình": [
+    ["Tân Sơn Hòa", ["Phường 1", "Phường 2", "Phường 3"]],
+    ["Tân Sơn Nhất", ["Phường 4", "Phường 5", "Phường 7"]],
+    ["Tân Hòa", ["Phường 6", "Phường 8", "Phường 9"]],
+    ["Bảy Hiền", ["Phường 10", "Phường 11", "Phường 12"]],
+    ["Tân Bình", ["Phường 13", "Phường 14", "Phường 15"]],
+    ["Tân Sơn", ["Phường 15"]],
+  ],
+  "Quận Tân Phú": [
+    ["Tây Thạnh", ["Tây Thạnh", "Sơn Kỳ"]],
+    ["Tân Sơn Nhì", ["Tân Sơn Nhì", "Tân Quý", "Tân Thành"]],
+    ["Phú Thọ Hòa", ["Phú Thọ Hòa", "Tân Quý", "Tân Thành"]],
+    ["Phú Thạnh", ["Phú Thạnh", "Hiệp Tân", "Tân Thới Hòa"]],
+    ["Tân Phú", ["Phú Trung", "Hòa Thạnh", "Tân Thành", "Tân Thới Hòa"]],
+  ],
+  "Huyện Bình Chánh": [
+    ["Vĩnh Lộc", ["Vĩnh Lộc A", "Phạm Văn Hai"]],
+    ["Tân Vĩnh Lộc", ["Vĩnh Lộc B", "Phạm Văn Hai"]],
+    ["Bình Lợi", ["Bình Lợi", "Lê Minh Xuân"]],
+    ["Tân Nhựt", ["Tân Kiên", "Tân Nhựt", "Thị trấn Tân Túc", "Tân Tạo A"]],
+    ["Bình Chánh", ["Bình Chánh", "Tân Quý Tây", "An Phú Tây"]],
+    ["Hưng Long", ["Hưng Long", "Qui Đức", "Đa Phước"]],
+    ["Bình Hưng", ["Bình Hưng", "Phong Phú"]],
+  ],
+  "Huyện Củ Chi": [
+    ["An Nhơn Tây", ["Phú Mỹ Hưng", "An Phú", "An Nhơn Tây"]],
+    ["Thái Mỹ", ["Trung Lập Thượng", "Thái Mỹ", "Phước Thạnh"]],
+    ["Nhuận Đức", ["Nhuận Đức", "Trung Lập Hạ", "Phạm Văn Cội"]],
+    ["Tân An Hội", ["Phước Hiệp", "Tân An Hội", "Thị trấn Củ Chi"]],
+    ["Củ Chi", ["Tân Phú Trung", "Tân Thông Hội", "Phước Vĩnh An"]],
+    ["Phú Hòa Đông", ["Tân Thạnh Tây", "Tân Thạnh Đông", "Phú Hòa Đông"]],
+    ["Bình Mỹ", ["Bình Mỹ", "Trung An", "Hòa Phú"]],
+  ],
+  "Huyện Cần Giờ": [
+    ["Bình Khánh", ["Bình Khánh", "Tam Thôn Hiệp", "An Thới Đông"]],
+    ["Cần Giờ", ["Long Hòa", "Thị trấn Cần Thạnh"]],
+    ["An Thới Đông", ["Lý Nhơn", "An Thới Đông"]],
+    ["Thạnh An", ["Thạnh An"]],
+  ],
+  "Huyện Hóc Môn": [
+    ["Hóc Môn", ["Tân Xuân", "Tân Hiệp", "Thị trấn Hóc Môn"]],
+    ["Bà Điểm", ["Xuân Thới Thượng", "Bà Điểm", "Trung Chánh"]],
+    ["Xuân Thới Sơn", ["Xuân Thới Đông", "Xuân Thới Sơn", "Tân Thới Nhì"]],
+    ["Đông Thạnh", ["Đông Thạnh", "Nhị Bình", "Thới Tam Thôn"]],
+  ],
+  "Huyện Nhà Bè": [
+    ["Nhà Bè", ["Thị trấn Nhà Bè", "Phú Xuân", "Phước Kiển", "Phước Lộc"]],
+    ["Hiệp Phước", ["Nhơn Đức", "Long Thới", "Hiệp Phước"]],
+  ],
+  "Thành Phố Thủ Đức": [
+    ["Hiệp Bình", ["Hiệp Bình Chánh", "Hiệp Bình Phước", "Linh Đông"]],
+    ["Tam Bình", ["Bình Chiểu", "Tam Bình", "Tam Phú"]],
+    ["Thủ Đức", ["Bình Thọ", "Linh Chiếu", "Trường Thọ", "Linh Tây"]],
+    ["Linh Xuân", ["Linh Trung", "Linh Xuân", "Linh Tây"]],
+    ["Long Bình", ["Long Bình", "Long Thạnh Mỹ"]],
+    ["Tăng Nhơn Phú", ["Hiệp Phú", "Tân Phú", "Tăng Nhơn Phú A", "Tăng Nhơn Phú B", "Long Thạnh Mỹ"]],
+    ["Phước Long", ["Phước Bình", "Phước Long A", "Phước Long B"]],
+    ["Long Phước", ["Long Phước", "Trường Thạnh"]],
+    ["Long Trường", ["Long Trường", "Phú Hữu"]],
+    ["An Khánh", ["An Khánh", "An Lợi Đông", "Thảo Điền", "Thủ Thiêm", "An Phú"]],
+    ["Bình Trưng", ["Bình Trưng Đông", "Bình Trưng Tây", "An Phú"]],
+    ["Cát Lái", ["Cát Lái", "Thạnh Mỹ Lợi"]],
+  ],
+};
+
+// Tiền tố mã phường cũ (phần chữ, trước dãy số phường) -> Quận/Huyện cũ — suy từ đối chiếu thực
+// nghiệm dữ liệu thật với OLD_DISTRICT_WARDS. QQ2/QQ9/QTD (Quận 2, 9, Thủ Đức cũ — đã sáp nhập vào
+// TP.Thủ Đức từ 2021, TRƯỚC đợt sáp nhập phường 2025) không còn là khoá riêng nên trỏ thẳng
+// "Thành Phố Thủ Đức".
+const OLD_CODE_PREFIX_TO_DISTRICT = {
+  QQ1: "Quận 1",
+  QQ2: "Thành Phố Thủ Đức",
+  QQ3: "Quận 3",
+  QQ4: "Quận 4",
+  QQ5: "Quận 5",
+  QQ6: "Quận 6",
+  QQ7: "Quận 7",
+  QQ8: "Quận 8",
+  QQ9: "Thành Phố Thủ Đức",
+  Q10: "Quận 10",
+  Q11: "Quận 11",
+  Q12: "Quận 12",
+  QTB: "Quận Tân Bình",
+  QTP: "Quận Tân Phú",
+  QTD: "Thành Phố Thủ Đức",
+  QPN: "Quận Phú Nhuận",
+  QBN: "Quận Bình Tân",
+  QGV: "Quận Gò Vấp",
+  QBT: "Quận Bình Thạnh",
+  TPT: "Thành Phố Thủ Đức",
+};
+const OLD_CODE_KNOWN_PREFIXES = Object.keys(OLD_CODE_PREFIX_TO_DISTRICT).sort((a, b) => b.length - a.length);
+
+function decodeOldDistrictFromCode(code) {
+  if (!code) return null;
+  const stripped = String(code).replace(/^028/, "");
+  for (const p of OLD_CODE_KNOWN_PREFIXES) {
+    if (stripped.startsWith(p)) return OLD_CODE_PREFIX_TO_DISTRICT[p];
+  }
+  return null;
+}
+
+const OLD_WARD_ALIASES = { "son ki": "son ky" };
+function normalizeOldWard(s) {
+  if (!s) return "";
+  let out = s
+    .replace(/Ð/g, "Đ")
+    .replace(/ð/g, "đ")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim()
+    .replace(/^(phường|phuong|xã|xa|thị trấn|thi tran)\.?\s+/i, "")
+    .replace(/\s+/g, " ");
+  if (/^0+\d+$/.test(out)) out = String(parseInt(out, 10));
+  return OLD_WARD_ALIASES[out] ?? out;
+}
+
+/** Tìm phường mới (chưa gắn tiền tố Phường/Xã) ứng với 1 tên phường CŨ, ưu tiên đúng quận cũ
+ * (districtHint) nếu biết — 1 số tên phường cũ (đặc biệt tên số) trùng giữa nhiều quận. Nếu 1 tên
+ * phường cũ bị TÁCH giữa 2 phường mới trong cùng quận (dữ liệu vận đơn không có toạ độ để tách
+ * chính xác), lấy phường xuất hiện trước trong bảng — giới hạn đã biết, không phải lỗi. */
+function resolveOldWardToNew(oldNameNorm, districtHint) {
+  function search(onlyDistrict) {
+    for (const [district, entries] of Object.entries(OLD_DISTRICT_WARDS)) {
+      if (onlyDistrict && district !== onlyDistrict) continue;
+      for (const [newWard, oldWards] of entries) {
+        if (oldWards.some((ow) => normalizeOldWard(ow) === oldNameNorm)) return newWard;
+      }
+    }
+    return null;
+  }
+  return search(districtHint) ?? search(null);
+}
+
+const wardsGeoJson = JSON.parse(
+  fs.readFileSync(path.join(__dirname, "..", "public", "geo", "hcm-wards.geojson"), "utf-8")
+);
+const NEW_WARD_NAMES = new Set(wardsGeoJson.features.map((f) => f.properties.name));
+const NEW_WARD_FULL_BY_BASENAME = new Map(
+  wardsGeoJson.features.map((f) => [f.properties.name.replace(/^(Phường|Xã)\s+/i, ""), f.properties.name])
+);
+
+/** "Phường Tam Bình-02826803" -> "Phường Tam Bình" (đã là tên phường mới, chỉ cần bỏ hậu tố mã).
+ * "Phường 7-028QQ807" -> tên phường cũ, không khớp thẳng bản đồ -> tra OLD_DISTRICT_WARDS (quận cũ
+ * suy từ tiền tố mã) để quy đổi ra đúng tên phường mới. Nếu không giải mã được (hiếm, vd địa chỉ
+ * ngoài TP.HCM), trả nguyên tên đã bỏ mã — không mất dữ liệu, chỉ là sẽ không tô màu được trên
+ * bản đồ (không khớp hcm-wards.geojson). */
+function resolvePhatWard(dichDenRaw) {
+  const m = String(dichDenRaw).match(/^(.*)-([A-Za-z0-9]+)$/);
+  const name = (m ? m[1] : dichDenRaw).trim();
+  const code = m ? m[2] : null;
+  if (NEW_WARD_NAMES.has(name)) return name;
+  const districtHint = decodeOldDistrictFromCode(code);
+  const newWardBase = resolveOldWardToNew(normalizeOldWard(name), districtHint);
+  if (!newWardBase) return name;
+  return NEW_WARD_FULL_BY_BASENAME.get(newWardBase) ?? `Phường ${newWardBase}`;
 }
 
 function readPhatGeoFiles() {
@@ -314,7 +562,7 @@ function readPhatGeoRows() {
       if (!dichDen) continue;
       byWaybill.set(waybill, {
         waybill,
-        phuong_xa: stripDestCode(dichDen),
+        phuong_xa: resolvePhatWard(dichDen),
         entry: excelSerialToDate(r[iThoiGianNhap]),
       });
     }
