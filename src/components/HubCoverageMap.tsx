@@ -7,8 +7,10 @@ import { useEffect, useRef, useState } from "react";
 import type * as LeafletNS from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { buildHubColorMap, colorForHub, NEUTRAL_COLOR } from "@/lib/hubColors";
-import type { HubCoverageHubPoint, HubCoverageKhuRow, HubCoverageSellerPoint } from "@/lib/types";
+import type { HubCoverageBcPhatPoint, HubCoverageHubPoint, HubCoverageKhuRow, HubCoverageSellerPoint } from "@/lib/types";
 import { RotateCcw } from "lucide-react";
+
+type PointMode = "nhan" | "phat";
 
 interface KhuFeature {
   type: "Feature";
@@ -56,24 +58,35 @@ export default function HubCoverageMap({
   hubs,
   khuCoverage,
   sellers,
+  bcPhat,
   loadingLabel,
   resetLabel,
   unassignedLabel,
   legendHint,
-  sellerUnitLabel,
+  unitLabel,
+  avgUnitLabel,
   khuLabelPrefix,
+  bcPhatLabelPrefix,
+  modeNhanLabel,
+  modePhatLabel,
 }: {
   hubs: HubCoverageHubPoint[];
   khuCoverage: HubCoverageKhuRow[];
   sellers: HubCoverageSellerPoint[];
+  bcPhat: HubCoverageBcPhatPoint[];
   loadingLabel: string;
   resetLabel: string;
   unassignedLabel: string;
   legendHint: string;
-  sellerUnitLabel: string;
+  unitLabel: string;
+  avgUnitLabel: string;
   khuLabelPrefix: string;
+  bcPhatLabelPrefix: string;
+  modeNhanLabel: string;
+  modePhatLabel: string;
 }) {
   const [ready, setReady] = useState(false);
+  const [mode, setMode] = useState<PointMode>("nhan");
   const [hoverHub, setHoverHub] = useState<string | null>(null);
   const [pinnedHub, setPinnedHub] = useState<string | null>(null);
   const activeHub = pinnedHub ?? hoverHub;
@@ -92,9 +105,9 @@ export default function HubCoverageMap({
 
   // props/state mới nhất luôn đọc được từ trong closure của các callback Leaflet (mouseover/pan...)
   // mà không cần rebuild layer mỗi lần tham chiếu đổi.
-  const stateRef = useRef({ hubs, sellers, khuHubMap, hubColorMap, activeHub, unassignedLabel, sellerUnitLabel });
+  const stateRef = useRef({ hubs, sellers, bcPhat, mode, khuHubMap, hubColorMap, activeHub, unassignedLabel, unitLabel, avgUnitLabel, bcPhatLabelPrefix });
   useEffect(() => {
-    stateRef.current = { hubs, sellers, khuHubMap, hubColorMap, activeHub, unassignedLabel, sellerUnitLabel };
+    stateRef.current = { hubs, sellers, bcPhat, mode, khuHubMap, hubColorMap, activeHub, unassignedLabel, unitLabel, avgUnitLabel, bcPhatLabelPrefix };
   });
 
   function khuHubFor(name: string): string | null {
@@ -171,25 +184,52 @@ export default function HubCoverageMap({
       markersGroup.addLayer(marker);
     }
 
-    for (const seller of stateRef.current.sellers) {
-      if (stateRef.current.activeHub && seller.hub !== stateRef.current.activeHub) continue;
-      const base = wardCentroidsRef.current.get(normalizeWardName(seller.phuong_xa));
-      if (!base) continue;
-      const [dx, dy] = jitterOffset(seller.seller, 0.012);
-      const color = colorForHub(seller.hub, stateRef.current.hubColorMap);
-      const marker = L.circleMarker([base.lat + dy, base.lng + dx], {
-        radius: 3.5,
-        color: "#fff",
-        weight: 1,
-        fillColor: color,
-        fillOpacity: 0.9,
-      }).bindTooltip(
-        `<div style="font-weight:600">${seller.seller}</div><div>${seller.phuong_xa}${
-          seller.hub ? ` · ${seller.hub}` : ""
-        }</div><div>${seller.tong_don.toLocaleString("vi-VN")} ${stateRef.current.sellerUnitLabel}</div>`,
-        { direction: "top", className: "vn-map-tooltip" }
-      );
-      markersGroup.addLayer(marker);
+    if (stateRef.current.mode === "nhan") {
+      for (const seller of stateRef.current.sellers) {
+        if (stateRef.current.activeHub && seller.hub !== stateRef.current.activeHub) continue;
+        const base = wardCentroidsRef.current.get(normalizeWardName(seller.phuong_xa));
+        if (!base) continue;
+        const [dx, dy] = jitterOffset(seller.seller, 0.012);
+        const color = colorForHub(seller.hub, stateRef.current.hubColorMap);
+        const marker = L.circleMarker([base.lat + dy, base.lng + dx], {
+          radius: 3.5,
+          color: "#fff",
+          weight: 1,
+          fillColor: color,
+          fillOpacity: 0.9,
+        }).bindTooltip(
+          `<div style="font-weight:600">${seller.seller}</div><div>${seller.phuong_xa}${
+            seller.hub ? ` · ${seller.hub}` : ""
+          }</div><div><b>${seller.tb_don_ngay.toLocaleString("vi-VN")}</b> ${stateRef.current.avgUnitLabel}</div><div>${seller.tong_don.toLocaleString(
+            "vi-VN"
+          )} ${stateRef.current.unitLabel}</div>`,
+          { direction: "top", className: "vn-map-tooltip" }
+        );
+        markersGroup.addLayer(marker);
+      }
+    } else {
+      for (const bc of stateRef.current.bcPhat) {
+        if (stateRef.current.activeHub && bc.hub !== stateRef.current.activeHub) continue;
+        const base = wardCentroidsRef.current.get(normalizeWardName(bc.phuong_xa));
+        if (!base) continue;
+        const [dx, dy] = jitterOffset(bc.bc_phat, 0.012);
+        const color = colorForHub(bc.hub, stateRef.current.hubColorMap);
+        const marker = L.circleMarker([base.lat + dy, base.lng + dx], {
+          radius: 3.5,
+          color: "#fff",
+          weight: 1,
+          fillColor: color,
+          fillOpacity: 0.9,
+        }).bindTooltip(
+          `<div style="font-weight:600">${stateRef.current.bcPhatLabelPrefix}${bc.bc_phat}</div><div>${bc.phuong_xa}${
+            bc.hub ? ` · ${bc.hub}` : ""
+          }</div><div><b>${bc.tb_don_ngay.toLocaleString("vi-VN")}</b> ${stateRef.current.avgUnitLabel}</div><div>${bc.tong_don.toLocaleString(
+            "vi-VN"
+          )} ${stateRef.current.unitLabel}</div>`,
+          { direction: "top", className: "vn-map-tooltip" }
+        );
+        markersGroup.addLayer(marker);
+      }
     }
 
     markersGroup.addTo(map);
@@ -256,17 +296,41 @@ export default function HubCoverageMap({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Đổi dữ liệu hoặc HUB đang xem riêng (hover/pin legend): chỉ tô lại màu/chấm, không tải lại geojson.
+  // Đổi dữ liệu, bộ lọc Nhận/Phát, hoặc HUB đang xem riêng (hover/pin legend): chỉ tô lại màu/chấm,
+  // không tải lại geojson.
   useEffect(() => {
     if (!ready) return;
     rebuildLayers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hubs, khuCoverage, sellers, activeHub, ready]);
+  }, [hubs, khuCoverage, sellers, bcPhat, mode, activeHub, ready]);
 
   const hubsSorted = [...hubs].sort((a, b) => a.hub.localeCompare(b.hub, "vi"));
 
   return (
     <div className="relative">
+      <div className="flex justify-end mb-3">
+        <div className="flex gap-1 p-1 rounded-full border" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
+          {(["nhan", "phat"] as PointMode[]).map((m) => (
+            <button
+              key={m}
+              onClick={() => setMode(m)}
+              className="text-xs font-semibold px-3.5 py-1.5 rounded-full transition-all duration-150"
+              style={
+                mode === m
+                  ? {
+                      background: "linear-gradient(135deg, var(--brand-red) 0%, var(--brand-red-dark) 100%)",
+                      color: "#fff",
+                      boxShadow: "var(--shadow-red)",
+                    }
+                  : { background: "transparent", color: "var(--text-secondary)" }
+              }
+            >
+              {m === "nhan" ? modeNhanLabel : modePhatLabel}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="relative">
         {!ready && (
           <div

@@ -415,13 +415,17 @@ const vi = {
     hubCoverage: {
       pageTitle: "Vùng phủ HUB",
       subtitle:
-        "Khu tô màu theo HUB chủ đạo (Bưu cục gửi thuộc HUB nào nhiều nhất trong khoảng ngày đang lọc) · chấm nhỏ là Seller, định vị theo Phường lấy hàng, màu theo HUB của Bưu cục seller đó đang lấy hàng chủ yếu.",
+        "Khu tô màu theo HUB chủ đạo (Bưu cục gửi thuộc HUB nào nhiều nhất trong khoảng ngày đang lọc) · chấm nhỏ là Seller (Hàng nhận) hoặc Bưu cục phát (Hàng phát), định vị theo Phường chủ đạo, màu theo HUB liên quan.",
       mapLoading: "Đang tải bản đồ...",
       mapReset: "Về khung nhìn ban đầu",
       mapUnassigned: "Chưa xác định HUB",
-      mapLegendHint: "Rê chuột hoặc bấm vào tên HUB để xem riêng vùng phủ và Seller của HUB đó.",
-      mapSellerUnit: "đơn",
+      mapLegendHint: "Rê chuột hoặc bấm vào tên HUB để xem riêng vùng phủ và các chấm của HUB đó.",
+      mapUnit: "đơn",
+      mapAvgUnit: "đơn/ngày",
       mapKhuPrefix: "Khu ",
+      mapBcPhatPrefix: "BC ",
+      mapModeNhan: "Hàng nhận",
+      mapModePhat: "Hàng phát",
     },
     weeklyMeeting: {
       pageTitle: "Báo cáo họp tuần",
@@ -795,13 +799,17 @@ const zh: typeof vi = {
     hubCoverage: {
       pageTitle: "HUB覆盖范围",
       subtitle:
-        "片区按主导HUB着色（所选时间范围内，发件网点归属最多的HUB）· 小圆点代表Seller，按揽收片区定位，颜色对应该Seller主要揽收网点所属的HUB。",
+        "片区按主导HUB着色（所选时间范围内，发件网点归属最多的HUB）· 小圆点代表Seller（揽收）或派送网点（派送），按主要片区定位，颜色对应相关HUB。",
       mapLoading: "地图加载中...",
       mapReset: "恢复初始视图",
       mapUnassigned: "未分配HUB",
-      mapLegendHint: "将鼠标悬停或点击HUB名称，可单独查看该HUB的覆盖范围与Seller。",
-      mapSellerUnit: "单",
+      mapLegendHint: "将鼠标悬停或点击HUB名称，可单独查看该HUB的覆盖范围与圆点。",
+      mapUnit: "单",
+      mapAvgUnit: "单/天",
       mapKhuPrefix: "片区 ",
+      mapBcPhatPrefix: "网点 ",
+      mapModeNhan: "揽收",
+      mapModePhat: "派送",
     },
     weeklyMeeting: {
       pageTitle: "周会报告",

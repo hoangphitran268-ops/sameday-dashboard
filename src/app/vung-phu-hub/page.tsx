@@ -35,12 +35,17 @@ export default async function HubCoveragePage({ searchParams }: { searchParams: 
           hubs={data.hubs}
           khuCoverage={data.khu_coverage}
           sellers={data.sellers}
+          bcPhat={data.bc_phat}
           loadingLabel={t.pages.hubCoverage.mapLoading}
           resetLabel={t.pages.hubCoverage.mapReset}
           unassignedLabel={t.pages.hubCoverage.mapUnassigned}
           legendHint={t.pages.hubCoverage.mapLegendHint}
-          sellerUnitLabel={t.pages.hubCoverage.mapSellerUnit}
+          unitLabel={t.pages.hubCoverage.mapUnit}
+          avgUnitLabel={t.pages.hubCoverage.mapAvgUnit}
           khuLabelPrefix={t.pages.hubCoverage.mapKhuPrefix}
+          bcPhatLabelPrefix={t.pages.hubCoverage.mapBcPhatPrefix}
+          modeNhanLabel={t.pages.hubCoverage.mapModeNhan}
+          modePhatLabel={t.pages.hubCoverage.mapModePhat}
         />
       </div>
     </div>

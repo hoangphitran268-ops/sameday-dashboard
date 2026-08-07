@@ -220,7 +220,7 @@ function main() {
     if (!r.waybill) continue;
     signedMap.set(r.waybill, (signedMap.get(r.waybill) ?? false) || r.is_signed);
   }
-  const phatGeoByDay = readPhatGeoByDay(signedMap);
+  const phat = readPhatGeoByDay(signedMap);
 
   const data = {
     generated_at: new Date().toISOString(),
@@ -240,7 +240,9 @@ function main() {
     transit_reason_by_day: transit.reasonByDay,
     transit_bc_status_by_day: transit.bcStatusByDay,
     transit_bc_hub_by_day: transit.bcHubByDay,
-    phat_geo_by_day: phatGeoByDay,
+    phat_geo_by_day: phat.geoByDay,
+    phat_bc_by_day: phat.bcByDay,
+    phat_bc_ward_by_day: phat.bcWardByDay,
     receiving_seller_ward_by_day: receiving.sellerWardByDay,
     hub_coords: HUB_COORDS,
   };
@@ -556,6 +558,7 @@ function readPhatGeoRows() {
     const iDichDen = header.indexOf("Đích đến");
     const iThoiGianNhap = header.indexOf("Thời gian nhập");
     const iTinhGiao = header.indexOf("Tỉnh thành giao");
+    const iBcPhat = header.indexOf("Mã bưu cục phát");
     for (let i = 1; i < rowsArr.length; i++) {
       const r = rowsArr[i];
       const waybill = r[iWaybill];
@@ -566,6 +569,7 @@ function readPhatGeoRows() {
       byWaybill.set(waybill, {
         waybill,
         phuong_xa: resolvePhatWard(dichDen),
+        bc_phat: iBcPhat >= 0 ? (r[iBcPhat] ?? null) : null,
         entry: excelSerialToDate(r[iThoiGianNhap]),
       });
     }
@@ -576,21 +580,41 @@ function readPhatGeoRows() {
 
 /** Xếp mỗi kiện vào ngày N theo "Thời gian nhập" (khung 12h(N-1)->11h59(N), cùng quy ước với Nhận
  * kiện) rồi tra xem kiện đó có từng ký nhận thành công không (`signedMap`, xây từ "Mã vận đơn" +
- * "ThƠì gian ký" của file "data" hằng ngày — vì thư mục "Phường Phát" không có cột trạng thái). */
+ * "ThƠì gian ký" của file "data" hằng ngày — vì thư mục "Phường Phát" không có cột trạng thái).
+ * Xuất thêm 2 bảng theo BC phát ("Mã bưu cục phát") — dùng cho bản đồ "Vùng phủ HUB" (bộ lọc Hàng
+ * phát): `bcByDay` tính số lượng trung bình/ngày mỗi BC phát, `bcWardByDay` suy ra Phường chủ đạo
+ * (nơi giao nhiều nhất) để định vị chấm trên bản đồ, giống hệt cách làm cho Seller ở Khâu nhận. */
 function readPhatGeoByDay(signedMap) {
   const rows = readPhatGeoRows();
   const geoMap = new Map();
+  const bcMap = new Map();
+  const bcWardMap = new Map();
   for (const r of rows) {
     if (!r.entry) continue;
     const dayN = noonWindowDay(r.entry);
     const iso_date = toISODate(dayN);
+    const signed = !!signedMap.get(r.waybill);
+
     const key = JSON.stringify([iso_date, r.phuong_xa]);
     const acc = geoMap.get(key) ?? { iso_date, phuong_xa: r.phuong_xa, tong_don: 0, thanh_cong: 0 };
     acc.tong_don += 1;
-    if (signedMap.get(r.waybill)) acc.thanh_cong += 1;
+    if (signed) acc.thanh_cong += 1;
     geoMap.set(key, acc);
+
+    if (r.bc_phat) {
+      const bcKey = JSON.stringify([iso_date, r.bc_phat]);
+      const bcAcc = bcMap.get(bcKey) ?? { iso_date, bc_phat: r.bc_phat, tong_don: 0, thanh_cong: 0 };
+      bcAcc.tong_don += 1;
+      if (signed) bcAcc.thanh_cong += 1;
+      bcMap.set(bcKey, bcAcc);
+
+      const bcWardKey = JSON.stringify([iso_date, r.bc_phat, r.phuong_xa]);
+      const bcWardAcc = bcWardMap.get(bcWardKey) ?? { iso_date, bc_phat: r.bc_phat, phuong_xa: r.phuong_xa, so_luong: 0 };
+      bcWardAcc.so_luong += 1;
+      bcWardMap.set(bcWardKey, bcWardAcc);
+    }
   }
-  return [...geoMap.values()];
+  return { geoByDay: [...geoMap.values()], bcByDay: [...bcMap.values()], bcWardByDay: [...bcWardMap.values()] };
 }
 
 // "13H 7/7/2026 - 12H59 8/7/2026" -> ngày báo cáo N là mốc kết thúc (8/7/2026),

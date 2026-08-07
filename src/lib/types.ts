@@ -116,6 +116,24 @@ export interface RawPhatGeoDay {
   thanh_cong: number;
 }
 
+/** Theo BC phát ("Mã bưu cục phát", thư mục "Phường Phát") — dùng để tính số lượng trung bình/ngày
+ * mỗi BC phát cho bản đồ "Vùng phủ HUB" (bộ lọc Hàng phát). */
+export interface RawPhatBcDay {
+  iso_date: string;
+  bc_phat: string;
+  tong_don: number;
+  thanh_cong: number;
+}
+
+/** BC phát -> Phường/Xã giao, theo ngày — dùng để suy ra Phường chủ đạo (giao nhiều nhất) định vị
+ * chấm BC phát trên bản đồ "Vùng phủ HUB", cùng cách làm với Seller ở Khâu nhận. */
+export interface RawPhatBcWardDay {
+  iso_date: string;
+  bc_phat: string;
+  phuong_xa: string;
+  so_luong: number;
+}
+
 /** Trung chuyển (HUB) — thư mục "Trung chuyển - HUB". Chỉ gồm kiện đi qua HUB thật (không tính
  * "Gửi sai đích"); "dung_gio" tính theo mốc HUB (trước 14:00 ngày N — xem hubOnTime trong
  * regenerate-data.mjs). */
@@ -183,6 +201,8 @@ export interface RawDashboardData {
   transit_bc_status_by_day: RawTransitBcStatusDay[];
   transit_bc_hub_by_day: RawTransitBcHubDay[];
   phat_geo_by_day: RawPhatGeoDay[];
+  phat_bc_by_day: RawPhatBcDay[];
+  phat_bc_ward_by_day: RawPhatBcWardDay[];
   hub_coords: Record<string, HubCoord>;
 }
 
@@ -492,12 +512,25 @@ export interface HubCoverageSellerPoint {
   phuong_xa: string;
   hub: string | null;
   tong_don: number;
+  tb_don_ngay: number;
+}
+
+/** Chấm BC phát (bộ lọc "Hàng phát") — vị trí = tâm Phường giao nhiều nhất (tính phía client),
+ * màu theo HUB của chính mã BC đó nếu nó cũng xuất hiện như BC gửi ở Trung chuyển (nhiều bưu cục
+ * vừa lấy vừa giao), không có thì "Chưa xác định HUB". */
+export interface HubCoverageBcPhatPoint {
+  bc_phat: string;
+  phuong_xa: string;
+  hub: string | null;
+  tong_don: number;
+  tb_don_ngay: number;
 }
 
 export interface HubCoveragePageData {
   hubs: HubCoverageHubPoint[];
   khu_coverage: HubCoverageKhuRow[];
   sellers: HubCoverageSellerPoint[];
+  bc_phat: HubCoverageBcPhatPoint[];
   has_data: boolean;
 }
 
