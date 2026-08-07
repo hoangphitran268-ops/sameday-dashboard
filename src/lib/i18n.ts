@@ -104,6 +104,7 @@ const vi = {
     receiving: "Nhận kiện",
     receivingLevel: "Nhận kiện theo cấp",
     transit: "Trung chuyển",
+    hubCoverage: "Vùng phủ HUB",
     weeklyMeeting: "Họp tuần",
   },
 
@@ -411,6 +412,17 @@ const vi = {
       rootCauseNote:
         'Đơn được xét theo ngày lấy hàng thành công (khớp Mã vận đơn với Khâu nhận). Chỉ tính đơn có trung chuyển qua 1 trong 4 HUB (7/8/11/13, HUB 18 gộp vào HUB 8) — đơn "Gửi sai đích" (không qua HUB nào) không tính ở đây, xem số liệu theo Bưu cục ở trang "Nhận kiện theo cấp". "Đúng giờ" nghĩa là TTTC đầu gửi hàng đi trước 14:00 ngày N. Nguyên nhân trễ chia theo gốc rễ Do BC (nhận hàng trễ, gửi hàng về trễ) hoặc Do HUB (thao tác trễ, xe trục trặc).',
     },
+    hubCoverage: {
+      pageTitle: "Vùng phủ HUB",
+      subtitle:
+        "Khu tô màu theo HUB chủ đạo (Bưu cục gửi thuộc HUB nào nhiều nhất trong khoảng ngày đang lọc) · chấm nhỏ là Seller, định vị theo Phường lấy hàng, màu theo HUB của Bưu cục seller đó đang lấy hàng chủ yếu.",
+      mapLoading: "Đang tải bản đồ...",
+      mapReset: "Về khung nhìn ban đầu",
+      mapUnassigned: "Chưa xác định HUB",
+      mapLegendHint: "Rê chuột hoặc bấm vào tên HUB để xem riêng vùng phủ và Seller của HUB đó.",
+      mapSellerUnit: "đơn",
+      mapKhuPrefix: "Khu ",
+    },
     weeklyMeeting: {
       pageTitle: "Báo cáo họp tuần",
       subtitle:
@@ -477,6 +489,7 @@ const zh: typeof vi = {
     receiving: "揽收成功率",
     receivingLevel: "揽收分级表现",
     transit: "转运",
+    hubCoverage: "HUB覆盖范围",
     weeklyMeeting: "周会报告",
   },
 
@@ -778,6 +791,17 @@ const zh: typeof vi = {
       reasonChartTitle: "延误原因分布（单量）",
       rootCauseNote:
         "订单按成功揽收日期计算（通过运单号与揽收数据匹配）。仅统计经过4个HUB之一（7/8/11/13号，18号HUB归入8号HUB）的订单——「发往错误目的地」（未经任何HUB）的订单不计入此页，相关网点数据请查看「揽收分级表现」页面。「准时」指HUB始发中心在N日14:00前发出货物。延误原因分为网点原因（收件延误、发件延误）或HUB原因（操作延误、车辆故障）。",
+    },
+    hubCoverage: {
+      pageTitle: "HUB覆盖范围",
+      subtitle:
+        "片区按主导HUB着色（所选时间范围内，发件网点归属最多的HUB）· 小圆点代表Seller，按揽收片区定位，颜色对应该Seller主要揽收网点所属的HUB。",
+      mapLoading: "地图加载中...",
+      mapReset: "恢复初始视图",
+      mapUnassigned: "未分配HUB",
+      mapLegendHint: "将鼠标悬停或点击HUB名称，可单独查看该HUB的覆盖范围与Seller。",
+      mapSellerUnit: "单",
+      mapKhuPrefix: "片区 ",
     },
     weeklyMeeting: {
       pageTitle: "周会报告",

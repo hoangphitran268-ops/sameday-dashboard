@@ -88,6 +88,16 @@ export interface RawReceivingSellerReasonDay {
   so_luong: number;
 }
 
+/** Seller -> Phường/Xã lấy hàng — dùng để định vị chấm Seller trên bản đồ Vùng phủ HUB (Phường
+ * chủ đạo = Phường xuất hiện nhiều nhất trong khoảng ngày đang lọc). Không lọc theo thành công/
+ * thất bại, chỉ để định vị. */
+export interface RawReceivingSellerWardDay {
+  iso_date: string;
+  seller: string;
+  phuong_xa: string;
+  so_luong: number;
+}
+
 /** Theo Phường/Xã lấy hàng (đơn vị hành chính mới) — dùng cho bản đồ HCM (chỉ quan tâm đơn nhận
  * thành công). */
 export interface RawReceivingGeoDay {
@@ -136,6 +146,23 @@ export interface RawTransitBcStatusDay {
   gui_sai_dich: number;
 }
 
+/** Bưu cục gửi -> HUB, theo ngày — chỉ kiện qua HUB thật (loại "Gửi sai đích"). Dùng để suy ra HUB
+ * chủ đạo của từng BC/Khu cho bản đồ "Vùng phủ HUB" (aggregateHubCoveragePage), giữ theo ngày để
+ * tự chọn HUB chiếm đa số đúng trong khoảng ngày đang lọc. */
+export interface RawTransitBcHubDay {
+  iso_date: string;
+  bc_gui: string;
+  khu: string | null;
+  hub: string;
+  so_luong: number;
+}
+
+/** Toạ độ tĩnh 4 HUB lõi (lấy từ database network-planning, xem regenerate-data.mjs). */
+export interface HubCoord {
+  lat: number;
+  lon: number;
+}
+
 export interface RawDashboardData {
   generated_at: string;
   available_dates: string[];
@@ -149,11 +176,14 @@ export interface RawDashboardData {
   receiving_reason_by_day: RawReceivingReasonDay[];
   receiving_seller_by_day: RawReceivingSellerDay[];
   receiving_seller_reason_by_day: RawReceivingSellerReasonDay[];
+  receiving_seller_ward_by_day: RawReceivingSellerWardDay[];
   receiving_geo_by_day: RawReceivingGeoDay[];
   transit_hub_by_day: RawTransitHubDay[];
   transit_reason_by_day: RawTransitReasonDay[];
   transit_bc_status_by_day: RawTransitBcStatusDay[];
+  transit_bc_hub_by_day: RawTransitBcHubDay[];
   phat_geo_by_day: RawPhatGeoDay[];
+  hub_coords: Record<string, HubCoord>;
 }
 
 // ---- Dữ liệu đã tổng hợp cho 1 khoảng ngày cụ thể (tính bởi src/lib/aggregate.ts) ----
@@ -440,6 +470,34 @@ export interface ReceivingLevelPageData {
   bc_table: ReceivingLevelSummaryRow[];
   khu_options: string[];
   bc_options: string[];
+  has_data: boolean;
+}
+
+/** Trang "Vùng phủ HUB" — tô Khu theo HUB chủ đạo (kiểu network-planning), chấm 4 HUB (toạ độ
+ * tĩnh) + chấm Seller (vị trí = tâm Phường chủ đạo, tính phía client). */
+export interface HubCoverageHubPoint {
+  hub: string;
+  lat: number;
+  lon: number;
+}
+
+export interface HubCoverageKhuRow {
+  khu: string;
+  hub: string | null;
+  tong_don: number;
+}
+
+export interface HubCoverageSellerPoint {
+  seller: string;
+  phuong_xa: string;
+  hub: string | null;
+  tong_don: number;
+}
+
+export interface HubCoveragePageData {
+  hubs: HubCoverageHubPoint[];
+  khu_coverage: HubCoverageKhuRow[];
+  sellers: HubCoverageSellerPoint[];
   has_data: boolean;
 }
 

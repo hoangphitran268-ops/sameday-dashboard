@@ -14,6 +14,7 @@ import {
   Presentation,
   Truck,
   Layers,
+  MapPinned,
   ChevronsLeft,
   ChevronsRight,
 } from "lucide-react";
@@ -25,13 +26,25 @@ const STORAGE_KEY = "jt-sidebar-collapsed";
 
 const NAV: {
   href: string;
-  navKey: "overview" | "kpi" | "hieuSuat" | "nguyenNhan" | "theoGio" | "phat" | "receiving" | "receivingLevel" | "transit" | "weeklyMeeting";
+  navKey:
+    | "overview"
+    | "kpi"
+    | "hieuSuat"
+    | "nguyenNhan"
+    | "theoGio"
+    | "phat"
+    | "receiving"
+    | "receivingLevel"
+    | "transit"
+    | "hubCoverage"
+    | "weeklyMeeting";
   icon: typeof LayoutDashboard;
 }[] = [
   { href: "/", navKey: "overview", icon: LayoutDashboard },
   { href: "/nhan-kien", navKey: "receiving", icon: PackageCheck },
   { href: "/nhan-kien-cap-do", navKey: "receivingLevel", icon: Layers },
   { href: "/trung-chuyen", navKey: "transit", icon: Truck },
+  { href: "/vung-phu-hub", navKey: "hubCoverage", icon: MapPinned },
   { href: "/kpi", navKey: "kpi", icon: TrendingUp },
   { href: "/hieu-suat", navKey: "hieuSuat", icon: Building2 },
   { href: "/nguyen-nhan", navKey: "nguyenNhan", icon: AlertTriangle },

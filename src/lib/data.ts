@@ -3,6 +3,7 @@ import path from "node:path";
 import type {
   DashboardData,
   HourPageData,
+  HubCoveragePageData,
   PenaltyPageData,
   RawDashboardData,
   RangePresetKey,
@@ -14,6 +15,7 @@ import type {
 } from "./types";
 import {
   aggregateHourPage,
+  aggregateHubCoveragePage,
   aggregatePenaltyPage,
   aggregateRange,
   aggregateReasonPage,
@@ -149,6 +151,23 @@ export function getTransitPageData(searchParams: SearchParams): { data: TransitP
 
   const range = resolvePreset(preset, { customFrom, customTo });
   const data = aggregateTransitPage(raw, range);
+  return { data, range };
+}
+
+/** Đọc query string (?preset=&from=&to=) cho trang Vùng phủ HUB. */
+export function getHubCoveragePageData(
+  searchParams: SearchParams
+): { data: HubCoveragePageData; range: ReturnType<typeof resolvePreset> } {
+  const raw = readRawData();
+  const presetParam = firstParam(searchParams.preset);
+  const preset: RangePresetKey = VALID_PRESETS.includes(presetParam as RangePresetKey)
+    ? (presetParam as RangePresetKey)
+    : "all";
+  const customFrom = firstParam(searchParams.from) ?? null;
+  const customTo = firstParam(searchParams.to) ?? null;
+
+  const range = resolvePreset(preset, { customFrom, customTo });
+  const data = aggregateHubCoveragePage(raw, range);
   return { data, range };
 }
 

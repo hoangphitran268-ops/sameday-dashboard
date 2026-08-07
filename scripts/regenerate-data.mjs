@@ -239,7 +239,10 @@ function main() {
     transit_hub_by_day: transit.hubByDay,
     transit_reason_by_day: transit.reasonByDay,
     transit_bc_status_by_day: transit.bcStatusByDay,
+    transit_bc_hub_by_day: transit.bcHubByDay,
     phat_geo_by_day: phatGeoByDay,
+    receiving_seller_ward_by_day: receiving.sellerWardByDay,
+    hub_coords: HUB_COORDS,
   };
 
   fs.mkdirSync(path.dirname(OUT_PATH), { recursive: true });
@@ -741,7 +744,7 @@ function classifyReceivingOrder(r) {
 
 function readReceivingByDay(rawRows, bcKhuMap) {
   if (rawRows.length === 0) {
-    return { bcByDay: [], reasonByDay: [], sellerByDay: [], sellerReasonByDay: [], geoByDay: [] };
+    return { bcByDay: [], reasonByDay: [], sellerByDay: [], sellerReasonByDay: [], geoByDay: [], sellerWardByDay: [] };
   }
 
   const unmatchedBc = new Set();
@@ -812,7 +815,18 @@ function readReceivingByDay(rawRows, bcKhuMap) {
     return { iso_date, phuong_xa, tong_don: items.length, thanh_cong: sum(items.map((r) => r.thanh_cong)) };
   });
 
-  return { bcByDay, reasonByDay, sellerByDay, sellerReasonByDay, geoByDay };
+  // ---- Seller -> Phường (để định vị chấm Seller trên bản đồ Vùng phủ HUB) — không cần chỉ tính
+  // đơn thành công, vì mục đích chỉ là suy ra Phường lấy hàng CHỦ ĐẠO của seller đó. ----
+  const sellerWardGroups = groupBy(
+    classified.filter((r) => r.seller && r.phuong_xa),
+    (r) => JSON.stringify([r.iso_date, r.seller, r.phuong_xa])
+  );
+  const sellerWardByDay = Object.entries(sellerWardGroups).map(([key, items]) => {
+    const [iso_date, seller, phuong_xa] = JSON.parse(key);
+    return { iso_date, seller, phuong_xa, so_luong: items.length };
+  });
+
+  return { bcByDay, reasonByDay, sellerByDay, sellerReasonByDay, geoByDay, sellerWardByDay };
 }
 
 const REASON_BC_NHAN_TRE = "Do BC - Nhận hàng trễ";
@@ -833,6 +847,16 @@ const CORE_HUB_NAME_BY_CODE = {
   "028H93": "(HCM) HUB 13",
 };
 const FEEDER_TO_HUB8_CODE = "028H98";
+
+// Toạ độ 4 HUB lõi — lấy y hệt từ database network-planning (model Hub, cùng hệ mã "Mã TTTC đầu"
+// 028H87/88/91/93), dùng cho bản đồ "Vùng phủ HUB". Không kết nối DB lúc build — đã tra 1 lần và
+// dán cố định ở đây, giống cách BC_KHU_OVERRIDES đang làm.
+const HUB_COORDS = {
+  "(HCM) HUB 7": { lat: 10.8244174, lon: 106.7557215 },
+  "(HCM) HUB 8": { lat: 10.7725203, lon: 106.6255 },
+  "(HCM) HUB 11": { lat: 10.820616, lon: 106.702572 },
+  "(HCM) HUB 13": { lat: 10.7267153, lon: 106.7435244 },
+};
 
 function classifyTransitHub(maTTTCDau) {
   if (maTTTCDau === FEEDER_TO_HUB8_CODE) return { hub: CORE_HUB_NAME_BY_CODE["028H88"], isWrongDestination: false };
@@ -964,7 +988,7 @@ function readTransitByDay(receivingRawRows, bcKhuMap) {
   }
 
   if (rows.length === 0) {
-    return { hubByDay: [], reasonByDay: [], bcStatusByDay: [] };
+    return { hubByDay: [], reasonByDay: [], bcStatusByDay: [], bcHubByDay: [] };
   }
 
   // ---- HUB: chỉ kiện đi qua HUB thật, đúng giờ theo mốc 14:00 ngày N ----
@@ -1004,7 +1028,18 @@ function readTransitByDay(receivingRawRows, bcKhuMap) {
     };
   });
 
-  return { hubByDay, reasonByDay, bcStatusByDay };
+  // ---- Bưu cục gửi -> HUB (để tô "vùng phủ HUB" theo Khu) — chỉ kiện qua HUB thật, giữ theo
+  // ngày để tầng aggregate tự chọn HUB chiếm đa số ĐÚNG trong khoảng ngày đang lọc. ----
+  const bcHubGroups = groupBy(
+    hubRows.filter((r) => r.bc_gui),
+    (r) => JSON.stringify([r.iso_date, r.bc_gui, r.hub])
+  );
+  const bcHubByDay = Object.entries(bcHubGroups).map(([key, items]) => {
+    const [iso_date, bc_gui, hub] = JSON.parse(key);
+    return { iso_date, bc_gui, khu: bcKhuMap.get(bc_gui) ?? null, hub, so_luong: items.length };
+  });
+
+  return { hubByDay, reasonByDay, bcStatusByDay, bcHubByDay };
 }
 
 main();
