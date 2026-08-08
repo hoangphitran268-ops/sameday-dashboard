@@ -517,16 +517,19 @@ const NEW_WARD_FULL_BY_BASENAME = new Map(
  * "Phường 7-028QQ807" -> tên phường cũ, không khớp thẳng bản đồ -> tra OLD_DISTRICT_WARDS (quận cũ
  * suy từ tiền tố mã) để quy đổi ra đúng tên phường mới. Nếu không giải mã được (hiếm, vd địa chỉ
  * ngoài TP.HCM), trả nguyên tên đã bỏ mã — không mất dữ liệu, chỉ là sẽ không tô màu được trên
- * bản đồ (không khớp hcm-wards.geojson). */
-function resolvePhatWard(dichDenRaw) {
+ * bản đồ (không khớp hcm-wards.geojson).
+ * Trả kèm "quan_cu" (Quận/Huyện CŨ) giải từ chính tiền tố mã phường — luôn giải, kể cả khi tên đã
+ * là phường mới khớp thẳng bản đồ, vì đây là nguồn Quận cũ DUY NHẤT đáng tin trong toàn bộ dữ liệu
+ * (bên Khâu nhận không có mã phường, "Zipcode gửi hàng" rỗng 100%, "Địa chỉ lấy" bị che sao). */
+function resolvePhatLocation(dichDenRaw) {
   const m = String(dichDenRaw).match(/^(.*)-([A-Za-z0-9]+)$/);
   const name = (m ? m[1] : dichDenRaw).trim();
   const code = m ? m[2] : null;
-  if (NEW_WARD_NAMES.has(name)) return name;
-  const districtHint = decodeOldDistrictFromCode(code);
-  const newWardBase = resolveOldWardToNew(normalizeOldWard(name), districtHint);
-  if (!newWardBase) return name;
-  return NEW_WARD_FULL_BY_BASENAME.get(newWardBase) ?? `Phường ${newWardBase}`;
+  const quan_cu = decodeOldDistrictFromCode(code);
+  if (NEW_WARD_NAMES.has(name)) return { phuong_xa: name, quan_cu };
+  const newWardBase = resolveOldWardToNew(normalizeOldWard(name), quan_cu);
+  if (!newWardBase) return { phuong_xa: name, quan_cu };
+  return { phuong_xa: NEW_WARD_FULL_BY_BASENAME.get(newWardBase) ?? `Phường ${newWardBase}`, quan_cu };
 }
 
 function readPhatGeoFiles() {
@@ -566,9 +569,11 @@ function readPhatGeoRows() {
       if (r[iTinhGiao] !== "Hồ Chí Minh") continue;
       const dichDen = r[iDichDen];
       if (!dichDen) continue;
+      const loc = resolvePhatLocation(dichDen);
       byWaybill.set(waybill, {
         waybill,
-        phuong_xa: resolvePhatWard(dichDen),
+        phuong_xa: loc.phuong_xa,
+        quan_cu: loc.quan_cu,
         bc_phat: iBcPhat >= 0 ? (r[iBcPhat] ?? null) : null,
         entry: excelSerialToDate(r[iThoiGianNhap]),
       });
@@ -608,8 +613,14 @@ function readPhatGeoByDay(signedMap) {
       if (signed) bcAcc.thanh_cong += 1;
       bcMap.set(bcKey, bcAcc);
 
-      const bcWardKey = JSON.stringify([iso_date, r.bc_phat, r.phuong_xa]);
-      const bcWardAcc = bcWardMap.get(bcWardKey) ?? { iso_date, bc_phat: r.bc_phat, phuong_xa: r.phuong_xa, so_luong: 0 };
+      const bcWardKey = JSON.stringify([iso_date, r.bc_phat, r.phuong_xa, r.quan_cu ?? null]);
+      const bcWardAcc = bcWardMap.get(bcWardKey) ?? {
+        iso_date,
+        bc_phat: r.bc_phat,
+        phuong_xa: r.phuong_xa,
+        quan_cu: r.quan_cu ?? null,
+        so_luong: 0,
+      };
       bcWardAcc.so_luong += 1;
       bcWardMap.set(bcWardKey, bcWardAcc);
     }

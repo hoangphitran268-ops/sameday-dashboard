@@ -46,6 +46,13 @@ export default async function HubCoveragePage({ searchParams }: { searchParams: 
           bcPhatLabelPrefix={t.pages.hubCoverage.mapBcPhatPrefix}
           modeNhanLabel={t.pages.hubCoverage.mapModeNhan}
           modePhatLabel={t.pages.hubCoverage.mapModePhat}
+          filterKhuLabel={t.pages.hubCoverage.filterKhu}
+          filterQuanLabel={t.pages.hubCoverage.filterQuan}
+          filterPhuongLabel={t.pages.hubCoverage.filterPhuong}
+          filterAllLabel={t.pages.hubCoverage.filterAll}
+          filterUnknownLabel={t.pages.hubCoverage.filterUnknown}
+          filterResetLabel={t.pages.hubCoverage.filterReset}
+          filterQuanUnavailableLabel={t.pages.hubCoverage.filterQuanUnavailable}
         />
       </div>
     </div>

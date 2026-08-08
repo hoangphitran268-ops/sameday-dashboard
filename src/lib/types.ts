@@ -131,6 +131,9 @@ export interface RawPhatBcWardDay {
   iso_date: string;
   bc_phat: string;
   phuong_xa: string;
+  /** Quận/Huyện CŨ, giải từ tiền tố mã phường trong "Đích đến" (xem resolvePhatLocation). Chỉ có ở
+   * nhánh Hàng phát — dữ liệu Khâu nhận không mang mã phường nên không suy ra được Quận cũ. */
+  quan_cu: string | null;
   so_luong: number;
 }
 
@@ -510,6 +513,8 @@ export interface HubCoverageKhuRow {
 export interface HubCoverageSellerPoint {
   seller: string;
   phuong_xa: string;
+  /** Khu chủ đạo (suy từ Khu của BC lấy hàng chủ đạo trong khoảng ngày đang lọc). */
+  khu: string | null;
   hub: string | null;
   tong_don: number;
   tb_don_ngay: number;
@@ -521,6 +526,10 @@ export interface HubCoverageSellerPoint {
 export interface HubCoverageBcPhatPoint {
   bc_phat: string;
   phuong_xa: string;
+  /** Khu của chính mã BC đó nếu nó cũng xuất hiện như BC gửi ở Trung chuyển, không thì null. */
+  khu: string | null;
+  /** Quận/Huyện cũ chủ đạo (nơi BC này giao nhiều nhất). Chỉ có ở nhánh Hàng phát. */
+  quan_cu: string | null;
   hub: string | null;
   tong_don: number;
   tb_don_ngay: number;
